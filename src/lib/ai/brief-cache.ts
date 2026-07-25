@@ -24,6 +24,8 @@ export type CachedBrief = {
   generatedAt: Date;
   ageMs: number;
   stale: boolean;
+  /** Whether any market data source was stale or missing when it was written. */
+  degraded: boolean;
 };
 
 function toCached(row: SessionBriefCache, now: Date): CachedBrief | null {
@@ -38,6 +40,7 @@ function toCached(row: SessionBriefCache, now: Date): CachedBrief | null {
     generatedAt: row.generatedAt,
     ageMs,
     stale: ageMs > BRIEF_TTL_MS,
+    degraded: row.degraded,
   };
 }
 
@@ -103,6 +106,8 @@ export async function claimBriefGeneration(
 export async function storeBrief(
   session: TradingSession,
   brief: SessionBrief,
+  inputs: unknown,
+  degraded: boolean,
   usage: AiUsage & { costUsd: number },
   now: Date = new Date(),
 ): Promise<void> {
@@ -111,6 +116,8 @@ export async function storeBrief(
     data: {
       status: "READY",
       brief: brief as unknown as Prisma.InputJsonValue,
+      inputs: inputs as Prisma.InputJsonValue,
+      degraded,
       generatedAt: now,
       model: usage.model,
       inputTokens: usage.inputTokens,

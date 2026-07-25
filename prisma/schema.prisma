@@ -32,6 +32,26 @@ enum BriefStatus {
   FAILED
 }
 
+enum MarketDataKind {
+  ECONOMIC_CALENDAR
+  TECHNICAL_LEVELS
+  NEWS_HEADLINES
+}
+
+/// Last-known-good market data, written on every successful provider fetch.
+///
+/// This is what makes a provider outage a degraded brief rather than no brief:
+/// when the live call fails, the newest row for that kind is served instead.
+model MarketDataSnapshot {
+  id      String         @id @default(uuid())
+  kind    MarketDataKind
+  payload Json
+
+  fetchedAt DateTime @default(now())
+
+  @@index([kind, fetchedAt])
+}
+
 /// One brief per trading session per UTC day, shared by every user.
 ///
 /// The unique key is what makes concurrent generation safe: the first request
@@ -47,6 +67,11 @@ model SessionBriefCache {
   status BriefStatus @default(PENDING)
   /// The SessionBrief payload. Null while PENDING and after a FAILED attempt.
   brief Json?
+  /// The exact market data the brief was written from, so a reader can check
+  /// what it was based on instead of taking it on faith.
+  inputs Json?
+  /// True when any source was stale or missing when the brief was generated.
+  degraded Boolean @default(false)
 
   /// When the stored brief was produced — the age the TTL is measured against.
   generatedAt DateTime?

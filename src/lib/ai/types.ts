@@ -33,6 +33,8 @@ export type SessionBriefInput = {
   economicEvents: CalendarInput[];
   technicalLevels: TechnicalLevelsInput[];
   newsHeadlines: NewsInput[];
+  /** Per-source provenance, so the model names gaps instead of filling them. */
+  dataQuality?: Record<string, string>;
 };
 
 export type SessionBrief = {
