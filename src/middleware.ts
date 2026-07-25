@@ -1,8 +1,11 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 /**
- * Next 16 renamed the `middleware` file convention to `proxy`. The handler is
- * still Clerk's `clerkMiddleware` — there is no `clerkProxy` counterpart.
+ * Next 16 deprecates this file convention in favour of `proxy.ts`, and the
+ * build prints a warning about it. Renaming the file took the whole site down
+ * with MIDDLEWARE_INVOCATION_FAILED on Vercel — Clerk exports no `clerkProxy`
+ * counterpart and `clerkMiddleware` did not survive the move. The warning
+ * stays until Clerk supports the new convention.
  *
  * Everything is private by default. Only the sign-in and sign-up screens are
  * reachable without a session — an allowlist, so a route added later is
