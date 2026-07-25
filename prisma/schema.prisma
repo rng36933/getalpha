@@ -32,6 +32,54 @@ enum BriefStatus {
   FAILED
 }
 
+enum InstrumentKind {
+  FOREX
+  CRYPTO
+  COMMODITY
+}
+
+/// The searchable instrument catalogue, synced from the data provider.
+///
+/// Held locally rather than proxying the provider's search: that search ranks
+/// "gold" as an Indonesian telecom stock before it reaches XAU/USD, and every
+/// keystroke would be a network round trip against a rate-limited plan.
+model Instrument {
+  /// Provider symbol, e.g. "EUR/USD". Also the natural primary key.
+  symbol String @id
+  /// Display form without the slash, matching how trades are journalled.
+  label  String
+  name   String
+  kind   InstrumentKind
+  /// Provider grouping — "Major", "Exotic-Cross", "Precious Metal".
+  group  String?
+
+  /// Hand-set ranking so majors surface above exotics in search.
+  popularity Int @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  watchlistItems WatchlistItem[]
+
+  @@index([kind])
+  @@index([popularity])
+}
+
+/// A user's personal instruments. Drives charts and filters — never the AI
+/// Session Brief, which stays a shared desk-wide document.
+model WatchlistItem {
+  id     String @id @default(uuid())
+  userId String
+
+  symbol     String
+  instrument Instrument @relation(fields: [symbol], references: [symbol], onDelete: Cascade)
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, symbol])
+  @@index([userId, sortOrder])
+}
+
 enum MarketDataKind {
   ECONOMIC_CALENDAR
   TECHNICAL_LEVELS
