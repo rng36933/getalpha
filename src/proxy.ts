@@ -1,6 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 /**
+ * Next 16 renamed the `middleware` file convention to `proxy`. The handler is
+ * still Clerk's `clerkMiddleware` — there is no `clerkProxy` counterpart.
+ *
  * Everything is private by default. Only the sign-in and sign-up screens are
  * reachable without a session — an allowlist, so a route added later is
  * protected unless someone deliberately opens it.

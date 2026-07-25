@@ -9,7 +9,7 @@ import {
   type CandlestickData,
   type Time,
 } from "lightweight-charts";
-import type { Candle } from "@/lib/mock-data";
+import type { Candle } from "@/lib/market-data/display";
 
 type PriceChartProps = {
   data: Candle[];

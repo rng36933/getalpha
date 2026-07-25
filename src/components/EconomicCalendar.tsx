@@ -1,4 +1,4 @@
-import type { EconomicEvent, ImpactLevel } from "@/lib/mock-data";
+import type { EconomicEvent, ImpactLevel } from "@/lib/market-data/display";
 
 const impactStyles: Record<ImpactLevel, { label: string; className: string }> = {
   HIGH: { label: "High", className: "bg-negative/15 text-negative" },

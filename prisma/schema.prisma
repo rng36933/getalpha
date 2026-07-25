@@ -84,6 +84,7 @@ enum MarketDataKind {
   ECONOMIC_CALENDAR
   TECHNICAL_LEVELS
   NEWS_HEADLINES
+  PRICE_SERIES
 }
 
 /// Last-known-good market data, written on every successful provider fetch.
@@ -95,9 +96,14 @@ model MarketDataSnapshot {
   kind    MarketDataKind
   payload Json
 
+  /// Distinguishes rows within a kind that are not interchangeable — the price
+  /// series for XAU/USD must never be served as the fallback for EUR/USD.
+  /// Null for kinds that have exactly one set, such as the calendar.
+  key String?
+
   fetchedAt DateTime @default(now())
 
-  @@index([kind, fetchedAt])
+  @@index([kind, key, fetchedAt])
 }
 
 /// One brief per trading session per UTC day, shared by every user.

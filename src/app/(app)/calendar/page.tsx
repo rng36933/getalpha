@@ -1,9 +1,17 @@
 import Card from "@/components/Card";
+import DataQualityNotice from "@/components/DataQualityNotice";
 import EconomicCalendar from "@/components/EconomicCalendar";
 import PageHeader from "@/components/PageHeader";
-import { mockEconomicEvents } from "@/lib/mock-data";
+import { fetchEconomicCalendar } from "@/lib/market-data/calendar";
+import { toEconomicEvents } from "@/lib/market-data/display";
 
-export default function CalendarPage() {
+export default async function CalendarPage() {
+  // `fetchEconomicCalendar` resolves to stored events when the feed is down and
+  // to an empty list when there is nothing stored either — it never rejects, so
+  // the page renders whatever is available rather than an error screen.
+  const calendar = await fetchEconomicCalendar();
+  const events = toEconomicEvents(calendar.data);
+
   return (
     <>
       <PageHeader
@@ -11,9 +19,13 @@ export default function CalendarPage() {
         subtitle="Economic events and scheduled releases."
       />
 
+      <DataQualityNotice
+        sources={[{ label: "Economic calendar", result: calendar }]}
+      />
+
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card title="Economic Calendar" className="xl:col-span-2">
-          <EconomicCalendar events={mockEconomicEvents} />
+          <EconomicCalendar events={events} />
         </Card>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
