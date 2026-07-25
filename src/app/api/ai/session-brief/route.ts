@@ -8,6 +8,7 @@ import {
 } from "@/lib/ai/brief-cache";
 import { aiErrorResponse, badRequest, isRecord } from "@/lib/ai/http";
 import { generateSessionBrief } from "@/lib/ai/session-brief";
+import { requirePaidAccess } from "@/lib/billing/guard";
 import type { TradingSession } from "@/lib/ai/types";
 import {
   collectMarketSnapshot,
@@ -32,6 +33,12 @@ export async function POST(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
+
+  // Checked before the cache is read, not after: the brief is a shared document
+  // and serving a cached copy to someone who has not paid gives the module away
+  // for free to everyone who arrives second.
+  const denied = await requirePaidAccess(userId);
+  if (denied) return denied;
 
   let body: unknown;
 

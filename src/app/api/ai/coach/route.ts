@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { reviewTrade } from "@/lib/ai/coach";
 import { aiErrorResponse, badRequest, isRecord } from "@/lib/ai/http";
+import { requirePaidAccess } from "@/lib/billing/guard";
 import {
   computePortfolioContext,
   computeTradeMetrics,
@@ -24,6 +25,9 @@ export async function POST(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
+
+  const denied = await requirePaidAccess(userId);
+  if (denied) return denied;
 
   let body: unknown;
 

@@ -11,7 +11,13 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
  * reachable without a session — an allowlist, so a route added later is
  * protected unless someone deliberately opens it.
  */
-const isPublicRoute = createRouteMatcher(["/login(.*)", "/register(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/login(.*)",
+  "/register(.*)",
+  // Stripe has no Clerk session. The webhook authenticates itself with a
+  // signature over the raw body instead.
+  "/api/billing/webhook",
+]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {

@@ -32,6 +32,11 @@ const navItems: NavItem[] = [
     label: "Calendar",
     icon: "M8 2v4M16 2v4M3.5 9h17M5 5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 21H5a1.5 1.5 0 0 1-1.5-1.5v-13A1.5 1.5 0 0 1 5 5Z",
   },
+  {
+    href: "/pricing",
+    label: "Plans",
+    icon: "M12 2v20M17 5.5C17 4 15.2 3 12 3S7 4 7 5.9c0 4.6 10 2.3 10 7 0 2-2 3.1-5 3.1s-5-1.2-5-3",
+  },
 ];
 
 function isActive(pathname: string, href: string) {

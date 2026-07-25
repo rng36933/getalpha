@@ -80,6 +80,62 @@ model WatchlistItem {
   @@index([userId, sortOrder])
 }
 
+/// Mirrors Stripe's subscription statuses, narrowed to the ones that change
+/// what a user can do. Stripe's `unpaid` and `paused` both land on PAST_DUE.
+enum SubscriptionStatus {
+  /// Paying, or inside a trial. Both grant access.
+  ACTIVE
+  TRIALING
+  /// Payment failed. Stripe keeps retrying, so access is kept for now.
+  PAST_DUE
+  /// Ended, or never completed checkout. No access.
+  CANCELED
+  INCOMPLETE
+}
+
+/// One row per user who has ever reached Stripe checkout.
+///
+/// Clerk owns identity, so there is no User table to hang this off — `userId`
+/// is the Clerk id and is the join key for the whole app.
+model Subscription {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  /// Created once and reused, so a returning customer keeps one billing
+  /// history rather than accumulating duplicate Stripe customers.
+  stripeCustomerId     String  @unique
+  stripeSubscriptionId String? @unique
+
+  status   SubscriptionStatus @default(INCOMPLETE)
+  /// Which plan they are on, from `plans.ts`. Null before checkout completes.
+  planSlug String?
+  stripePriceId String?
+
+  /// When the paid period ends. Access survives to this date after cancelling.
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+/// Webhook deliveries already applied.
+///
+/// Stripe retries until it gets a 2xx and explicitly does not promise
+/// exactly-once delivery, so without this a retried `checkout.session.completed`
+/// would be processed twice.
+model ProcessedStripeEvent {
+  /// Stripe's event id, e.g. "evt_1234". The primary key is the whole point.
+  id String @id
+
+  type        String
+  processedAt DateTime @default(now())
+
+  @@index([processedAt])
+}
+
 enum MarketDataKind {
   ECONOMIC_CALENDAR
   TECHNICAL_LEVELS
