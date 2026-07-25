@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HybridTrader",
+  title: "getALPHA",
   description: "Signals, macro, journal and calendar in one trading desk.",
 };
 

@@ -43,11 +43,11 @@ export default function Sidebar() {
   return (
     <aside className="flex w-16 shrink-0 flex-col border-r border-line bg-surface sm:w-60">
       <div className="flex h-16 items-center gap-2.5 border-b border-line px-4 sm:px-5">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-sm font-bold text-background">
-          H
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-base font-bold text-background">
+          α
         </span>
         <span className="hidden truncate text-sm font-semibold tracking-tight sm:inline">
-          HybridTrader
+          get<span className="text-accent">ALPHA</span>
         </span>
       </div>
 

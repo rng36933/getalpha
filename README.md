@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# getALPHA
 
-## Getting Started
+A trading desk: price charts, an economic calendar, a trade journal, and two
+Claude-powered features — a pre-session risk brief and a post-trade process
+review.
 
-First, run the development server:
+Domain: [getalpha.org](https://getalpha.org) (not deployed yet).
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript + Tailwind v4, dark theme only
+- Prisma 7 + PostgreSQL, `Decimal` columns for every money value
+- Anthropic Claude (`claude-opus-5`) with schema-constrained JSON output
+- `lightweight-charts` for candlesticks
+
+## Running locally
 
 ```bash
+npm install
+cp .env.example .env              # then fill it in
+npx prisma dev --name getalpha    # local Postgres, prints the connection string
+npx prisma db push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development server on http://localhost:3000 |
+| `npm run build` | `prisma generate` then a production build |
+| `npm test` | Unit tests for trade metrics and AI pricing |
+| `npm run lint` | ESLint |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Design notes
 
-## Learn More
+**Every number in an AI review is computed in code, never by the model.**
+R-multiples, planned reward-to-risk, risk as a percentage of equity and
+holding times come from `src/lib/ai/trade-metrics.ts`; the model receives them
+as finished figures and only judges them. A language model will confidently
+misreport an R-multiple, and a review built on a wrong R is worse than no
+review.
 
-To learn more about Next.js, take a look at the following resources:
+**`contractSize` matters.** Brokers quote size in lots and one XAUUSD lot is
+100 ounces, so risk is `riskPerUnit × size × contractSize`. Omitting the
+factor makes every R-multiple wrong by that factor.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**AI spend is capped per UTC day.** Every call is written to `AiUsageLog` with
+its cost, and a call whose worst case would breach `AI_DAILY_BUDGET_USD`
+(default $2) is refused with HTTP 402 before it is sent.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Route | Purpose |
+|---|---|
+| `GET/POST /api/trades` | Trade journal |
+| `POST /api/ai/session-brief` | Three-point pre-session risk brief |
+| `POST /api/ai/coach` | Process review of one trade |
+| `GET /api/ai/usage` | Today's AI spend against the budget |
