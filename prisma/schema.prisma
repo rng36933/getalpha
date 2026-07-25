@@ -20,6 +20,51 @@ enum AiFeature {
   TRADE_COACH
 }
 
+enum TradingSession {
+  LONDON
+  NEW_YORK
+  ASIA
+}
+
+enum BriefStatus {
+  PENDING
+  READY
+  FAILED
+}
+
+/// One brief per trading session per UTC day, shared by every user.
+///
+/// The unique key is what makes concurrent generation safe: the first request
+/// of the morning claims the row, and everyone arriving behind it reads the
+/// result instead of paying for a second identical call.
+model SessionBriefCache {
+  id String @id @default(uuid())
+
+  session TradingSession
+  /// YYYY-MM-DD in UTC. A string, so the key cannot drift with timezones.
+  briefDate String
+
+  status BriefStatus @default(PENDING)
+  /// The SessionBrief payload. Null while PENDING and after a FAILED attempt.
+  brief Json?
+
+  /// When the stored brief was produced — the age the TTL is measured against.
+  generatedAt DateTime?
+  /// When a generator last took ownership. Lets a crashed attempt be retried.
+  claimedAt DateTime @default(now())
+
+  model        String?
+  inputTokens  Int?
+  outputTokens Int?
+  costUsd      Decimal? @db.Decimal(12, 6)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([session, briefDate])
+  @@index([session, generatedAt])
+}
+
 /// One row per Anthropic API call. This table is the only source of truth for
 /// spend, so the daily limit is only as reliable as its write path.
 model AiUsageLog {

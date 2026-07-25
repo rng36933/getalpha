@@ -1,5 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import {
+  claimBriefGeneration,
+  readBrief,
+  releaseFailedClaim,
+  storeBrief,
+} from "@/lib/ai/brief-cache";
 import { generateSessionBrief } from "@/lib/ai/session-brief";
 import {
   aiErrorResponse,
@@ -84,9 +90,45 @@ export async function POST(request: Request) {
 
   if (errors.length > 0) return badRequest(errors);
 
+  const tradingSession = session as TradingSession;
+  const now = new Date();
+
+  // 1. Someone already generated this session's brief recently.
+  const cached = await readBrief(tradingSession, now);
+  if (cached && !cached.stale) {
+    return NextResponse.json({
+      brief: cached.brief,
+      cached: true,
+      generatedAt: cached.generatedAt.toISOString(),
+      ageSeconds: Math.round(cached.ageMs / 1000),
+    });
+  }
+
+  // 2. Take ownership, or discover that another request already has it.
+  const { won } = await claimBriefGeneration(tradingSession, now);
+
+  if (!won) {
+    // Serving a slightly stale brief beats making the user wait for a call
+    // somebody else is already paying for.
+    if (cached) {
+      return NextResponse.json({
+        brief: cached.brief,
+        cached: true,
+        stale: true,
+        generatedAt: cached.generatedAt.toISOString(),
+        ageSeconds: Math.round(cached.ageMs / 1000),
+      });
+    }
+
+    return NextResponse.json(
+      { status: "generating", retryAfterSeconds: 15 },
+      { status: 202, headers: { "retry-after": "15" } },
+    );
+  }
+
   const input: SessionBriefInput = {
-    session: session as TradingSession,
-    asOf: new Date().toISOString(),
+    session: tradingSession,
+    asOf: now.toISOString(),
     economicEvents,
     technicalLevels,
     newsHeadlines,
@@ -94,8 +136,13 @@ export async function POST(request: Request) {
 
   try {
     const { data, usage } = await generateSessionBrief(input, userId);
-    return NextResponse.json({ brief: data, usage });
+    await storeBrief(tradingSession, data, usage, new Date());
+
+    return NextResponse.json({ brief: data, cached: false, usage });
   } catch (error) {
+    // Release the claim so the next request retries rather than waiting out
+    // the claim timeout.
+    await releaseFailedClaim(tradingSession, now);
     return aiErrorResponse(error, "POST /api/ai/session-brief");
   }
 }
