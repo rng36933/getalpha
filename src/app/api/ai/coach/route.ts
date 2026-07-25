@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { reviewTrade } from "@/lib/ai/coach";
 import { aiErrorResponse, badRequest, isRecord } from "@/lib/ai/http";
@@ -17,11 +18,13 @@ const HISTORY_WINDOW = 50;
  * Body: { tradeId }
  * Loads the trade and the trader's recent history, computes every metric in
  * code, then asks the model to judge the process.
- *
- * TODO: once authentication exists this must check that the trade belongs to
- * the session user. As written, any tradeId can be reviewed by anyone.
  */
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
+
   let body: unknown;
 
   try {
@@ -49,14 +52,19 @@ export async function POST(request: Request) {
   let history;
 
   try {
-    trade = await prisma.trade.findUnique({ where: { id: tradeId.trim() } });
+    // Scoped by userId, not just id: a trade belonging to someone else must
+    // read as "not found" rather than "forbidden", which would confirm it
+    // exists.
+    trade = await prisma.trade.findFirst({
+      where: { id: tradeId.trim(), userId },
+    });
 
     if (!trade) {
       return NextResponse.json({ error: "Trade not found" }, { status: 404 });
     }
 
     history = await prisma.trade.findMany({
-      where: { userId: trade.userId, createdAt: { lt: trade.createdAt } },
+      where: { userId, createdAt: { lt: trade.createdAt } },
       orderBy: { createdAt: "desc" },
       take: HISTORY_WINDOW,
     });

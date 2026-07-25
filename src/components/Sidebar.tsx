@@ -1,5 +1,6 @@
 "use client";
 
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -84,6 +85,15 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="flex items-center gap-3 border-t border-line p-3 sm:p-4">
+        <UserButton
+          appearance={{ elements: { userButtonAvatarBox: "width: 2rem; height: 2rem" } }}
+        />
+        <span className="hidden truncate text-xs text-muted sm:inline">
+          Account
+        </span>
+      </div>
     </aside>
   );
 }

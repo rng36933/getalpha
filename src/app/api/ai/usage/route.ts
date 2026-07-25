@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { budgetStatus, startOfUtcDay } from "@/lib/ai/budget";
 import { prisma } from "@/lib/prisma";
@@ -7,8 +8,16 @@ import { prisma } from "@/lib/prisma";
  *
  * Today's AI spend against the configured daily limit, broken down by feature.
  * The UI uses this to show remaining budget without waiting for a 402.
+ *
+ * The budget is deliberately account-wide, not per user: it caps what this
+ * deployment can spend in a day, whoever spends it.
  */
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
+
   try {
     const [status, byFeature] = await Promise.all([
       budgetStatus(),

@@ -1,7 +1,12 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { Prisma, TradeDirection } from "@/generated/prisma/client";
 import type { Trade } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+
+function unauthorized() {
+  return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+}
 
 /**
  * Decimal and Date do not survive JSON.stringify in a useful shape, so every
@@ -117,15 +122,14 @@ function parseDecimal(
   return decimal;
 }
 
-/**
- * GET /api/trades — all trades, newest first.
- *
- * TODO: once authentication exists this must filter by the session user.
- * As written it returns every user's trades to anyone who calls it.
- */
+/** GET /api/trades — the signed-in user's trades, newest first. */
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return unauthorized();
+
   try {
     const trades = await prisma.trade.findMany({
+      where: { userId },
       orderBy: { createdAt: "desc" },
     });
 
@@ -139,8 +143,11 @@ export async function GET() {
   }
 }
 
-/** POST /api/trades — create one trade. */
+/** POST /api/trades — create one trade owned by the signed-in user. */
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return unauthorized();
+
   let body: unknown;
 
   try {
@@ -161,7 +168,8 @@ export async function POST(request: Request) {
 
   const errors: string[] = [];
 
-  const userId = requireString(body.userId, "userId", errors);
+  // userId is never read from the body: ownership comes from the session, so a
+  // caller cannot write a trade into somebody else's journal.
   const asset = requireString(body.asset, "asset", errors);
 
   const direction = body.direction;

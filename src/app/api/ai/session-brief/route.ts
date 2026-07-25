@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { generateSessionBrief } from "@/lib/ai/session-brief";
 import {
@@ -24,6 +25,11 @@ const IMPACTS = ["HIGH", "MEDIUM", "LOW"];
  * Returns the three-point desk brief plus the token usage of the call.
  */
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
+
   let body: unknown;
 
   try {
@@ -87,7 +93,7 @@ export async function POST(request: Request) {
   };
 
   try {
-    const { data, usage } = await generateSessionBrief(input);
+    const { data, usage } = await generateSessionBrief(input, userId);
     return NextResponse.json({ brief: data, usage });
   } catch (error) {
     return aiErrorResponse(error, "POST /api/ai/session-brief");
