@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TradeDirection {
+  BUY
+  SELL
+}
+
+enum AiFeature {
+  SESSION_BRIEF
+  TRADE_COACH
+}
+
+/// One row per Anthropic API call. This table is the only source of truth for
+/// spend, so the daily limit is only as reliable as its write path.
+model AiUsageLog {
+  id      String    @id @default(uuid())
+  userId  String?
+  feature AiFeature
+
+  /// The model that actually served the request — a safety fallback may have
+  /// been answered by a different (differently priced) model than requested.
+  model String
+
+  inputTokens              Int
+  outputTokens             Int
+  cacheCreationInputTokens Int @default(0)
+  cacheReadInputTokens     Int @default(0)
+
+  costUsd Decimal @db.Decimal(12, 6)
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+model Trade {
+  id     String @id @default(uuid())
+  userId String
+
+  asset     String
+  direction TradeDirection
+
+  // Which playbook entry this was, so reviews can be grouped by setup rather
+  // than judged one trade at a time.
+  setup     String?
+  timeframe String?
+
+  // Prices and size are Decimal, not Float: binary floating point silently
+  // corrupts money values (0.1 + 0.2 != 0.3).
+  entryPrice Decimal  @db.Decimal(18, 8)
+  exitPrice  Decimal? @db.Decimal(18, 8)
+  size       Decimal  @db.Decimal(18, 8)
+  pnl        Decimal? @db.Decimal(18, 2)
+
+  // Units per unit of `size`. MT5 quotes size in lots, and one XAUUSD lot is
+  // 100 ounces — without this, risk in currency is out by that factor and
+  // every R-multiple built on it is wrong. Defaults to 1 (size is in units).
+  contractSize Decimal @default(1) @db.Decimal(18, 4)
+
+  // The planned trade. Without stopLoss there is no defined risk, so no
+  // R-multiple, and any review of sizing or exit discipline is guesswork.
+  stopLoss   Decimal? @db.Decimal(18, 8)
+  takeProfit Decimal? @db.Decimal(18, 8)
+
+  // Equity at entry — turns absolute risk into risk-percent-of-account.
+  accountBalance Decimal? @db.Decimal(18, 2)
+
+  // Optional: a trade can be journalled while it is still open, and the
+  // reflection fields are often filled in later.
+  marketContext  String?
+  emotionalState String?
+
+  createdAt DateTime  @default(now())
+  closedAt  DateTime?
+
+  @@index([userId, createdAt])
+  @@index([asset])
+  @@index([userId, setup])
+}
