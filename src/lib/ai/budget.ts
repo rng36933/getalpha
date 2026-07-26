@@ -1,39 +1,46 @@
 import type { AiFeature } from "@/generated/prisma/client";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import {
+  dailyBudgetUsd,
+  isPerUserCapped,
+  perUserDailyBudgetUsd,
+} from "./budget-limits";
 import { costOfUsage, worstCaseCost } from "./pricing";
 import type { AiUsage } from "./types";
 
-export const DEFAULT_DAILY_BUDGET_USD = 2;
+export {
+  DEFAULT_DAILY_BUDGET_USD,
+  DEFAULT_PER_USER_BUDGET_USD,
+  dailyBudgetUsd,
+  perUserDailyBudgetUsd,
+} from "./budget-limits";
 
-/** Thrown when a call would take the day past its spending limit. */
+/**
+ * Which ceiling refused the call.
+ *
+ * The two mean different things to whoever is reading the message. GLOBAL is the
+ * desk being out of budget for everyone until midnight UTC and is nobody's
+ * fault; USER is this account having spent its own allowance, which resets the
+ * same way but is worth saying differently.
+ */
+export type BudgetScope = "GLOBAL" | "USER";
+
+/** Thrown when a call would take the day past a spending limit. */
 export class AiBudgetError extends Error {
   constructor(
     readonly spentTodayUsd: number,
     readonly limitUsd: number,
     readonly reserveUsd: number,
+    readonly scope: BudgetScope = "GLOBAL",
   ) {
     super(
-      `Daily AI budget reached: $${spentTodayUsd.toFixed(4)} of $${limitUsd.toFixed(2)} spent`,
+      scope === "USER"
+        ? `Your daily AI allowance is used up: $${spentTodayUsd.toFixed(4)} of $${limitUsd.toFixed(2)}`
+        : `Daily AI budget reached: $${spentTodayUsd.toFixed(4)} of $${limitUsd.toFixed(2)} spent`,
     );
     this.name = "AiBudgetError";
   }
-}
-
-/** Reads AI_DAILY_BUDGET_USD, falling back to the default when unusable. */
-export function dailyBudgetUsd(): number {
-  const raw = process.env.AI_DAILY_BUDGET_USD;
-  if (raw === undefined || raw.trim() === "") return DEFAULT_DAILY_BUDGET_USD;
-
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    console.warn(
-      `AI_DAILY_BUDGET_USD="${raw}" is not a valid amount — using $${DEFAULT_DAILY_BUDGET_USD}.`,
-    );
-    return DEFAULT_DAILY_BUDGET_USD;
-  }
-
-  return parsed;
 }
 
 /**
@@ -130,7 +137,34 @@ export async function reserveBudget(
     const spent = total._sum.costUsd?.toNumber() ?? 0;
 
     if (spent + reserveUsd > limitUsd) {
-      throw new AiBudgetError(spent, limitUsd, reserveUsd);
+      throw new AiBudgetError(spent, limitUsd, reserveUsd, "GLOBAL");
+    }
+
+    // The account's own share, inside the same lock and the same transaction.
+    // Checking it in a second round trip would let two of this user's requests
+    // both read the same total, both fit, and together go over — the identical
+    // race the application-wide cap is held under one lock to avoid.
+    if (userId !== null && isPerUserCapped(feature)) {
+      const perUserLimit = perUserDailyBudgetUsd();
+
+      const mine = await tx.aiUsageLog.aggregate({
+        _sum: { costUsd: true },
+        where: {
+          userId,
+          feature,
+          createdAt: { gte: dayStart },
+          OR: [
+            { pending: false },
+            { pending: true, createdAt: { gt: staleBefore } },
+          ],
+        },
+      });
+
+      const spentByUser = mine._sum.costUsd?.toNumber() ?? 0;
+
+      if (spentByUser + reserveUsd > perUserLimit) {
+        throw new AiBudgetError(spentByUser, perUserLimit, reserveUsd, "USER");
+      }
     }
 
     const row = await tx.aiUsageLog.create({

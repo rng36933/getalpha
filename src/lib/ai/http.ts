@@ -15,7 +15,15 @@ export function aiErrorResponse(error: unknown, route: string): NextResponse {
   if (error instanceof AiBudgetError) {
     return NextResponse.json(
       {
-        error: "Daily AI budget reached",
+        // Which ceiling was hit changes what the reader should do. Their own
+        // allowance means come back tomorrow; the desk's means it is not about
+        // them at all, and telling somebody they are out of budget when they are
+        // not is the kind of wrong message that generates support tickets.
+        error:
+          error.scope === "USER"
+            ? "You have used today's AI allowance for this account"
+            : "The desk has reached its daily AI budget",
+        scope: error.scope,
         spentTodayUsd: Number(error.spentTodayUsd.toFixed(6)),
         limitUsd: error.limitUsd,
         reservedForThisCallUsd: Number(error.reserveUsd.toFixed(6)),
