@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { Prisma, TradeDirection } from "@/generated/prisma/client";
 import type { Trade } from "@/generated/prisma/client";
+import { safeLabel, track } from "@/lib/analytics";
 import { prisma } from "@/lib/prisma";
 
 function unauthorized() {
@@ -256,6 +257,17 @@ export async function POST(request: Request) {
         emotionalState,
         closedAt,
       },
+    });
+
+    // Which instrument and whether risk was defined — never the numbers. See
+    // the event map in analytics.ts for why the shape is fixed there.
+    track("trade_logged", userId, {
+      instrument: safeLabel(trade.asset),
+      direction: trade.direction,
+      hasStopLoss: trade.stopLoss !== null,
+      hasTakeProfit: trade.takeProfit !== null,
+      isClosed: trade.closedAt !== null,
+      timeframe: safeLabel(trade.timeframe),
     });
 
     return NextResponse.json(serializeTrade(trade), { status: 201 });

@@ -8,6 +8,7 @@ import {
 } from "@/lib/ai/brief-cache";
 import { aiErrorResponse, badRequest, isRecord } from "@/lib/ai/http";
 import { generateSessionBrief } from "@/lib/ai/session-brief";
+import { track } from "@/lib/analytics";
 import { requirePaidAccess } from "@/lib/billing/guard";
 import type { TradingSession } from "@/lib/ai/types";
 import {
@@ -69,6 +70,12 @@ export async function POST(request: Request) {
   // 1. Someone already generated this session's brief recently.
   const cached = await readBrief(tradingSession, now);
   if (cached && !cached.stale) {
+    track("ai_brief_requested", userId, {
+      session: tradingSession,
+      cacheHit: true,
+      degraded: cached.degraded,
+    });
+
     return NextResponse.json({
       brief: cached.brief,
       cached: true,
@@ -85,6 +92,12 @@ export async function POST(request: Request) {
     // Serving a slightly stale brief beats making the user wait for a call
     // somebody else is already paying for.
     if (cached) {
+      track("ai_brief_requested", userId, {
+        session: tradingSession,
+        cacheHit: true,
+        degraded: cached.degraded,
+      });
+
       return NextResponse.json({
         brief: cached.brief,
         cached: true,
@@ -121,6 +134,15 @@ export async function POST(request: Request) {
     const { data, usage } = await generateSessionBrief(input, userId);
 
     await storeBrief(tradingSession, data, input, snapshot.degraded, usage, new Date());
+
+    // Only the paths that actually return a brief are counted. A 202 while
+    // somebody else generates is not a brief the user received; they retry,
+    // and that attempt is the one recorded.
+    track("ai_brief_requested", userId, {
+      session: tradingSession,
+      cacheHit: false,
+      degraded: snapshot.degraded,
+    });
 
     return NextResponse.json({
       brief: data,
