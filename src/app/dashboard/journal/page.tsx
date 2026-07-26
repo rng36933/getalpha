@@ -37,6 +37,9 @@ async function loadTrades(userId: string): Promise<TradeRow[]> {
     exitPrice: trade.exitPrice?.toNumber() ?? null,
     pnl: trade.pnl?.toNumber() ?? null,
     createdAt: trade.createdAt.toISOString(),
+    source: trade.source,
+    marketContext: trade.marketContext,
+    emotionalState: trade.emotionalState,
     // The same function the AI review is given, so the number on screen and
     // the number the model judges can never disagree.
     metrics: computeTradeMetrics(trade),

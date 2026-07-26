@@ -19,6 +19,9 @@ function serializeTrade(trade: Trade) {
   return {
     id: trade.id,
     userId: trade.userId,
+    // Which rows the terminal owns, and therefore which numbers a client must
+    // not offer to edit.
+    source: trade.source,
     asset: trade.asset,
     direction: trade.direction,
     setup: trade.setup,
