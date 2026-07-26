@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { SubscriptionStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hasActiveReward } from "@/lib/referral/program";
+import { hasComplimentaryAccess } from "./complimentary";
 import { planSlugForPrice } from "./plans";
 import { stripe } from "./stripe";
 
@@ -23,6 +24,8 @@ export type Access =
   | { allowed: true; reason: "SUBSCRIBED" | "PERIOD_REMAINING" }
   /** An unexpired referral bonus, which is access without a payment. */
   | { allowed: true; reason: "REFERRAL_REWARD" }
+  /** Handed the paid modules outright by the operator. */
+  | { allowed: true; reason: "COMPLIMENTARY" }
   /** Never subscribed, or the subscription ended. */
   | { allowed: false; reason: "NO_SUBSCRIPTION" }
   /** The entitlement could not be read. Fails closed, but says so. */
@@ -36,6 +39,12 @@ export type Access =
  * they need to buy something they already own.
  */
 export async function checkAccess(userId: string): Promise<Access> {
+  // Checked before the database, so a comped account keeps working through an
+  // outage that would otherwise fail closed on it.
+  if (hasComplimentaryAccess(userId)) {
+    return { allowed: true, reason: "COMPLIMENTARY" };
+  }
+
   try {
     const subscription = await prisma.subscription.findUnique({
       where: { userId },

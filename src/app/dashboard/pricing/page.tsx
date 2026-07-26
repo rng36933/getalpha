@@ -8,6 +8,7 @@ import {
   priceIdFor,
 } from "@/lib/billing/plans";
 import { isTestMode, stripe } from "@/lib/billing/stripe";
+import { hasComplimentaryAccess } from "@/lib/billing/complimentary";
 import { getSubscription } from "@/lib/billing/subscription";
 
 /**
@@ -95,12 +96,27 @@ export default async function PricingPage({
     userId ? getSubscription(userId) : Promise.resolve(null),
   ]);
 
+  // A comped account has no subscription row, so without this the page would
+  // invite somebody to pay for the two modules they already have.
+  const complimentary = hasComplimentaryAccess(userId);
+
   return (
     <>
       <PageHeader
         title="Plans"
         subtitle="The AI Session Brief and AI Coach are the paid modules. Everything else is free."
       />
+
+      {complimentary ? (
+        <p
+          role="status"
+          className="mb-4 rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
+        >
+          The AI Session Brief and AI Coach are already unlocked on this account.
+          There is nothing to pay and nothing to subscribe to — ignore the plans
+          below.
+        </p>
+      ) : null}
 
       {checkout === "success" ? (
         <p

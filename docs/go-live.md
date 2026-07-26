@@ -107,10 +107,45 @@ Each of these silently disables a feature that is otherwise finished.
 | `CLERK_WEBHOOK_SECRET` | Deleting a Clerk account leaves that person's rows in the database — a GDPR obligation, not a nicety. Needs a Clerk webhook pointed at `/api/webhooks/clerk` for `user.deleted`. |
 | `NEXT_PUBLIC_SENTRY_DSN` | Errors in production are invisible. Not Sensitive — it is a `NEXT_PUBLIC_` value. |
 | `TURNSTILE_SECRET_KEY` | Optional bot check on the public forms. |
+| `PRO_USER_IDS` | Nobody gets the paid modules for free. See section 4. |
 
 ---
 
-## 4. Legal documents
+## 4. Giving somebody Pro without charging them
+
+Set `PRO_USER_IDS` in Vercel to a comma-separated list of **Clerk user ids**.
+Everyone on it gets the AI Session Brief and the AI Coach, with no subscription,
+no Stripe object, and nothing to cancel. Removing an id revokes it on the next
+deploy.
+
+1. **They sign up themselves** at https://www.getalpha.org/register. Nobody can
+   create the account for them, and until it exists there is no id to grant
+   against.
+2. **Find their id:** Clerk dashboard → *Users* → click the person → copy the
+   `user_…` id from their profile.
+3. **Vercel** → Settings → Environment Variables → `PRO_USER_IDS`. Several ids
+   are comma-separated: `user_abc,user_def`. Server-only, so marking it
+   Sensitive is fine.
+4. **Redeploy.** Environment changes only take effect on a new deployment.
+
+They can confirm it worked on the Plans page, which says the modules are already
+unlocked, and by opening a Coach review on any trade.
+
+Ids rather than email addresses on purpose: whoever owns an account can change
+its email, and an entitlement that follows a mutable field is an entitlement
+anyone can move.
+
+> **The AI budget is shared, and it is not per-person.**
+> `AI_DAILY_BUDGET_USD` defaults to **$2 a day for the whole application**, and
+> a Coach review costs about $0.09–0.11. That is roughly 18–20 reviews a day
+> across every account together, so a comped friend runs the same pot down as
+> you do, and whoever asks nineteenth gets an HTTP 402. Raise the variable if
+> two people are going to use it seriously — it is the only thing standing
+> between an enthusiastic friend and your Anthropic bill.
+
+---
+
+## 5. Legal documents
 
 `src/lib/legal/documents.ts` still carries visible square-bracket markers for
 every operator detail — `[COMPANY LEGAL NAME]`,
