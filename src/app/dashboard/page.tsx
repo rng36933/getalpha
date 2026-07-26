@@ -4,8 +4,9 @@ import DataQualityNotice from "@/components/DataQualityNotice";
 import PageHeader from "@/components/PageHeader";
 import PriceChart from "@/components/PriceChart";
 import SessionBriefPanel from "@/components/SessionBriefPanel";
+import WatchlistManager from "@/components/WatchlistManager";
 import { fetchDailyCandles } from "@/lib/market-data/candles";
-import { getWatchlist } from "@/lib/watchlist";
+import { MAX_WATCHLIST_SIZE, getWatchlist } from "@/lib/watchlist";
 
 /** Shown when the watchlist cannot be read, so the chart still has a symbol. */
 const DEFAULT_INSTRUMENT = { symbol: "XAU/USD", label: "XAUUSD" };
@@ -17,24 +18,41 @@ const DEFAULT_INSTRUMENT = { symbol: "XAU/USD", label: "XAUUSD" };
  * mostly other modules, and one card falling back to gold is a smaller loss
  * than an error screen.
  */
-async function primaryInstrument() {
+async function loadWatchlist(requested: string | undefined) {
   // Deliberately outside the try: `auth()` throws a control-flow error during
   // static generation to mark the route dynamic, and swallowing it would let
   // this page be prerendered with somebody else's default instrument.
   const { userId } = await auth();
-  if (!userId) return DEFAULT_INSTRUMENT;
+  if (!userId) return { entries: [], instrument: DEFAULT_INSTRUMENT };
 
   try {
-    const [first] = await getWatchlist(userId);
-    return first ? { symbol: first.symbol, label: first.label } : DEFAULT_INSTRUMENT;
+    const entries = await getWatchlist(userId);
+
+    // The requested symbol is only honoured if it is on their own list. A
+    // symbol taken straight from the query string would let anyone spend this
+    // account's provider credits on any instrument they liked.
+    const chosen =
+      entries.find((entry) => entry.symbol === requested) ?? entries[0];
+
+    return {
+      entries,
+      instrument: chosen
+        ? { symbol: chosen.symbol, label: chosen.label }
+        : DEFAULT_INSTRUMENT,
+    };
   } catch (error) {
     console.error("Dashboard could not read the watchlist:", error);
-    return DEFAULT_INSTRUMENT;
+    return { entries: [], instrument: DEFAULT_INSTRUMENT };
   }
 }
 
-export default async function DashboardPage() {
-  const instrument = await primaryInstrument();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ symbol?: string }>;
+}) {
+  const { symbol } = await searchParams;
+  const { entries, instrument } = await loadWatchlist(symbol);
   const candles = await fetchDailyCandles(instrument.symbol);
 
   return (
@@ -61,11 +79,17 @@ export default async function DashboardPage() {
         <Card title="AI Session Brief">
           <SessionBriefPanel />
         </Card>
-        <Card
-          title="Account Summary"
-          hint="Balance / equity / drawdown"
-          height="h-56"
-        />
+        <Card title="Watchlist">
+          <WatchlistManager
+            initialEntries={entries.map((entry) => ({
+              symbol: entry.symbol,
+              label: entry.label,
+              name: entry.name,
+            }))}
+            max={MAX_WATCHLIST_SIZE}
+            selectedSymbol={instrument.symbol}
+          />
+        </Card>
         <Card title="Open Positions" hint="Positions table" />
         <Card title="Signal Feed" hint="Live signal stream" />
         <Card title="Risk Exposure" hint="Exposure by symbol" />
