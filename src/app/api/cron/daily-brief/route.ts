@@ -3,6 +3,17 @@ import { sendDailyBrief } from "@/lib/email/daily-brief";
 import { EmailConfigError } from "@/lib/email/resend";
 
 /**
+ * Runs at 06:30 UTC, which is 07:30 in London through British Summer Time and
+ * 06:30 in winter. Vercel schedules in UTC only, and a Hobby cron fires with up
+ * to an hour of jitter, so the exact minute is not the guarantee — the job
+ * claims the London date and refuses to send twice.
+ *
+ * The schedule lives in vercel.json, which is JSON and cannot carry a comment.
+ * It was written there as a "//" key for a while, which is the kind of thing a
+ * schema validator is entitled to reject.
+ */
+
+/**
  * 60, not 300.
  *
  * A cold start, a Claude call and the sends would happily use 300 seconds, but

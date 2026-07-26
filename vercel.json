@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "//": "06:30 UTC is 07:30 in London through British Summer Time, and 06:30 in winter. Vercel schedules in UTC only and Hobby crons fire with up to an hour of jitter, so the exact minute is not the guarantee here — the job claims the London date and refuses to send twice.",
       "path": "/api/cron/daily-brief",
       "schedule": "30 6 * * *"
     }

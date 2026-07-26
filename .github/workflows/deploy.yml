@@ -57,3 +57,10 @@ jobs:
 
       - name: Build
         run: npx next build
+
+      # Last, and separate from the build on purpose. Vercel checks plan limits
+      # when it deploys, not when it builds, so a violation compiles cleanly,
+      # passes every step above, and then fails on the platform with nothing in
+      # the compiler output to explain it.
+      - name: Deployment limits
+        run: node scripts/check-deploy-limits.mjs
