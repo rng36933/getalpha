@@ -6,6 +6,14 @@ type CardProps = {
   className?: string;
   /** Height of the placeholder area. Ignored when children are given. */
   height?: string;
+  /**
+   * Position in the arrival sequence, 0-based.
+   *
+   * Cards fade up in order rather than all together, which is the difference
+   * between a page that appears and a page that arrives. Left at 0 the card
+   * simply arrives first, so callers that do not care can ignore it.
+   */
+  enter?: number;
   /** Real content. When present it replaces the placeholder and the "Soon" badge. */
   children?: React.ReactNode;
 };
@@ -15,6 +23,7 @@ export default function Card({
   hint = "Module placeholder",
   className = "",
   height = "h-44",
+  enter = 0,
   children,
 }: CardProps) {
   return (
@@ -25,7 +34,8 @@ export default function Card({
     // shadow, defined once in globals.css. It is what stops a page of these
     // reading as a wireframe.
     <section
-      className={`surface-lit relative isolate rounded-xl border border-line p-4 sm:p-5 ${className}`}
+      style={{ "--enter": enter } as React.CSSProperties}
+      className={`surface-lit card-enter relative isolate rounded-xl border border-line p-4 sm:p-5 ${className}`}
     >
       <header className="flex items-center justify-between gap-3">
         <h2 className="text-[0.9375rem] font-semibold tracking-tight">

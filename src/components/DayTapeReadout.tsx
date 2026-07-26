@@ -65,23 +65,37 @@ function RangeBar({ tape }: { tape: DayTape }) {
   );
 }
 
+/**
+ * What the readings add up to, said accurately.
+ *
+ * "All" means all of them. The first version said "All 5 readings point up"
+ * whenever none pointed down — so one reading up and four flat was reported as
+ * unanimous, which is the sort of small lie that makes a reader stop trusting
+ * the big numbers too.
+ */
 function agreementLine(tape: DayTape): string {
   const { up, down, flat } = tape.agreeing;
   const total = tape.readings.length;
 
-  if (up > 0 && down === 0) {
-    return `All ${total} readings point up.`;
+  if (total === 0) return "Nothing measurable yet.";
+
+  if (up === total) return `All ${total} readings point up.`;
+  if (down === total) return `All ${total} readings point down.`;
+  if (flat === total) {
+    return `All ${total} readings are flat — nothing has moved far enough to call.`;
   }
-  if (down > 0 && up === 0) {
-    return `All ${total} readings point down.`;
-  }
-  if (up > down) {
-    return `${up} of ${total} readings point up, ${down} down.`;
-  }
-  if (down > up) {
-    return `${down} of ${total} readings point down, ${up} up.`;
-  }
-  return `The readings disagree — ${up} up, ${down} down, ${flat} flat.`;
+
+  const parts: string[] = [];
+  if (up > 0) parts.push(`${up} up`);
+  if (down > 0) parts.push(`${down} down`);
+  if (flat > 0) parts.push(`${flat} flat`);
+
+  const counts = parts.join(", ");
+
+  if (up > down) return `Leaning up: ${counts}, of ${total}.`;
+  if (down > up) return `Leaning down: ${counts}, of ${total}.`;
+
+  return `No lean either way: ${counts}, of ${total}.`;
 }
 
 export default function DayTapeReadout({
@@ -111,6 +125,22 @@ export default function DayTapeReadout({
           thing being read. It used to be set at 24px beside a 56px icon, which
           gave the decoration more weight than the number. */}
       <div>
+        {/* The pulse is the only looping animation in the app, and it carries
+            information rather than atmosphere: it is the difference between a
+            price that is moving and a price that is a historical record. A
+            closed market gets a still dot. */}
+        <p className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted">
+          {/* Accent, not green: "live" is not a direction, and a green dot on a
+              red session would read as one. Green and red stay reserved for
+              which way price went. */}
+          <span
+            className={`size-1.5 rounded-full ${
+              tape.barelyTraded ? "bg-muted" : "bg-accent live-dot"
+            }`}
+          />
+          {tape.barelyTraded ? "market closed" : "trading now"}
+        </p>
+
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
           <span className="figure text-[2.75rem] sm:text-[3.5rem]">
             {tape.lastPrice}

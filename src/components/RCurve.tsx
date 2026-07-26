@@ -45,6 +45,22 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
   const zeroY = y(0);
 
   const line = points.map((p) => `${x(p.n)},${y(p.cumulative)}`).join(" ");
+
+  // Summed from the coordinates rather than measured off the DOM. `getTotalLength`
+  // would need a ref and a layout pass to learn something the geometry already
+  // knows, and the dash animation needs the number before the first paint.
+  const lineLength = points.reduce((sum, point, index) => {
+    if (index === 0) return 0;
+    const previous = points[index - 1];
+    return (
+      sum +
+      Math.hypot(
+        x(point.n) - x(previous.n),
+        y(point.cumulative) - y(previous.cumulative),
+      )
+    );
+  }, 0);
+
   // Closed against the zero line, not the floor of the box: the fill then reads
   // as "distance from break-even", which is the quantity being shown.
   const area = `${PAD.left},${zeroY} ${line} ${x(points.length)},${zeroY}`;
@@ -116,7 +132,9 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
           </g>
         ))}
 
-        <polygon points={area} fill="url(#rcurve-fill)" />
+        {/* The fill arrives after the line has drawn itself, so the shape reads
+            as being built rather than switched on. */}
+        <polygon points={area} fill="url(#rcurve-fill)" className="fade-in" />
 
         <polyline
           points={line}
@@ -125,6 +143,13 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
+          className="draw-line"
+          style={
+            {
+              strokeDasharray: lineLength,
+              "--len": lineLength,
+            } as React.CSSProperties
+          }
         />
 
         {/* The endpoint, emphasised: where the account stands now is the one
@@ -136,6 +161,7 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
           fill="var(--accent)"
           stroke="var(--surface)"
           strokeWidth={2}
+          className="fade-in"
         />
 
         {active ? (
