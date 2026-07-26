@@ -243,6 +243,101 @@ body::before {
 }
 
 /* ---------------------------------------------------------------------------
+   Landing page treatment: Deep Cyber Dark.
+
+   Everything here is prefixed `lp-` and used only under the public page. The
+   application keeps the tokens at the top of this file — a landing page in one
+   palette handing off to an app in another is a visible seam at the exact
+   moment somebody signs up, and these utilities exist so the public page can
+   have its own voice without dragging the desk with it.
+   --------------------------------------------------------------------------- */
+
+/* The faint grid. Two repeating gradients rather than an image, so it scales
+   with the viewport and costs no request. Masked to fade out downward, because
+   a grid that runs to the fold competes with the type. */
+.lp-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent 85%);
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+
+/* Glass. Kept to one definition so every card is the same thickness of glass —
+   the giveaway of a cheap version of this look is five different opacities. */
+.lp-glass {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* The one light that runs across a button on hover. Transform-only, so it
+   composites on the GPU and cannot cause layout. */
+@keyframes lp-shimmer {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+.lp-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+.lp-shimmer:hover::after {
+  animation: lp-shimmer 0.9s ease-out;
+}
+
+/* Ambient drift for the hero's light points. Long and slow: motion you notice
+   is motion that distracts from the headline. */
+@keyframes lp-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(0, -22px, 0);
+    opacity: 0.8;
+  }
+}
+
+.lp-drift {
+  animation: lp-drift var(--dur, 14s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* The danger pulse on the verdict badge. Ring only — no opacity flicker on the
+   text, which would make the words hard to read. */
+@keyframes lp-alarm {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 0.65rem rgba(239, 68, 68, 0);
+  }
+}
+
+.lp-alarm {
+  animation: lp-alarm 2s ease-out infinite;
+}
+
+/* ---------------------------------------------------------------------------
    Landing page motion.
    Defined here rather than inline so both keyframes and their reduced-motion
    opt-out live in one place — an animation whose off switch is somewhere else
@@ -303,6 +398,18 @@ body::before {
   .draw-line {
     animation: none;
     stroke-dashoffset: 0;
+  }
+
+  /* The landing page's ambient layers, still and finished. */
+  .lp-drift,
+  .lp-alarm,
+  .lp-shimmer:hover::after {
+    animation: none;
+  }
+
+  .lp-drift {
+    opacity: 0.6;
+    transform: none;
   }
 
   .surface-lit {
