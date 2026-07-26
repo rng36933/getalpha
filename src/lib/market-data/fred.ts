@@ -99,16 +99,39 @@ function parseValue(raw: string | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+/**
+ * How long one FRED series gets.
+ *
+ * Longer than the shared `PROVIDER_TIMEOUT_MS`, which is 5 seconds because the
+ * session brief has a Claude call waiting behind it. The Macro Desk has nothing
+ * waiting behind it, and FRED under concurrent load is not quick — every series
+ * failing at once in production, while each one answered fine from a laptop, is
+ * exactly what too short a deadline looks like.
+ */
+const SERIES_TIMEOUT_MS = 9_000;
+
+/**
+ * Series fetched at a time.
+ *
+ * Eleven at once is eleven simultaneous connections from one address. On
+ * Vercel that address is shared with everybody else on the platform, so it is
+ * also the address most likely to be throttled — and a throttle that arrives
+ * as eleven silent failures is indistinguishable from an outage.
+ */
+const BATCH_SIZE = 4;
+
+type SeriesOutcome = { reading: MacroReading; error: string | null };
+
 async function fetchSeries(
   spec: SeriesSpec,
   apiKey: string,
-): Promise<MacroReading> {
+): Promise<SeriesOutcome> {
   const url =
     `${BASE}?series_id=${encodeURIComponent(spec.id)}` +
     `&api_key=${encodeURIComponent(apiKey)}&file_type=json` +
     `&units=${spec.units}&sort_order=desc&limit=8`;
 
-  const empty: MacroReading = {
+  const blank: MacroReading = {
     id: spec.id,
     label: spec.label,
     value: null,
@@ -117,9 +140,17 @@ async function fetchSeries(
     asOf: null,
   };
 
+  const empty = (error: string): SeriesOutcome => ({
+    reading: blank,
+    error: `${spec.id}: ${error}`,
+  });
+
   try {
-    const response = await fetchWithTimeout(url);
-    if (!response.ok) return empty;
+    const response = await fetchWithTimeout(url, SERIES_TIMEOUT_MS);
+    // 429 and 403 are the two that matter and they were previously
+    // indistinguishable from "no data": one is a rate limit that will pass, the
+    // other is a rejected key that never will.
+    if (!response.ok) return empty(`HTTP ${response.status}`);
 
     const body = (await response.json()) as { observations?: FredObservation[] };
 
@@ -133,24 +164,29 @@ async function fetchSeries(
       .filter((o): o is { date: string | null; value: number } => o.value !== null);
 
     const [latest, previous] = usable;
-    if (!latest) return empty;
+    if (!latest) return empty("no usable observation");
 
     const delta = previous ? latest.value - previous.value : null;
 
     return {
-      id: spec.id,
-      label: spec.label,
-      value: `${latest.value.toFixed(spec.decimals)}${spec.suffix}`,
-      change:
-        delta === null
-          ? null
-          : `${delta > 0 ? "+" : ""}${delta.toFixed(spec.decimals)}`,
-      direction: delta === null || delta === 0 ? 0 : delta > 0 ? 1 : -1,
-      asOf: latest.date,
+      reading: {
+        id: spec.id,
+        label: spec.label,
+        value: `${latest.value.toFixed(spec.decimals)}${spec.suffix}`,
+        change:
+          delta === null
+            ? null
+            : `${delta > 0 ? "+" : ""}${delta.toFixed(spec.decimals)}`,
+        direction: delta === null || delta === 0 ? 0 : delta > 0 ? 1 : -1,
+        asOf: latest.date,
+      },
+      error: null,
     };
-  } catch {
-    // One failed series must not empty the whole page.
-    return empty;
+  } catch (error) {
+    // One failed series must not empty the whole page — but it must be nameable,
+    // or a page with nothing on it cannot be told from a provider with nothing
+    // to say.
+    return empty(describeError(error));
   }
 }
 
@@ -181,23 +217,51 @@ export async function fetchMacroSeries(
   }
 
   try {
-    const readings = await Promise.all(
-      ALL_SERIES.map((spec) => fetchSeries(spec, apiKey)),
-    );
+    const outcomes: SeriesOutcome[] = [];
+
+    // In batches rather than all at once, so a shared egress address does not
+    // open eleven connections to FRED in the same instant.
+    for (let i = 0; i < ALL_SERIES.length; i += BATCH_SIZE) {
+      const batch = ALL_SERIES.slice(i, i + BATCH_SIZE);
+      outcomes.push(
+        ...(await Promise.all(batch.map((spec) => fetchSeries(spec, apiKey)))),
+      );
+    }
+
+    const readings = outcomes.map((outcome) => outcome.reading);
+    const failures = outcomes
+      .map((outcome) => outcome.error)
+      .filter((error): error is string => error !== null);
 
     if (readings.every((reading) => reading.value === null)) {
-      throw new Error("no series returned a usable observation");
+      // The reasons, not a summary of them. "no series returned a usable
+      // observation" was true and told nobody whether the key was rejected, the
+      // address throttled, or the deadline simply too short.
+      throw new Error(failures.join("; ") || "no series returned a value");
     }
 
     await rememberSnapshot("MACRO_SERIES", readings, "all");
 
-    return { data: readings, status: "LIVE", fetchedAt: now.toISOString() };
+    return {
+      data: readings,
+      status: "LIVE",
+      fetchedAt: now.toISOString(),
+      // A partial result is still live; name the series that are missing.
+      error: failures.length > 0 ? failures.join("; ") : undefined,
+    };
   } catch (error) {
     return fallback(describeError(error));
   }
 }
 
 async function fallback(reason: string): Promise<SourceResult<MacroReading[]>> {
+  // Logged, not only returned. `DataQualityNotice` renders one sentence for
+  // every kind of failure — "provider unreachable and nothing stored" reads the
+  // same whether the key is missing, the address is throttled or the deadline
+  // was short. Without this line the only copy of the real reason is a value
+  // nothing displays.
+  console.error(`FRED macro series unavailable: ${reason}`);
+
   const stored = await recallSnapshot<MacroReading[]>("MACRO_SERIES", "all");
 
   if (!stored) {

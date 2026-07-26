@@ -10,11 +10,11 @@ import type { MacroReading } from "@/lib/market-data/fred";
  */
 export function ReadingList({ readings }: { readings: MacroReading[] }) {
   if (readings.length === 0) {
-    return (
-      <p className="py-6 text-center text-sm text-muted">
-        Not available right now.
-      </p>
-    );
+    // One quiet line, not a tall centred box. When the provider is down all
+    // three cards hit this at once, and three paragraphs of "Not available
+    // right now" under a notice that has already explained why reads as a
+    // broken page rather than as a missing feed.
+    return <p className="py-1 text-sm text-muted">No readings — see above.</p>;
   }
 
   return (
@@ -63,11 +63,7 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
  */
 export function CotList({ rows }: { rows: CotRow[] }) {
   if (rows.length === 0) {
-    return (
-      <p className="py-6 text-center text-sm text-muted">
-        Positioning is not available right now.
-      </p>
-    );
+    return <p className="py-1 text-sm text-muted">No positioning — see above.</p>;
   }
 
   return (
