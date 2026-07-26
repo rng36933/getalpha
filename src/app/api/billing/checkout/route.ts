@@ -4,6 +4,7 @@ import { findPlan, priceIdFor } from "@/lib/billing/plans";
 import {
   BillingConfigError,
   appOrigin,
+  sellingIsAllowed,
   stripe,
 } from "@/lib/billing/stripe";
 import { findOrCreateCustomer } from "@/lib/billing/subscription";
@@ -23,6 +24,19 @@ export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
+
+  // Before anything else: the live site must not run a test-mode checkout.
+  // Stripe's test cards are public, so that is a free Pro subscription for
+  // anyone who tries one — see the note on `sellingIsAllowed`.
+  if (!sellingIsAllowed()) {
+    console.error(
+      "Refusing checkout: the production deployment is holding Stripe test keys.",
+    );
+    return NextResponse.json(
+      { error: "Payments are not open yet" },
+      { status: 503 },
+    );
   }
 
   const wrongType = requireJsonRequest(request);

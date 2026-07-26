@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { BillingConfigError, stripe, webhookSecret } from "@/lib/billing/stripe";
+import {
+  BillingConfigError,
+  isProductionDeployment,
+  sellingIsAllowed,
+  stripe,
+  webhookSecret,
+} from "@/lib/billing/stripe";
 import { claimEvent, syncSubscription } from "@/lib/billing/subscription";
 
 /**
@@ -56,6 +62,19 @@ export async function POST(request: Request) {
     // Either way it must not be retried, so answer 400 rather than 500.
     console.error("Stripe webhook signature verification failed:", error);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  // Entitlement is written here and nowhere else, so this is the last place a
+  // test-mode payment can be stopped from becoming a real subscription. Stripe
+  // stamps every event with `livemode`, which is a stronger check than the key
+  // prefix: it refuses a genuine test event replayed at the live endpoint, not
+  // only a misconfigured deployment. 200 rather than an error, because Stripe
+  // must not retry something that will never be accepted.
+  if (!sellingIsAllowed() || (isProductionDeployment() && !event.livemode)) {
+    console.error(
+      `Ignoring Stripe ${event.type} (${event.id}): test-mode event on the live deployment.`,
+    );
+    return NextResponse.json({ received: true, handled: false });
   }
 
   if (!HANDLED.has(event.type)) {

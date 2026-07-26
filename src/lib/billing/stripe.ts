@@ -1,4 +1,9 @@
 import Stripe from "stripe";
+import {
+  isProductionDeployment,
+  isTestMode,
+  sellingIsAllowed,
+} from "./mode";
 
 /** Thrown when billing is not configured, so routes can answer 503 not 500. */
 export class BillingConfigError extends Error {
@@ -36,10 +41,9 @@ export function webhookSecret(): string {
   return secret;
 }
 
-/** True while the account is in test mode. Drives the banner on the pricing page. */
-export function isTestMode(): boolean {
-  return (process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_test_");
-}
+// Re-exported so callers keep importing billing concerns from one place, while
+// the logic itself lives in a module `npm test` can load. See `mode.ts`.
+export { isProductionDeployment, isTestMode, sellingIsAllowed };
 
 /**
  * Absolute origin for Stripe's return URLs.

@@ -20,9 +20,21 @@ type PricingPlansProps = {
   plans: PlanCard[];
   /** Slug the user is already on, so their current plan is not offered again. */
   currentPlan: string | null;
+  /**
+   * Billing is not open on this deployment, so nothing may be bought.
+   *
+   * The server refuses the checkout call regardless — this only stops the page
+   * offering a button that cannot work. The guard that matters is the one in
+   * the route, because a disabled button is a suggestion, not a control.
+   */
+  sellingClosed?: boolean;
 };
 
-export default function PricingPlans({ plans, currentPlan }: PricingPlansProps) {
+export default function PricingPlans({
+  plans,
+  currentPlan,
+  sellingClosed = false,
+}: PricingPlansProps) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,16 +124,23 @@ export default function PricingPlans({ plans, currentPlan }: PricingPlansProps) 
                 <button
                   type="button"
                   onClick={() => subscribe(plan.slug)}
-                  disabled={!plan.purchasable || isCurrent || pending !== null}
+                  disabled={
+                    sellingClosed ||
+                    !plan.purchasable ||
+                    isCurrent ||
+                    pending !== null
+                  }
                   className="mt-5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
                 >
                   {isCurrent
                     ? "Current plan"
-                    : !plan.purchasable
-                      ? "Not available yet"
-                      : pending === plan.slug
-                        ? "Opening checkout…"
-                        : "Subscribe"}
+                    : sellingClosed
+                      ? "Not for sale yet"
+                      : !plan.purchasable
+                        ? "Not available yet"
+                        : pending === plan.slug
+                          ? "Opening checkout…"
+                          : "Subscribe"}
                 </button>
               )}
             </section>

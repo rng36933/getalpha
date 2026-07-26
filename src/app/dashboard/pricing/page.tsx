@@ -7,7 +7,7 @@ import {
   PRO_FEATURES,
   priceIdFor,
 } from "@/lib/billing/plans";
-import { isTestMode, stripe } from "@/lib/billing/stripe";
+import { isTestMode, sellingIsAllowed, stripe } from "@/lib/billing/stripe";
 import { hasComplimentaryAccess } from "@/lib/billing/complimentary";
 import { getSubscription } from "@/lib/billing/subscription";
 
@@ -137,14 +137,29 @@ export default async function PricingPage({
         </p>
       ) : null}
 
-      {isTestMode() ? (
+      {/* Two situations that used to share one banner.
+          On the live site with test keys nothing may be sold, the buttons are
+          off, and the test card number is deliberately not printed — publishing
+          it to every signed-in visitor is handing out the exploit. The hint
+          appears only where it is useful and harmless: locally and on previews. */}
+      {!sellingIsAllowed() ? (
+        <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+          Payments are not open yet. Pro is not for sale on this site until
+          billing goes live — nothing here can be bought, and nothing will be
+          charged.
+        </p>
+      ) : isTestMode() ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
           Stripe is in test mode. Use card 4242 4242 4242 4242 with any future
           expiry and any CVC — no real money moves.
         </p>
       ) : null}
 
-      <PricingPlans plans={plans} currentPlan={subscription?.planSlug ?? null} />
+      <PricingPlans
+        plans={plans}
+        currentPlan={subscription?.planSlug ?? null}
+        sellingClosed={!sellingIsAllowed()}
+      />
     </>
   );
 }
