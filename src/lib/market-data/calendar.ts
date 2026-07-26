@@ -67,6 +67,7 @@ function toCalendarInput(raw: FeedEvent, todayUtc: string): CalendarInput | null
 
   return {
     time: iso.slice(11, 16),
+    at: iso,
     currency,
     title: raw.title,
     impact,

@@ -14,8 +14,10 @@ export type ImpactLevel = "HIGH" | "MEDIUM" | "LOW";
 
 export type EconomicEvent = {
   id: string;
-  /** HH:MM in UTC. */
+  /** HH:MM in UTC. Rendered until the browser can convert it. */
   time: string;
+  /** The full moment, so the browser can show it in the reader's own zone. */
+  at: string | null;
   currency: string;
   title: string;
   impact: ImpactLevel;
@@ -34,6 +36,7 @@ export function toEconomicEvents(events: CalendarInput[]): EconomicEvent[] {
   return events.map((event, index) => ({
     id: `${event.time}-${event.currency}-${slug(event.title)}-${index}`,
     time: event.time,
+    at: event.at ?? null,
     currency: event.currency,
     title: event.title,
     impact: event.impact,

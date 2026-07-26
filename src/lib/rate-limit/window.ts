@@ -1,20 +1,21 @@
-import { NextResponse } from "next/server";
-
 /**
- * A per-process sliding-window limiter.
+ * The counting, with no framework attached.
+ *
+ * Split out so it can be tested directly: the module that turns a refusal into
+ * an HTTP response imports `next/server`, and a plain test runner cannot
+ * resolve that.
  *
  * Be clear about what this is and is not. Each serverless instance keeps its
  * own counters, so with N warm instances the real ceiling is N times the limit
- * below. That is a weak guarantee against a determined attacker and a strong
+ * given. That is a weak guarantee against a determined attacker and a strong
  * one against the thing that actually happens: a runaway client, a retry loop,
- * a double-clicked button, a script someone points at the API to see what it
- * does. It turns "the database falls over" into "the database is fine and the
- * caller gets 429".
+ * a double-clicked button, a script pointed at the API to see what it does. It
+ * turns "the database falls over" into "the caller gets 429".
  *
  * A hard guarantee needs shared state — Redis, or a counter in Postgres. Redis
  * is another service to run and pay for; a Postgres counter puts write load on
  * the database this exists to protect. Neither earns its place at this size.
- * When it does, replace the map behind `check` and nothing above it changes.
+ * When it does, replace the map below and nothing above it changes.
  */
 
 type Window = {
@@ -27,11 +28,11 @@ const windows = new Map<string, Window>();
 /**
  * Stops the map growing without bound.
  *
- * Every key is a user id, so the map is bounded by active users in principle —
- * but a process that lives for days accumulates every user who passed through
- * it, and a signed-out attacker's keys are unbounded. Swept whenever it gets
- * large rather than on a timer, because a serverless instance may be frozen
- * between requests and a timer would not fire.
+ * Every key is a user id or an address, so in principle the map is bounded by
+ * active callers — but a process that lives for days accumulates everyone who
+ * passed through it. Swept when it gets large rather than on a timer, because
+ * a serverless instance may be frozen between requests and a timer would not
+ * fire.
  */
 const MAX_KEYS = 10_000;
 
@@ -70,6 +71,9 @@ export function check(
 
   if (hits.length >= limit) {
     const oldest = hits[0] ?? now;
+    // The refused attempt is deliberately not recorded. Counting rejected
+    // requests against the window would turn a retry loop into a permanent
+    // lockout that never expires.
     windows.set(key, { hits });
 
     return {
@@ -98,28 +102,3 @@ export const LIMITS = {
   /** Calls that spend money at the model provider. */
   ai: { limit: 10, windowMs: 60_000 },
 } as const;
-
-/**
- * Returns null when the caller may proceed, or the 429 to send back.
- *
- * Shaped like `requirePaidAccess` so a route reads as a pair of early returns
- * rather than nested conditionals.
- */
-export function enforceRateLimit(
-  key: string,
-  { limit, windowMs }: { limit: number; windowMs: number },
-): NextResponse | null {
-  const result = check(key, limit, windowMs);
-  if (result.allowed) return null;
-
-  return NextResponse.json(
-    {
-      error: "Too many requests. Slow down and try again shortly.",
-      retryAfterSeconds: result.retryAfterSeconds,
-    },
-    {
-      status: 429,
-      headers: { "retry-after": String(result.retryAfterSeconds) },
-    },
-  );
-}

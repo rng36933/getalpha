@@ -3,7 +3,16 @@
 export type TradingSession = "LONDON" | "NEW_YORK" | "ASIA";
 
 export type CalendarInput = {
+  /** HH:MM in UTC. */
   time: string;
+  /**
+   * The same moment as a full ISO timestamp.
+   *
+   * `time` alone cannot be converted to a reader's own zone — an hour with no
+   * date is not a point in time. Optional because snapshots stored before this
+   * field existed do not carry it.
+   */
+  at?: string;
   currency: string;
   title: string;
   impact: "HIGH" | "MEDIUM" | "LOW";

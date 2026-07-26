@@ -1,3 +1,4 @@
+import LocalTime, { LocalZoneLabel } from "@/components/LocalTime";
 import type { EconomicEvent, ImpactLevel } from "@/lib/market-data/display";
 
 const impactStyles: Record<ImpactLevel, { label: string; className: string }> = {
@@ -34,7 +35,9 @@ export default function EconomicCalendar({ events }: EconomicCalendarProps) {
   return (
     <div>
       <div className="hidden items-center gap-3 border-b border-line pb-2 text-[11px] uppercase tracking-wider text-muted sm:flex">
-        <span className="w-12 shrink-0">Time</span>
+        <span className="w-12 shrink-0">
+          Time <LocalZoneLabel />
+        </span>
         <span className="w-10 shrink-0">Ccy</span>
         <span className="min-w-0 flex-1">Event</span>
         <span className="w-[70px] shrink-0">Impact</span>
@@ -55,9 +58,9 @@ export default function EconomicCalendar({ events }: EconomicCalendarProps) {
               key={event.id}
               className="flex items-center gap-3 py-3 last:pb-0"
             >
-              <time className="w-12 shrink-0 font-mono text-xs text-muted">
-                {event.time}
-              </time>
+              <span className="w-12 shrink-0 font-mono text-xs text-muted">
+                <LocalTime at={event.at} utc={event.time} />
+              </span>
 
               <span className="w-10 shrink-0 text-xs font-medium text-muted">
                 {event.currency}
