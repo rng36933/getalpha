@@ -33,7 +33,12 @@ type State =
   | { status: "generating"; retryAfterSeconds: number }
   | { status: "error"; message: string; upgrade?: boolean };
 
-export default function SessionBriefPanel() {
+export default function SessionBriefPanel({
+  deskInstruments,
+}: {
+  /** The desk-wide list the brief is written from — not the reader's own. */
+  deskInstruments: string[];
+}) {
   const [session, setSession] = useState<TradingSession>("LONDON");
   const [state, setState] = useState<State>({ status: "idle" });
 
@@ -107,6 +112,17 @@ export default function SessionBriefPanel() {
           <p className="text-sm text-muted">
             Pick a session. The brief is written once a day and shared by the
             whole desk, so asking twice costs nothing.
+          </p>
+        ) : null}
+
+        {/* Named explicitly. The brief says "the supplied watchlist", which
+            reads as the reader's own — it is not, and somebody seeing a pair
+            discussed that they do not trade deserves to know why. */}
+        {deskInstruments.length > 0 ? (
+          <p className="mt-3 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
+            Covers the desk list — {deskInstruments.join(", ")} — not your own
+            watchlist. One brief is written per session and shared by everyone,
+            which is what keeps it affordable.
           </p>
         ) : null}
 

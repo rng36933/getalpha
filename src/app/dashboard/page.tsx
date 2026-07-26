@@ -11,12 +11,14 @@ import {
   RecentTrades,
   RiskExposure,
 } from "@/components/dashboard/DeskCards";
+import FirstRun from "@/components/dashboard/FirstRun";
 import { summariseTrades, type DashboardSummary } from "@/lib/dashboard/summary";
 import {
   TIMEFRAMES,
   fetchCandles,
   parseTimeframe,
 } from "@/lib/market-data/candles";
+import { WATCHLIST } from "@/lib/market-data/types";
 import { prisma } from "@/lib/prisma";
 import { MAX_WATCHLIST_SIZE, getWatchlist } from "@/lib/watchlist";
 
@@ -126,6 +128,14 @@ export default async function DashboardPage({
         sources={[{ label: `${instrument.label} price history`, result: candles }]}
       />
 
+      {/* Shown only until there is a single trade to measure. After that the
+          cards make the same point better, by being full of the person's own
+          numbers. */}
+      {summary.performance.closedCount === 0 &&
+      summary.openPositions.length === 0 ? (
+        <FirstRun />
+      ) : null}
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="md:col-span-2">
           <ChartCard
@@ -144,7 +154,9 @@ export default async function DashboardPage({
           />
         </div>
         <Card title="AI Session Brief">
-          <SessionBriefPanel />
+          <SessionBriefPanel
+            deskInstruments={WATCHLIST.map((entry) => entry.label)}
+          />
         </Card>
         <Card title="Watchlist">
           <WatchlistManager
