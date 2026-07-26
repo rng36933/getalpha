@@ -1,6 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
-import { ArrowRight, Check, Sparkles, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  LineChart,
+  Lock,
+  PlugZap,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import DayTapeReadout from "@/components/DayTapeReadout";
@@ -87,6 +95,40 @@ const MOTES = [
   { left: "78%", top: "24%", size: "size-1.5", dur: "14s", delay: "2.2s" },
   { left: "91%", top: "70%", size: "size-1", dur: "16s", delay: "4s" },
 ];
+
+/**
+ * The questions asked before signing up, answered honestly.
+ *
+ * Kept as data so the same strings feed both the visible list and the
+ * structured-data block below it. Two copies of an answer is how a page ends up
+ * telling a search engine something it no longer tells a reader.
+ */
+const FAQ = [
+  {
+    q: "Is getALPHA a trading platform?",
+    a: "No. It never places an order and never touches your money. You keep trading with your own broker on your own platform; this reads what you did afterwards and tells you how you did it.",
+  },
+  {
+    q: "Do you see my broker password?",
+    a: "No, and there is nowhere for one to be stored. The MetaTrader add-on sends your closed trades out to us — we never connect to your terminal or your broker. It ships as readable source so you can check that claim rather than take it.",
+  },
+  {
+    q: "How does the AI review a trade?",
+    a: "Every number is calculated in code first — your risk, your result, how the exit compared to the plan — and the model is handed the finished figures to judge the process behind them. It comments on decisions you already made. It never predicts a price or tells you what to trade next.",
+  },
+  {
+    q: "Which brokers are supported?",
+    a: "Any broker you trade through desktop MetaTrader 5. The add-on reads the account your terminal is already logged into, so the broker never has to know we exist. MetaTrader has to be running for a sync to happen.",
+  },
+  {
+    q: "What is actually free?",
+    a: "The journal, the MetaTrader sync, the charts, the economic calendar, the per-instrument breakdown and the watchlist. Paying adds the two AI modules and nothing else, because those are the only parts that cost money every time they run.",
+  },
+  {
+    q: "What happens if I delete my account?",
+    a: "Your trades, notes, watchlist and terminal connection are deleted from the database. The record that you accepted the terms is kept, because that is the evidence that you did.",
+  },
+] as const;
 
 export default async function LandingPage({
   searchParams,
@@ -223,7 +265,7 @@ export default async function LandingPage({
                   href="/register"
                   className="lp-shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-emerald-500 px-6 py-3.5 font-semibold text-[#030712] shadow-lg shadow-emerald-500/20 transition-all duration-300 ease-in-out hover:bg-emerald-400 hover:shadow-emerald-400/30"
                 >
-                  Start free
+                  Start your free journal
                   <ArrowRight
                     className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5"
                     aria-hidden="true"
@@ -235,6 +277,28 @@ export default async function LandingPage({
                   <br className="hidden sm:inline" /> No card, no trial clock.
                 </p>
               </div>
+
+              {/* The one sentence a trader wants before connecting a terminal,
+                  placed where they decide rather than in the privacy policy.
+                  Every clause here is checkable — the EA ships as source, so
+                  "it only sends" is a claim somebody can read for themselves.
+                  Nothing is promised about encryption or about who can see the
+                  data once it arrives, because that would not be true. */}
+              <p className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] leading-relaxed text-zinc-400">
+                <Lock
+                  className="mt-0.5 size-3.5 shrink-0 text-emerald-400"
+                  aria-hidden="true"
+                />
+                <span>
+                  <span className="text-zinc-200">
+                    No broker password ever leaves your machine.
+                  </span>{" "}
+                  The MetaTrader add-on only sends — it is shipped as readable
+                  source so you can check that yourself — and nothing here can
+                  place a trade or move money. Your record is never sold or
+                  shared.
+                </span>
+              </p>
 
               <p className="mt-5 text-xs text-zinc-600">
                 Rather be told when the AI modules change?{" "}
@@ -300,6 +364,73 @@ export default async function LandingPage({
             </p>
 
             <Features />
+          </div>
+        </section>
+
+        {/* What actually happens after signing up.
+            The page explained what the product is and never what using it looks
+            like, which is the gap between "I understand this" and "I can see
+            myself doing this". Three steps, and the middle one is deliberately
+            "carry on as you were" — the strongest thing about the sync is that
+            it asks nothing of the trading itself. */}
+        <section className="border-t border-white/[0.05] py-14 sm:py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <Eyebrow>How it fits your week</Eyebrow>
+            <Heading>Three steps, and only the first one takes any time.</Heading>
+
+            <ol className="mt-10 grid gap-4 sm:grid-cols-3">
+              {[
+                {
+                  icon: PlugZap,
+                  title: "Connect",
+                  body: "Drop the add-on into MetaTrader and paste one key. About a minute, once. Ninety days of history arrives on the first sync.",
+                  note: "Desktop MetaTrader 5",
+                },
+                {
+                  icon: LineChart,
+                  title: "Trade",
+                  body: "Nothing changes. Take the trades you were going to take, on the platform you already use. Every closed position lands in the journal by itself.",
+                  note: "No new habit to keep",
+                },
+                {
+                  icon: Sparkles,
+                  title: "Review",
+                  body: "Read the session brief before the open, and ask for a written review of any trade — sizing, stop placement, exit, and whether you followed your own plan.",
+                  note: "The part that costs money to run",
+                },
+              ].map((step, index) => {
+                const Icon = step.icon;
+
+                return (
+                  <li
+                    key={step.title}
+                    className="lp-glass group rounded-2xl p-5 transition-all duration-300 ease-in-out hover:border-zinc-700 sm:p-6"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.03] transition-all duration-300 ease-in-out group-hover:-translate-y-1">
+                        <Icon
+                          className="size-4 text-zinc-300"
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <span className="font-mono text-[11px] tracking-[0.16em] text-zinc-600">
+                        0{index + 1}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-4 text-lg font-semibold tracking-tight text-white">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-[14px] leading-relaxed text-zinc-400">
+                      {step.body}
+                    </p>
+                    <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-600">
+                      {step.note}
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
         </section>
 
@@ -443,6 +574,56 @@ export default async function LandingPage({
                 <WaitlistForm referralCode={referralCode} />
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Answers, and the page's only real body of text.
+            The rest of the landing page is deliberately short, which leaves a
+            search engine very little to read. These are the questions somebody
+            actually asks before connecting a terminal, so the section earns its
+            place twice — and every answer is one this product can stand behind.
+
+            Rendered as plain markup rather than a JS accordion: a crawler reads
+            what is in the document, and an answer hidden behind a click is an
+            answer some readers never find. */}
+        <section id="faq" className="border-t border-white/[0.05] py-14 sm:py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <Eyebrow>Questions</Eyebrow>
+            <Heading>Before you connect anything.</Heading>
+
+            <dl className="mt-10 grid gap-4 lg:grid-cols-2">
+              {FAQ.map((item) => (
+                <div key={item.q} className="lp-glass rounded-2xl p-5 sm:p-6">
+                  <dt className="text-[15px] font-semibold tracking-tight text-white">
+                    {item.q}
+                  </dt>
+                  <dd className="mt-2.5 text-[14px] leading-relaxed text-zinc-400">
+                    {item.a}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            {/* The structured data that lets these answers appear in a search
+                result. Built from the same array as the list above, so the two
+                cannot drift.
+
+                Rendered as a script child rather than through
+                `dangerouslySetInnerHTML`: React escapes it as text, and this
+                app has no instances of that prop anywhere — worth keeping at
+                zero, because the next person to reach for it may not be
+                inserting a compile-time constant. */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: FAQ.map((item) => ({
+                  "@type": "Question",
+                  name: item.q,
+                  acceptedAnswer: { "@type": "Answer", text: item.a },
+                })),
+              })}
+            </script>
           </div>
         </section>
 
