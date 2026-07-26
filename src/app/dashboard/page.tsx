@@ -1,8 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
+import Link from "next/link";
 import Card from "@/components/Card";
 import ChartCard from "@/components/ChartCard";
 import DataQualityNotice from "@/components/DataQualityNotice";
+import DayTapeReadout from "@/components/DayTapeReadout";
 import PageHeader from "@/components/PageHeader";
+import PairNews from "@/components/PairNews";
 import SessionBriefPanel from "@/components/SessionBriefPanel";
 import WatchlistManager from "@/components/WatchlistManager";
 import {
@@ -18,6 +21,9 @@ import {
   fetchCandles,
   parseTimeframe,
 } from "@/lib/market-data/candles";
+import { fetchNewsHeadlines } from "@/lib/market-data/news";
+import { headlinesFor } from "@/lib/market-data/relevance";
+import { computeDayTape } from "@/lib/market-data/tape";
 import { WATCHLIST } from "@/lib/market-data/types";
 import { prisma } from "@/lib/prisma";
 import { MAX_WATCHLIST_SIZE, getWatchlist } from "@/lib/watchlist";
@@ -62,7 +68,15 @@ async function loadSummary(userId: string | null): Promise<DashboardSummary> {
   }
 }
 
-/** Shown when the watchlist cannot be read, so the chart still has a symbol. */
+/**
+ * Gold. The default instrument everywhere on this page, and the fallback when
+ * the watchlist cannot be read.
+ *
+ * Deliberately the focus: the desk is built around it, and every other
+ * instrument has to be put on a watchlist before it appears anywhere. The
+ * hardcoded `WATCHLIST` in `market-data/types.ts` keeps being *tracked* for the
+ * shared Session Brief — tracked and displayed are different things.
+ */
 const DEFAULT_INSTRUMENT = { symbol: "XAU/USD", label: "XAUUSD" };
 
 /**
@@ -100,12 +114,30 @@ async function loadWatchlist(requested: string | undefined) {
   }
 }
 
+/**
+ * The instruments the day's readout may be asked for: gold, plus whatever the
+ * user put on their watchlist.
+ *
+ * Gold is always in the list even when the watchlist is empty or unreadable, so
+ * the card always has something true to show. Anything not on this list is
+ * refused rather than fetched — a symbol taken from the query string would let
+ * a stranger spend this account's provider credits on any instrument they liked.
+ */
+function tapeChoices(entries: { symbol: string; label: string }[]) {
+  const choices = [DEFAULT_INSTRUMENT, ...entries];
+
+  return choices.filter(
+    (choice, index) =>
+      choices.findIndex((other) => other.symbol === choice.symbol) === index,
+  );
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ symbol?: string; tf?: string }>;
+  searchParams: Promise<{ symbol?: string; tf?: string; tape?: string }>;
 }) {
-  const { symbol, tf } = await searchParams;
+  const { symbol, tf, tape: requestedTape } = await searchParams;
   const { userId } = await auth();
 
   const timeframe = parseTimeframe(tf);
@@ -115,7 +147,31 @@ export default async function DashboardPage({
     loadSummary(userId),
   ]);
 
-  const candles = await fetchCandles(instrument.symbol, timeframe);
+  const choices = tapeChoices(
+    entries.map((entry) => ({ symbol: entry.symbol, label: entry.label })),
+  );
+  const tapeInstrument =
+    choices.find((choice) => choice.symbol === requestedTape) ?? choices[0];
+
+  // Two series for the readout — the day's own bar comes from D1 and the
+  // intraday balance from M15 — and both are cached per symbol@timeframe, so a
+  // reload costs nothing. The chart's series is a third only when it is looking
+  // at a different instrument or timeframe.
+  const [candles, tapeDaily, tapeIntraday, news] = await Promise.all([
+    fetchCandles(instrument.symbol, timeframe),
+    fetchCandles(tapeInstrument.symbol, "D1"),
+    fetchCandles(tapeInstrument.symbol, "M15"),
+    fetchNewsHeadlines(),
+  ]);
+
+  const dayTape = computeDayTape({
+    symbol: tapeInstrument.symbol,
+    label: tapeInstrument.label,
+    daily: tapeDaily.data,
+    intraday: tapeIntraday.data,
+  });
+
+  const pairHeadlines = headlinesFor(news.data, tapeInstrument.symbol);
 
   return (
     <>
@@ -125,7 +181,11 @@ export default async function DashboardPage({
       />
 
       <DataQualityNotice
-        sources={[{ label: `${instrument.label} price history`, result: candles }]}
+        sources={[
+          { label: `${instrument.label} price history`, result: candles },
+          { label: `${tapeInstrument.label} daily bars`, result: tapeDaily },
+          { label: "News feeds", result: news },
+        ]}
       />
 
       {/* Shown only until there is a single trade to measure. After that the
@@ -135,6 +195,63 @@ export default async function DashboardPage({
       summary.openPositions.length === 0 ? (
         <FirstRun />
       ) : null}
+
+      <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <Card
+          title={`${tapeInstrument.label} — this session`}
+          className="xl:col-span-2"
+        >
+          {choices.length > 1 ? (
+            <nav className="mb-4 flex flex-wrap gap-2">
+              {choices.map((choice) => {
+                const active = choice.symbol === tapeInstrument.symbol;
+
+                return (
+                  <Link
+                    key={choice.symbol}
+                    href={`/dashboard?tape=${encodeURIComponent(choice.symbol)}`}
+                    aria-current={active ? "page" : undefined}
+                    className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                      active
+                        ? "border-accent bg-accent-soft text-accent"
+                        : "border-line text-muted hover:text-foreground"
+                    }`}
+                  >
+                    {choice.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          ) : null}
+
+          {dayTape ? (
+            <DayTapeReadout
+              tape={dayTape}
+              fetchedAt={tapeDaily.fetchedAt}
+              stale={tapeDaily.status === "CACHED"}
+            />
+          ) : (
+            <p className="py-8 text-center text-sm text-muted">
+              {tapeDaily.status === "UNAVAILABLE"
+                ? `The price feed has nothing stored for ${tapeInstrument.label} yet, so there is nothing true to draw. It fills in on the next successful fetch.`
+                : `Not enough completed bars for ${tapeInstrument.label} to measure a session against. An arrow drawn from one candle would be a guess wearing a measurement's clothes.`}
+            </p>
+          )}
+        </Card>
+
+        <Card title={`News naming ${tapeInstrument.label}`}>
+          <PairNews
+            headlines={pairHeadlines}
+            label={tapeInstrument.label}
+            asOf={news.fetchedAt}
+            emptyReason={
+              news.status === "UNAVAILABLE"
+                ? "The news feeds could not be reached just now. Nothing is stored to fall back on."
+                : undefined
+            }
+          />
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="md:col-span-2">
