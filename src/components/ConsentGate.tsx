@@ -59,7 +59,7 @@ export default function ConsentGate({ version, documents }: ConsentGateProps) {
 
   return (
     <div className="grid min-h-screen place-items-center bg-background px-6 py-10">
-      <div className="w-full max-w-lg rounded-xl border border-line bg-surface p-6">
+      <div className="surface-lit w-full max-w-lg rounded-xl border border-line p-6">
         <h1 className="text-lg font-semibold tracking-tight">
           Before you continue
         </h1>

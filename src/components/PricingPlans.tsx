@@ -73,8 +73,8 @@ export default function PricingPlans({ plans, currentPlan }: PricingPlansProps) 
           return (
             <section
               key={plan.slug}
-              className={`flex flex-col rounded-xl border bg-surface p-5 ${
-                plan.highlight ? "border-accent/40" : "border-line"
+              className={`surface-lit flex flex-col rounded-xl border p-5 ${
+                plan.highlight ? "glow-ai border-accent/40" : "border-line"
               }`}
             >
               <header className="flex items-start justify-between gap-3">

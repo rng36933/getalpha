@@ -70,12 +70,15 @@ export default async function AppLayout({
   return (
     // A column on a phone, so the top bar can be sticky and the content can run
     // the full width; a row from `sm` up, where the sidebar returns.
-    <div className="flex min-h-screen flex-col sm:flex-row">
+    // `app-grid` lays the same faint grid the landing page uses behind the
+    // desk. `isolate` keeps its fixed pseudo-element from being painted over
+    // the cards, which sit in the normal flow above it.
+    <div className="app-grid isolate flex min-h-screen flex-col sm:flex-row">
       <MobileNav pro={access.allowed} />
       <Sidebar name={name} pro={access.allowed} />
       {/* The bottom padding clears the fixed tab bar. Without it the last card
           on every page sits underneath the navigation. */}
-      <main className="min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-8 sm:py-8 sm:pb-8 lg:px-10">
+      <main className="relative z-10 min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-8 sm:py-8 sm:pb-8 lg:px-10">
         {children}
       </main>
     </div>

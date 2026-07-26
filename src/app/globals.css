@@ -6,32 +6,50 @@
   /* Dark is the default (and currently only) theme. */
   color-scheme: dark;
 
-  --background: #0a0b0f;
-  --surface: #13151c;
-  --surface-raised: #191c25;
-  --line: #252935;
-  --foreground: #e9ebf0;
-  --muted: #8a90a0;
-  --accent: #5b8cff;
-  --accent-soft: rgba(91, 140, 255, 0.12);
-  --positive: #34d399;
-  --negative: #f87171;
-  --warning: #fbbf24;
+  /* ---------------------------------------------------------------------
+     Deep Cyber Dark, now the whole site.
+
+     The landing page was rebuilt in this palette first and the application
+     was deliberately left on its own, quieter set — which produced exactly
+     the seam that split treatment always produces: people signed up through
+     one product and landed in another. The user asked for one look
+     everywhere (2026-07-27), so these are the landing page's values,
+     promoted to tokens the desk can use.
+
+     The ground is #030712 rather than pure black: black flattens every
+     shadow above it, and a trading desk is mostly shadow.
+     --------------------------------------------------------------------- */
+  --background: #030712;
+  --surface: rgba(255, 255, 255, 0.02);
+  --surface-raised: rgba(255, 255, 255, 0.05);
+  --line: rgba(255, 255, 255, 0.06);
+  --foreground: #fafafa;
+  --muted: #a1a1aa;
+
+  /* Violet is the premium/AI signal, carried over from the landing page's
+     Pro column so the same colour means the same thing on both sides of
+     the sign-up. */
+  --accent: #8b5cf6;
+  --accent-soft: rgba(139, 92, 246, 0.12);
+
+  /* Direction colours are the loudest thing on the page on purpose: on a
+     journal row they are the answer, not decoration. */
+  --positive: #10b981;
+  --negative: #ef4444;
+  --warning: #f59e0b;
 
   /* ---------------------------------------------------------------------
      Depth.
 
-     The app had two shadows and one gradient across forty components, so
-     every panel sat on the same plane as the page and the whole thing read
-     as a wireframe. These three values are the entire depth vocabulary:
-     a lit top edge, a long soft shadow, and a surface that is very slightly
-     brighter where the light lands. Nothing here glows — a card that glows
-     implies excitement, and this product exists to argue against trading on
-     that.
+     Glass rather than the old lit-edge panels: one thickness of it, because
+     the giveaway of a cheap version of this look is five different
+     opacities. The long shadow stays — it is what keeps a translucent card
+     from dissolving into the ground behind it.
      --------------------------------------------------------------------- */
-  --lift: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --lift: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --shadow-card: 0 18px 40px -28px rgba(0, 0, 0, 0.9);
-  --surface-top: #171a22;
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-line: rgba(255, 255, 255, 0.05);
 }
 
 @theme inline {
@@ -89,7 +107,7 @@ body::before {
   height: 60vh;
   background: radial-gradient(
     75% 100% at 50% 0%,
-    rgba(91, 140, 255, 0.07),
+    rgba(139, 92, 246, 0.09),
     transparent 72%
   );
   pointer-events: none;
@@ -105,8 +123,55 @@ body::before {
    --------------------------------------------------------------------------- */
 
 .surface-lit {
-  background: linear-gradient(180deg, var(--surface-top) 0%, var(--surface) 58%);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
   box-shadow: var(--lift), var(--shadow-card);
+}
+
+/*
+  The faint grid, behind the application shell as well as the landing page.
+
+  Fixed rather than scrolling: a grid that travels with the content reads as
+  wallpaper, while a still one reads as the surface the content sits on. Masked
+  so it never reaches the bottom of the viewport and starts competing with the
+  numbers.
+*/
+.app-grid::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(80% 60% at 50% 0%, black, transparent 78%);
+  mask-image: radial-gradient(80% 60% at 50% 0%, black, transparent 78%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/*
+  The violet halo that marks a Pro module.
+
+  Only the AI cards carry it. It is the one thing on the desk allowed to glow,
+  and it glows to say "this one costs money to run", not to say "get excited".
+*/
+.glow-ai,
+.glow-ai:hover {
+  border-color: rgba(139, 92, 246, 0.28);
+  box-shadow:
+    var(--lift),
+    0 0 34px -14px rgba(139, 92, 246, 0.55),
+    var(--shadow-card);
+}
+
+@media (hover: hover) {
+  .glow-ai:hover {
+    box-shadow:
+      var(--lift),
+      0 0 44px -12px rgba(139, 92, 246, 0.75),
+      0 22px 44px -26px rgba(0, 0, 0, 0.95);
+  }
 }
 
 /*
@@ -189,7 +254,7 @@ body::before {
 @media (hover: hover) {
   .surface-lit:hover {
     transform: translateY(-1px);
-    border-color: #2f3545;
+    border-color: rgba(255, 255, 255, 0.12);
     box-shadow: var(--lift), 0 22px 44px -26px rgba(0, 0, 0, 0.95);
   }
 }

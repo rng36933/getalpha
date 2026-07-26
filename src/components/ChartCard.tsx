@@ -41,7 +41,7 @@ export default function ChartCard({
   }
 
   return (
-    <section className="rounded-xl border border-line bg-surface p-5">
+    <section className="surface-lit rounded-xl border border-line p-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <label className="sr-only" htmlFor="chart-instrument">

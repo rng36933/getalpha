@@ -21,7 +21,7 @@ export default function RegisterConsent() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6">
+    <div className="surface-lit w-full max-w-md rounded-xl border border-line p-6">
       <h1 className="text-lg font-semibold tracking-tight">Create your account</h1>
 
       <p className="mt-3 text-sm leading-relaxed text-muted">

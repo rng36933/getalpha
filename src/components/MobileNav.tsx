@@ -127,7 +127,10 @@ export default function MobileNav({ pro }: Readonly<{ pro: boolean }>) {
           <div
             role="dialog"
             aria-label="More pages"
-            className="fixed inset-x-0 bottom-[4.25rem] z-40 mx-3 overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl sm:hidden"
+            // Opaque, unlike every other surface in the app. Glass works when
+            // there is a page behind it to be glimpsed; a menu floating over
+            // the content it covers just makes both unreadable.
+            className="fixed inset-x-0 bottom-[4.25rem] z-40 mx-3 overflow-hidden rounded-2xl border border-line bg-[#0b1020] shadow-2xl backdrop-blur-xl sm:hidden"
           >
             {SECONDARY_ITEMS.map((item) => {
               const active = isActive(pathname, item.href);
@@ -153,7 +156,7 @@ export default function MobileNav({ pro }: Readonly<{ pro: boolean }>) {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-40 flex items-stretch gap-0.5 border-t border-line bg-surface/95 px-1.5 pb-[env(safe-area-inset-bottom)] pt-1 backdrop-blur-md sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-stretch gap-0.5 border-t border-line bg-background/90 px-1.5 pb-[env(safe-area-inset-bottom)] pt-1 backdrop-blur-md sm:hidden"
       >
         {PRIMARY_ITEMS.map((item) => (
           <Tab

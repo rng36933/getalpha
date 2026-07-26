@@ -311,7 +311,10 @@ export default async function DashboardPage({
             candles={candles.data}
           />
         </div>
-        <Card title="AI Session Brief">
+        {/* The one card on the desk allowed to glow. Violet is the same signal
+            the landing page's Pro column uses, and it says "this one costs
+            money to run" rather than "get excited". */}
+        <Card title="AI Session Brief" className="glow-ai">
           <SessionBriefPanel
             deskInstruments={WATCHLIST.map((entry) => entry.label)}
           />
