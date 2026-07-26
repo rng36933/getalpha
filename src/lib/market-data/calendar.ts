@@ -109,13 +109,21 @@ export async function fetchEconomicCalendar(
     // An empty calendar is a legitimate answer — quiet days exist — but it is
     // not worth overwriting a good fallback with.
     if (events.length > 0) {
-      await rememberSnapshot("ECONOMIC_CALENDAR", events);
+      await rememberSnapshot("ECONOMIC_CALENDAR", events, todayUtc);
     }
 
     return { data: events, status: "LIVE", fetchedAt: now.toISOString() };
   } catch (error) {
     const reason = describeError(error);
-    const stored = await recallSnapshot<CalendarInput[]>("ECONOMIC_CALENDAR");
+
+    // Keyed by the day, so a stored set from yesterday is simply not found.
+    // Without that key an outage on a quiet morning served yesterday's
+    // releases under a heading that says "today" — which is worse than showing
+    // nothing, because a trader has no way to tell it is wrong.
+    const stored = await recallSnapshot<CalendarInput[]>(
+      "ECONOMIC_CALENDAR",
+      todayUtc,
+    );
 
     if (!stored) {
       return { data: [], status: "UNAVAILABLE", fetchedAt: null, error: reason };

@@ -51,7 +51,7 @@ export default function DataQualityNotice({ sources }: DataQualityNoticeProps) {
           <li key={source.label}>
             {source.result.status === "CACHED"
               ? `${source.label}: provider unreachable, showing the last stored data (${formatAge(source.result.fetchedAt)}).`
-              : `${source.label}: unavailable right now.`}
+              : `${source.label}: provider unreachable and nothing stored for today, so nothing is shown.`}
           </li>
         ))}
       </ul>
