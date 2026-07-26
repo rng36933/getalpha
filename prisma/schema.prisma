@@ -80,6 +80,64 @@ model WatchlistItem {
   @@index([userId, sortOrder])
 }
 
+/// Someone who asked to hear about the product before signing up.
+model WaitlistEntry {
+  id    String @id @default(uuid())
+  email String @unique
+
+  /// The referral code in the link they arrived through, if any.
+  referredByCode String?
+
+  /// Set when this address later became a real account, so an invite can be
+  /// credited to whoever sent the link rather than only to direct sign-ups.
+  convertedUserId String?   @unique
+  convertedAt     DateTime? @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([referredByCode])
+}
+
+/// One row per signed-up user: their invite code, and whose code brought them.
+///
+/// `code` is random, never sequential. A guessable code lets anyone enumerate
+/// every user's invite link and attribute sign-ups to accounts that never sent
+/// one.
+model Referral {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  code String @unique
+
+  /// The code of whoever invited them. Not a foreign key on purpose: the
+  /// inviter may delete their account, and that must not erase the record of
+  /// where an existing user came from.
+  referredByCode String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([referredByCode])
+}
+
+/// A granted referral bonus — paid access without a payment.
+///
+/// One row per threshold reached, so passing three invites grants once and
+/// passing six later grants again, while re-checking the same threshold does
+/// nothing.
+model ReferralReward {
+  id     String @id @default(uuid())
+  userId String
+
+  /// How many qualified invites triggered this grant.
+  atInviteCount Int
+
+  grantedAt DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+
+  @@unique([userId, atInviteCount])
+  @@index([userId, expiresAt])
+}
+
 /// Proof that a user accepted the legal documents, and which version.
 ///
 /// One row per acceptance, never updated. When a document changes its version
@@ -94,7 +152,13 @@ model LegalAcceptance {
   /// e.g. "terms@2026-07-26|privacy@2026-07-26|disclaimer@2026-07-26".
   documentVersion String
 
-  acceptedAt DateTime @default(now())
+  /// Explicitly `timestamptz`, unlike every other timestamp here.
+  ///
+  /// Prisma writes UTC into a plain `timestamp` anyway, so the value would be
+  /// correct either way — but this column is evidence, and evidence is read by
+  /// people who did not write the code. A bare `timestamp` says "some clock,
+  /// somewhere"; `timestamptz` says which one, in the database itself.
+  acceptedAt DateTime @default(now()) @db.Timestamptz(3)
 
   @@unique([userId, documentVersion])
   @@index([userId, acceptedAt])

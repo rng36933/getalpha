@@ -30,7 +30,7 @@ export async function requirePaidAccess(
     {
       error: "This module is part of the Pro plan",
       reason: "SUBSCRIPTION_REQUIRED",
-      upgradeUrl: "/pricing",
+      upgradeUrl: "/dashboard/pricing",
     },
     { status: 403 },
   );

@@ -9,5 +9,5 @@ export const metadata = {
  * sub-routes (verification, factor two, reset) underneath this path.
  */
 export default function LoginPage() {
-  return <SignIn signUpUrl="/register" fallbackRedirectUrl="/" />;
+  return <SignIn signUpUrl="/register" fallbackRedirectUrl="/dashboard" />;
 }

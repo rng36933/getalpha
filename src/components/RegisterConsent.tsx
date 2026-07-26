@@ -17,7 +17,7 @@ export default function RegisterConsent() {
   const [agreed, setAgreed] = useState(false);
 
   if (agreed) {
-    return <SignUp signInUrl="/login" fallbackRedirectUrl="/" />;
+    return <SignUp signInUrl="/login" fallbackRedirectUrl="/dashboard" />;
   }
 
   return (

@@ -73,8 +73,8 @@ export async function POST(request: Request) {
       line_items: [{ price: priceId, quantity: 1 }],
       // The webhook is the only thing that grants access, but these let the
       // browser show the right thing the moment it comes back.
-      success_url: `${origin}/pricing?checkout=success`,
-      cancel_url: `${origin}/pricing?checkout=cancelled`,
+      success_url: `${origin}/dashboard/pricing?checkout=success`,
+      cancel_url: `${origin}/dashboard/pricing?checkout=cancelled`,
       client_reference_id: userId,
       // Copied onto the subscription itself, so every later webhook can be
       // traced back to an account without a database lookup.

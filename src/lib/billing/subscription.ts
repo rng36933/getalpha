@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { SubscriptionStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { hasActiveReward } from "@/lib/referral/program";
 import { planSlugForPrice } from "./plans";
 import { stripe } from "./stripe";
 
@@ -20,6 +21,8 @@ const ENTITLED: SubscriptionStatus[] = [
 export type Access =
   /** Paid up, or inside a period already paid for. */
   | { allowed: true; reason: "SUBSCRIBED" | "PERIOD_REMAINING" }
+  /** An unexpired referral bonus, which is access without a payment. */
+  | { allowed: true; reason: "REFERRAL_REWARD" }
   /** Never subscribed, or the subscription ended. */
   | { allowed: false; reason: "NO_SUBSCRIPTION" }
   /** The entitlement could not be read. Fails closed, but says so. */
@@ -38,10 +41,15 @@ export async function checkAccess(userId: string): Promise<Access> {
       where: { userId },
     });
 
-    if (!subscription) return { allowed: false, reason: "NO_SUBSCRIPTION" };
-
-    if (ENTITLED.includes(subscription.status)) {
+    if (subscription && ENTITLED.includes(subscription.status)) {
       return { allowed: true, reason: "SUBSCRIBED" };
+    }
+
+    if (!subscription) {
+      // Never paid, but may have earned access by inviting people.
+      return (await hasActiveReward(userId))
+        ? { allowed: true, reason: "REFERRAL_REWARD" }
+        : { allowed: false, reason: "NO_SUBSCRIPTION" };
     }
 
     // Cancelled, but the period they already paid for has not run out.
@@ -52,7 +60,10 @@ export async function checkAccess(userId: string): Promise<Access> {
       return { allowed: true, reason: "PERIOD_REMAINING" };
     }
 
-    return { allowed: false, reason: "NO_SUBSCRIPTION" };
+    // A lapsed subscriber can still be inside a referral bonus.
+    return (await hasActiveReward(userId))
+      ? { allowed: true, reason: "REFERRAL_REWARD" }
+      : { allowed: false, reason: "NO_SUBSCRIPTION" };
   } catch (error) {
     console.error(`Could not read the subscription for ${userId}:`, error);
     return { allowed: false, reason: "UNKNOWN" };

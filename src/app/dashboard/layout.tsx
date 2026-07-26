@@ -1,0 +1,62 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
+import ConsentGate from "@/components/ConsentGate";
+import Sidebar from "@/components/Sidebar";
+import { hasAcceptedCurrentTerms } from "@/lib/legal/acceptance";
+import { CURRENT_LEGAL_VERSION, LEGAL_PAGES } from "@/lib/legal/documents";
+import { ensureReferralLinked } from "@/lib/referral/program";
+import { REFERRAL_COOKIE } from "@/lib/referral/cookie";
+
+/**
+ * Credits whoever invited this user, on their first visit only.
+ *
+ * Never allowed to break the app: an unattributed referral costs one person a
+ * free week, while a layout that throws costs everybody the application.
+ */
+async function linkReferral(userId: string): Promise<void> {
+  try {
+    const store = await cookies();
+    const code = store.get(REFERRAL_COOKIE)?.value ?? null;
+
+    const user = await currentUser();
+    const email = user?.primaryEmailAddress?.emailAddress ?? null;
+
+    await ensureReferralLinked(userId, code, email);
+  } catch (error) {
+    console.error("Could not link the referral for this account:", error);
+  }
+}
+
+/**
+ * Shell for the signed-in application. The sign-in and sign-up screens live in
+ * the (auth) group and deliberately do not get the sidebar.
+ *
+ * The consent gate sits here rather than on each page, so a route added later
+ * is covered without anyone remembering to cover it.
+ */
+export default async function AppLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const { userId } = await auth();
+
+  if (userId && !(await hasAcceptedCurrentTerms(userId))) {
+    return (
+      <ConsentGate version={CURRENT_LEGAL_VERSION} documents={LEGAL_PAGES} />
+    );
+  }
+
+  // After consent, not before: somebody who never agrees to the terms is not
+  // an account anyone should be credited for inviting.
+  if (userId) await linkReferral(userId);
+
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <main className="min-w-0 flex-1 px-5 py-8 sm:px-8 lg:px-10">
+        {children}
+      </main>
+    </div>
+  );
+}

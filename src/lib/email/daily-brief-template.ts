@@ -84,7 +84,7 @@ export function dailyBriefText({
       ? "Note: some market data was stale or unavailable when this was written.\n"
       : "",
     `Open the desk: ${appUrl}`,
-    `Stop these emails: ${appUrl}/settings`,
+    `Stop these emails: ${appUrl}/dashboard/settings`,
   ]
     .filter((line) => line !== "")
     .join("\n");
@@ -168,7 +168,7 @@ export function dailyBriefHtml({
               This is a market summary, not advice, and not a recommendation to trade.
             </p>
             <p style="margin:8px 0 0 0;font-size:12px;color:#8a90a0;">
-              <a href="${escape(appUrl)}/settings" style="color:#8a90a0;">Stop receiving these</a>
+              <a href="${escape(appUrl)}/dashboard/settings" style="color:#8a90a0;">Stop receiving these</a>
             </p>
           </td>
         </tr>

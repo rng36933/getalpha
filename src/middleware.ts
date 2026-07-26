@@ -1,4 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import {
+  REFERRAL_CODE_PATTERN,
+  REFERRAL_COOKIE,
+  REFERRAL_COOKIE_MAX_AGE,
+} from "@/lib/referral/cookie";
 
 /**
  * Next 16 deprecates this file convention in favour of `proxy.ts`, and the
@@ -12,6 +18,10 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
  * protected unless someone deliberately opens it.
  */
 const isPublicRoute = createRouteMatcher([
+  // The landing page and the waitlist behind it. Everything a visitor can
+  // reach before deciding to sign up.
+  "/",
+  "/api/waitlist",
   "/login(.*)",
   "/register(.*)",
   // Readable before signing up. A policy you can only see after agreeing to it
@@ -34,6 +44,32 @@ export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
+
+  const response = NextResponse.next();
+
+  // An invite code arrives on the landing page but is only usable after the
+  // visitor has signed up, which happens on Clerk's pages. The cookie is what
+  // carries it across that gap. Set here rather than on the page so it survives
+  // whichever route the link points at.
+  const ref = request.nextUrl.searchParams.get("ref")?.toUpperCase();
+
+  if (
+    ref &&
+    REFERRAL_CODE_PATTERN.test(ref) &&
+    !request.cookies.has(REFERRAL_COOKIE)
+  ) {
+    // Not `httpOnly: false` — nothing in the browser needs to read it, and
+    // `lax` is enough for a code that only ever arrives by following a link.
+    response.cookies.set(REFERRAL_COOKIE, ref, {
+      maxAge: REFERRAL_COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+  }
+
+  return response;
 });
 
 export const config = {
