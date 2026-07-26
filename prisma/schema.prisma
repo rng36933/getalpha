@@ -394,9 +394,58 @@ model AiUsageLog {
   @@index([pending, createdAt])
 }
 
+enum TradeSource {
+  MANUAL
+  MT5
+}
+
+/// A terminal allowed to push trades into one account's journal.
+///
+/// The token is stored as a hash. A leaked database should not hand anyone a
+/// working key, and nobody — including us — needs to read it back after it is
+/// shown to the user once.
+///
+/// Note what is deliberately absent: any credential for the broker. The
+/// terminal sends to us; we never connect to it, and there is nothing here
+/// that could be used to reach somebody's trading account.
+model MtConnection {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  /// SHA-256 of the token, hex encoded.
+  tokenHash String @unique
+
+  /// Shown so the user can tell which terminal is connected.
+  accountLogin String?
+  broker       String?
+  currency     String?
+
+  /// When the terminal last sent anything, so a silent EA is visible as silent.
+  lastSeenAt DateTime? @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt
+
+  @@index([lastSeenAt])
+}
+
 model Trade {
   id     String @id @default(uuid())
   userId String
+
+  /// Where the row came from. Manual entries stay editable; synced ones are
+  /// overwritten by the terminal on the next update.
+  source TradeSource @default(MANUAL)
+
+  /// The MT5 position ticket, for synced trades.
+  ///
+  /// The position ticket rather than the deal ticket, because a position is one
+  /// trade from open to close while its deals are the two ends of it. Keyed
+  /// this way, an open position becomes the same row when it closes instead of
+  /// a second one — and a terminal that restarts and resends its whole history
+  /// updates rows rather than duplicating them, which the unique constraint
+  /// enforces rather than a check two concurrent requests could both pass.
+  externalId String?
 
   asset     String
   direction TradeDirection
@@ -434,6 +483,7 @@ model Trade {
   createdAt DateTime  @default(now())
   closedAt  DateTime?
 
+  @@unique([userId, externalId])
   @@index([userId, createdAt])
   @@index([asset])
   @@index([userId, setup])

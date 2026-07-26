@@ -45,6 +45,9 @@ const isPublicRoute = createRouteMatcher([
   // Clerk has no session with itself. That route verifies a svix signature
   // over the raw body instead.
   "/api/webhooks/(.*)",
+  // A MetaTrader terminal has no browser and no session. That route
+  // authenticates with the user's own connection token.
+  "/api/mt5/sync",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

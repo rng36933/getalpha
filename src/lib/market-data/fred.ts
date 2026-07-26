@@ -55,10 +55,20 @@ export const INFLATION_SERIES: SeriesSpec[] = [
   { id: "PCEPILFE", label: "Core PCE", units: "pc1", suffix: "% y/y", decimals: 1 },
 ];
 
+/**
+ * Two policy rates and one market rate, and the labels say which is which.
+ *
+ * Fed funds effective and the ECB deposit facility are set by their central
+ * banks. SONIA is not: it is what UK banks actually paid overnight, and it
+ * tracks Bank Rate closely without being it. FRED has no current Bank Rate
+ * series — the old one was discontinued — so the honest options were to label
+ * SONIA accurately or to leave the UK out, and a mislabelled number on a page
+ * that sells itself on facts is worse than a missing one.
+ */
 export const POLICY_SERIES: SeriesSpec[] = [
-  { id: "DFF", label: "Fed funds", units: "lin", suffix: "%", decimals: 2 },
-  { id: "ECBDFR", label: "ECB deposit", units: "lin", suffix: "%", decimals: 2 },
-  { id: "IUDSOIA", label: "SONIA (UK)", units: "lin", suffix: "%", decimals: 2 },
+  { id: "DFF", label: "Fed funds (effective)", units: "lin", suffix: "%", decimals: 2 },
+  { id: "ECBDFR", label: "ECB deposit facility", units: "lin", suffix: "%", decimals: 2 },
+  { id: "IUDSOIA", label: "SONIA — UK overnight, not Bank Rate", units: "lin", suffix: "%", decimals: 2 },
 ];
 
 const ALL_SERIES = [...YIELD_SERIES, ...INFLATION_SERIES, ...POLICY_SERIES];
