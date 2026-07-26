@@ -1,5 +1,6 @@
 import { Prisma, TradeDirection, TradeSource } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { normaliseSymbol } from "./symbol";
 
 /**
  * Applying what a terminal sent.
@@ -94,7 +95,11 @@ export async function applySync(
     }
 
     const shared = {
-      asset: incoming.symbol.trim().toUpperCase(),
+      // Normalised on the way in, not on the way out. The stored value is what
+      // every later grouping and join uses, so a display-time fix would leave
+      // the database holding two names for one instrument — and the per-pair
+      // page would keep computing two win rates from half the evidence each.
+      asset: normaliseSymbol(incoming.symbol),
       direction:
         incoming.direction === "BUY" ? TradeDirection.BUY : TradeDirection.SELL,
       entryPrice: new Prisma.Decimal(incoming.entryPrice),
