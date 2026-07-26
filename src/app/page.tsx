@@ -189,12 +189,17 @@ export default async function LandingPage({
                 journal · session brief · process review
               </span>
 
-              <h1 className="mt-5 bg-gradient-to-b from-white via-white to-zinc-400 bg-clip-text pb-[0.1em] text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.04em] text-transparent text-balance sm:text-[3.5rem] lg:text-[4rem]">
-                Your best trade this month was{" "}
-                <span className="bg-gradient-to-b from-zinc-500 to-zinc-600 bg-clip-text text-transparent line-through decoration-red-500 decoration-2">
-                  a good trade
+              {/* Two sentences, lit differently: the gap is stated in grey and
+                  the thing this product does about it is stated in white. The
+                  strikethrough that used to carry the argument asked a reader
+                  to parse a joke before they understood the product. */}
+              <h1 className="mt-5 pb-[0.1em] text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.04em] text-balance sm:text-[3.5rem] lg:text-[4rem]">
+                <span className="bg-gradient-to-b from-zinc-500 to-zinc-600 bg-clip-text text-transparent">
+                  Most traders measure the outcome.
+                </span>{" "}
+                <span className="bg-gradient-to-b from-white via-white to-zinc-400 bg-clip-text text-transparent">
+                  Almost none measure the decision.
                 </span>
-                .
               </h1>
 
               <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-zinc-400 sm:text-base">
@@ -285,7 +290,9 @@ export default async function LandingPage({
         <section id="how" className="border-t border-white/[0.05] py-14 sm:py-20">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>What you get</Eyebrow>
-            <Heading>Four things, and none of them tell you what to buy.</Heading>
+            <Heading>
+              Four modules. Every number computed from your own record.
+            </Heading>
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-zinc-400">
               There is no signal feed here, and there never will be. What there
               is: an honest record, the context around the session you are about
