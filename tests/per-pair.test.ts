@@ -1,0 +1,213 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { analyseJournal, sessionOf } from "../src/lib/analysis/per-pair.ts";
+
+const dec = (n: number | null) => (n === null ? null : { toNumber: () => n });
+
+type AnyTrade = Parameters<typeof analyseJournal>[0][number];
+
+/**
+ * A closed trade with a defined risk of 10 per unit on 1 unit, so `pnl` in
+ * currency is the R-multiple. Keeps the arithmetic out of the assertions.
+ */
+function trade(o: {
+  id?: string;
+  asset?: string;
+  openedAt: string;
+  r?: number | null;
+  balance?: number | null;
+  open?: boolean;
+  noStop?: boolean;
+  notes?: boolean;
+}): AnyTrade {
+  const closed = o.open !== true;
+
+  return {
+    id: o.id ?? o.openedAt,
+    userId: "u",
+    source: "MANUAL",
+    externalId: null,
+    asset: o.asset ?? "XAUUSD",
+    direction: "BUY",
+    setup: null,
+    timeframe: null,
+    entryPrice: dec(2300),
+    exitPrice: closed ? dec(2310) : null,
+    stopLoss: o.noStop ? null : dec(2290),
+    takeProfit: dec(2330),
+    size: dec(1),
+    contractSize: dec(1),
+    // risk = 10 per unit x 1 unit, so pnl of 10 is exactly +1R.
+    pnl: closed && o.r !== undefined && o.r !== null ? dec(o.r * 10) : null,
+    accountBalance: o.balance === undefined ? dec(1000) : dec(o.balance),
+    marketContext: o.notes ? "context" : null,
+    emotionalState: null,
+    createdAt: new Date(o.openedAt),
+    closedAt: closed ? new Date(o.openedAt) : null,
+  } as unknown as AnyTrade;
+}
+
+test("sessions are non-overlapping and cover the clock", () => {
+  const seen = new Set<string>();
+  for (let hour = 0; hour < 24; hour += 1) {
+    const at = new Date(Date.UTC(2026, 6, 1, hour));
+    seen.add(sessionOf(at));
+  }
+
+  assert.deepEqual(
+    [...seen].sort(),
+    ["ASIA", "LONDON", "NEW_YORK", "OFF_HOURS", "OVERLAP"],
+  );
+});
+
+test("session boundaries land on the right side", () => {
+  const at = (hour: number) => new Date(Date.UTC(2026, 6, 1, hour));
+
+  assert.equal(sessionOf(at(6)), "ASIA");
+  assert.equal(sessionOf(at(7)), "LONDON");
+  assert.equal(sessionOf(at(11)), "LONDON");
+  assert.equal(sessionOf(at(12)), "OVERLAP");
+  assert.equal(sessionOf(at(15)), "OVERLAP");
+  assert.equal(sessionOf(at(16)), "NEW_YORK");
+  assert.equal(sessionOf(at(20)), "NEW_YORK");
+  assert.equal(sessionOf(at(21)), "OFF_HOURS");
+  assert.equal(sessionOf(at(23)), "ASIA");
+  assert.equal(sessionOf(at(0)), "ASIA");
+});
+
+test("splits the journal by instrument, most-traded first", () => {
+  const analysis = analyseJournal([
+    trade({ asset: "EURUSD", openedAt: "2026-07-01T08:00:00Z", r: 1 }),
+    trade({ asset: "XAUUSD", openedAt: "2026-07-02T08:00:00Z", r: 1 }),
+    trade({ asset: "XAUUSD", openedAt: "2026-07-03T08:00:00Z", r: -1 }),
+  ]);
+
+  assert.deepEqual(
+    analysis.pairs.map((p) => p.asset),
+    ["XAUUSD", "EURUSD"],
+  );
+  assert.equal(analysis.totalTrades, 3);
+  assert.equal(analysis.totalScored, 3);
+});
+
+test("win rate, expectancy and total R come from the R-multiples", () => {
+  const [pair] = analyseJournal([
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: 2 }),
+    trade({ openedAt: "2026-07-02T08:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-03T08:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-06T08:00:00Z", r: 2 }),
+  ]).pairs;
+
+  assert.equal(pair.scored, 4);
+  assert.equal(pair.winRatePercent, 50);
+  assert.equal(pair.totalR, 2);
+  assert.equal(pair.expectancyR, 0.5);
+  assert.equal(pair.averageWinR, 2);
+  assert.equal(pair.averageLossR, -1);
+  assert.equal(pair.worstLossR, -1);
+});
+
+test("an open trade counts as a trade but never as a result", () => {
+  const [pair] = analyseJournal([
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: 1 }),
+    trade({ openedAt: "2026-07-02T08:00:00Z", open: true }),
+  ]).pairs;
+
+  assert.equal(pair.trades, 2);
+  assert.equal(pair.scored, 1);
+  assert.equal(pair.openTrades, 1);
+  assert.equal(pair.winRatePercent, 100);
+});
+
+test("a trade with no stop has no defined risk and is counted apart", () => {
+  const [pair] = analyseJournal([
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: 1 }),
+    trade({ openedAt: "2026-07-02T08:00:00Z", r: 1, noStop: true }),
+  ]).pairs;
+
+  assert.equal(pair.trades, 2);
+  assert.equal(pair.withoutStop, 1);
+  // No stop means no R, so it cannot be scored as a win either.
+  assert.equal(pair.scored, 1);
+});
+
+test("risk is compared against the trader's own median, not a rule of thumb", () => {
+  // EURUSD risks 1% of 1000; XAUUSD risks 4% by holding a tenth the balance.
+  const analysis = analyseJournal([
+    trade({ asset: "EURUSD", openedAt: "2026-07-01T08:00:00Z", r: 1 }),
+    trade({ asset: "EURUSD", openedAt: "2026-07-02T08:00:00Z", r: 1 }),
+    trade({ asset: "EURUSD", openedAt: "2026-07-03T08:00:00Z", r: 1 }),
+    trade({
+      asset: "XAUUSD",
+      openedAt: "2026-07-06T08:00:00Z",
+      r: -1,
+      balance: 250,
+    }),
+  ]);
+
+  const gold = analysis.pairs.find((p) => p.asset === "XAUUSD");
+  const euro = analysis.pairs.find((p) => p.asset === "EURUSD");
+
+  assert.equal(analysis.medianRiskPercent, 1);
+  assert.equal(gold?.medianRiskPercent, 4);
+  assert.equal(gold?.riskVsOwnMedian, 4);
+  assert.equal(euro?.riskVsOwnMedian, 1);
+});
+
+test("the previous result is the previous trade in the journal, across pairs", () => {
+  const analysis = analyseJournal([
+    trade({ asset: "EURUSD", openedAt: "2026-07-01T08:00:00Z", r: -1 }),
+    trade({ asset: "XAUUSD", openedAt: "2026-07-01T09:00:00Z", r: -1 }),
+    trade({ asset: "XAUUSD", openedAt: "2026-07-01T10:00:00Z", r: -1 }),
+    trade({ asset: "XAUUSD", openedAt: "2026-07-01T11:00:00Z", r: 3 }),
+  ]);
+
+  const gold = analysis.pairs.find((p) => p.asset === "XAUUSD");
+  const afterLoss = gold?.afterResult.find((b) => b.key === "AFTER_LOSS");
+  const afterWin = gold?.afterResult.find((b) => b.key === "AFTER_WIN");
+
+  // All three gold trades follow a loss — the first of them follows the euro
+  // loss, which is the point of counting across pairs.
+  assert.equal(afterLoss?.trades, 3);
+  assert.equal(afterLoss?.winRatePercent, 33.3);
+  assert.equal(afterWin, undefined);
+});
+
+test("an unresolved trade does not break the streak", () => {
+  const analysis = analyseJournal([
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-01T09:00:00Z", open: true }),
+    trade({ openedAt: "2026-07-01T10:00:00Z", r: 1 }),
+  ]);
+
+  const afterLoss = analysis.pairs[0].afterResult.find(
+    (b) => b.key === "AFTER_LOSS",
+  );
+
+  // The open position and the trade after it both still follow the loss.
+  assert.equal(afterLoss?.trades, 2);
+  assert.equal(afterLoss?.scored, 1);
+});
+
+test("buckets with no trades are left out rather than shown as zero", () => {
+  const [pair] = analyseJournal([
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: 1 }),
+  ]).pairs;
+
+  assert.deepEqual(
+    pair.sessions.map((b) => b.key),
+    ["LONDON"],
+  );
+  assert.deepEqual(
+    pair.weekdays.map((b) => b.label),
+    ["Wednesday"],
+  );
+});
+
+test("an empty journal produces no pairs and no median", () => {
+  const analysis = analyseJournal([]);
+
+  assert.deepEqual(analysis.pairs, []);
+  assert.equal(analysis.medianRiskPercent, null);
+  assert.equal(analysis.totalTrades, 0);
+});

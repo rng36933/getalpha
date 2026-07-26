@@ -28,6 +28,11 @@ const navItems: NavItem[] = [
     icon: "M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 0v18M9 8h6M9 12h6",
   },
   {
+    href: "/dashboard/pairs",
+    label: "Pairs",
+    icon: "M4 18l5-6 4 4 7-9M4 20V4M4 20h16",
+  },
+  {
     href: "/dashboard/calendar",
     label: "Calendar",
     icon: "M8 2v4M16 2v4M3.5 9h17M5 5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 21H5a1.5 1.5 0 0 1-1.5-1.5v-13A1.5 1.5 0 0 1 5 5Z",
