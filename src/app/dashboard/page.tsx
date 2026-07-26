@@ -7,6 +7,7 @@ import DayTapeReadout from "@/components/DayTapeReadout";
 import Mt5Prompt from "@/components/Mt5Prompt";
 import PageHeader from "@/components/PageHeader";
 import PairNews from "@/components/PairNews";
+import RCurve from "@/components/RCurve";
 import SessionBriefPanel from "@/components/SessionBriefPanel";
 import WatchlistManager from "@/components/WatchlistManager";
 import {
@@ -44,6 +45,7 @@ const EMPTY_SUMMARY: DashboardSummary = {
     profitFactor: null,
     withoutStop: 0,
   },
+  rCurve: null,
 };
 
 /**
@@ -340,6 +342,17 @@ export default async function DashboardPage({
         <Card title="Recent trades">
           <RecentTrades trades={summary.recentTrades} />
         </Card>
+
+        {/* Summary before detail: the shape of the account first, the figures
+            that describe it underneath. */}
+        {summary.rCurve ? (
+          <Card
+            title="Cumulative R, trade by trade"
+            className="md:col-span-2 xl:col-span-3"
+          >
+            <RCurve curve={summary.rCurve} />
+          </Card>
+        ) : null}
 
         <Card title="Performance" className="md:col-span-2 xl:col-span-3">
           <PerformanceStats performance={summary.performance} />

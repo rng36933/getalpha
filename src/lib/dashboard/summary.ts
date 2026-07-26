@@ -1,5 +1,6 @@
 import type { Trade } from "@/generated/prisma/client";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
+import { buildRCurve, type RCurve } from "./r-curve";
 
 /**
  * Everything the dashboard cards show, computed from the journal.
@@ -60,6 +61,8 @@ export type DashboardSummary = {
   recentTrades: ClosedTrade[];
   exposure: Exposure[];
   performance: Performance;
+  /** Null until there are two scored trades to draw a line through. */
+  rCurve: RCurve | null;
 };
 
 function round(value: number, decimals: number): number {
@@ -152,5 +155,18 @@ export function summariseTrades(trades: Trade[]): DashboardSummary {
       closedAt: (trade.closedAt ?? trade.createdAt).toISOString(),
     }));
 
-  return { openPositions, recentTrades, exposure, performance };
+  /* ------------------------------------------------------------- the curve */
+
+  // Built from the same `closed` set the figures above come from, so the line
+  // and the total can never disagree about what happened.
+  const rCurve = buildRCurve(
+    closed.map(({ trade, realizedR }) => ({
+      closedAt: trade.closedAt,
+      createdAt: trade.createdAt,
+      asset: trade.asset,
+      realizedR,
+    })),
+  );
+
+  return { openPositions, recentTrades, exposure, performance, rCurve };
 }

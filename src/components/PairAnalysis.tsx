@@ -47,8 +47,21 @@ function Stat({
  * instead. "100% on Tuesdays" from a single trade is not a finding, and
  * printing it as one is how a page like this starts lying.
  */
-function BucketRow({ bucket, hint }: { bucket: Bucket; hint?: string }) {
+function BucketRow({
+  bucket,
+  hint,
+  scale,
+}: {
+  bucket: Bucket;
+  hint?: string;
+  /** Largest absolute total R in this table, so bars share one scale. */
+  scale: number;
+}) {
   const thin = bucket.scored < MIN_SAMPLE_FOR_RATE;
+  const r = bucket.totalR ?? 0;
+  // Both sides measured against the same number, or a −2R bar would look the
+  // same length as a +6R one and the chart would be worse than the text.
+  const width = scale > 0 ? (Math.abs(r) / scale) * 50 : 0;
 
   return (
     <tr className="border-t border-line">
@@ -68,10 +81,33 @@ function BucketRow({ bucket, hint }: { bucket: Bucket; hint?: string }) {
           `${bucket.winRatePercent}%`
         )}
       </td>
-      <td
-        className={`py-2 text-right font-mono text-xs ${toneFor(bucket.totalR)}`}
-      >
-        {formatR(bucket.totalR)}
+      <td className="w-[38%] min-w-[7rem] py-2 pl-2">
+        <div className="flex items-center gap-2">
+          {/* Read from the centre, so which side of break-even a bucket falls
+              on is visible before any number is. */}
+          <div className="relative h-2 flex-1">
+            <span className="absolute left-1/2 top-0 h-full w-px bg-line" />
+            {width > 0 ? (
+              <span
+                className={`absolute top-0 h-full rounded-sm ${
+                  r > 0 ? "bg-positive/70" : "bg-negative/70"
+                }`}
+                style={
+                  r > 0
+                    ? { left: "50%", width: `${width}%` }
+                    : { right: "50%", width: `${width}%` }
+                }
+              />
+            ) : null}
+          </div>
+          <span
+            className={`w-14 shrink-0 text-right font-mono text-xs tabular-nums ${toneFor(
+              bucket.totalR,
+            )}`}
+          >
+            {formatR(bucket.totalR)}
+          </span>
+        </div>
       </td>
     </tr>
   );
@@ -88,6 +124,11 @@ function BucketTable({
 }) {
   if (buckets.length === 0) return null;
 
+  const scale = Math.max(
+    ...buckets.map((bucket) => Math.abs(bucket.totalR ?? 0)),
+    0,
+  );
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -96,7 +137,7 @@ function BucketTable({
             <th className="py-1 pr-3 text-left font-normal">{caption}</th>
             <th className="py-1 pr-3 text-right font-normal">Trades</th>
             <th className="py-1 pr-3 text-right font-normal">Win rate</th>
-            <th className="py-1 text-right font-normal">Total R</th>
+            <th className="py-1 pl-2 text-right font-normal">Total R</th>
           </tr>
         </thead>
         <tbody>
@@ -105,6 +146,7 @@ function BucketTable({
               key={bucket.key}
               bucket={bucket}
               hint={hints?.[bucket.key]}
+              scale={scale}
             />
           ))}
         </tbody>
