@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatMoney, formatSignedMoney } from "@/lib/format/money";
 import type {
   ClosedTrade,
   Exposure,
@@ -30,23 +31,16 @@ function JournalLink({ label }: { label: string }) {
   );
 }
 
-function money(value: number): string {
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function rTone(value: number | null): string {
+function tone(value: number | null): string {
   if (value === null) return "text-muted";
   if (value > 0) return "text-positive";
   if (value < 0) return "text-negative";
   return "text-muted";
 }
 
-function formatR(value: number | null): string {
+function pnl(value: number | null, currency: string | null): string {
   if (value === null) return "—";
-  return `${value > 0 ? "+" : ""}${value.toFixed(2)}R`;
+  return formatSignedMoney(value, currency);
 }
 
 /* ------------------------------------------------------------------ open */
@@ -92,7 +86,13 @@ export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
 
 /* -------------------------------------------------------------- exposure */
 
-export function RiskExposure({ exposure }: { exposure: Exposure[] }) {
+export function RiskExposure({
+  exposure,
+  currency,
+}: {
+  exposure: Exposure[];
+  currency: string | null;
+}) {
   if (exposure.length === 0) {
     return (
       <Empty>
@@ -109,7 +109,7 @@ export function RiskExposure({ exposure }: { exposure: Exposure[] }) {
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-sm font-medium">{row.asset}</span>
             <span className="font-mono text-xs tabular-nums text-muted">
-              {money(row.riskAmount)}
+              {formatMoney(row.riskAmount, currency)}
             </span>
           </div>
 
@@ -131,12 +131,18 @@ export function RiskExposure({ exposure }: { exposure: Exposure[] }) {
 
 /* --------------------------------------------------------- recent trades */
 
-export function RecentTrades({ trades }: { trades: ClosedTrade[] }) {
+export function RecentTrades({
+  trades,
+  currency,
+}: {
+  trades: ClosedTrade[];
+  currency: string | null;
+}) {
   if (trades.length === 0) {
     return (
       <Empty>
-        No closed trades yet. <JournalLink label="Record one" /> and its
-        R-multiple is computed for you.
+        No closed trades yet. <JournalLink label="Connect MetaTrader" /> and they
+        arrive by themselves.
       </Empty>
     );
   }
@@ -152,9 +158,9 @@ export function RecentTrades({ trades }: { trades: ClosedTrade[] }) {
           <span className="min-w-0 flex-1 truncate text-sm">{trade.asset}</span>
 
           <span
-            className={`shrink-0 font-mono text-xs tabular-nums ${rTone(trade.realizedR)}`}
+            className={`shrink-0 font-mono text-xs tabular-nums ${tone(trade.pnl)}`}
           >
-            {formatR(trade.realizedR)}
+            {pnl(trade.pnl, currency)}
           </span>
         </li>
       ))}
@@ -241,7 +247,13 @@ function ProfitFactorBar({ factor }: { factor: number }) {
   );
 }
 
-export function PerformanceStats({ performance }: { performance: Performance }) {
+export function PerformanceStats({
+  performance,
+  currency,
+}: {
+  performance: Performance;
+  currency: string | null;
+}) {
   if (performance.closedCount === 0) {
     return (
       <Empty>
@@ -272,9 +284,9 @@ export function PerformanceStats({ performance }: { performance: Performance }) 
           ) : null}
         </div>
         <Stat
-          label="Total R"
-          value={formatR(performance.totalR)}
-          tone={rTone(performance.totalR)}
+          label="Total P&L"
+          value={pnl(performance.totalPnl, currency)}
+          tone={tone(performance.totalPnl)}
         />
         <div>
           <Stat
@@ -306,9 +318,9 @@ export function PerformanceStats({ performance }: { performance: Performance }) 
         <span>
           Expectancy{" "}
           <span
-            className={`font-mono tabular-nums ${rTone(performance.expectancyR)}`}
+            className={`font-mono tabular-nums ${tone(performance.expectancyPnl)}`}
           >
-            {formatR(performance.expectancyR)}
+            {pnl(performance.expectancyPnl, currency)}
           </span>{" "}
           per trade
         </span>

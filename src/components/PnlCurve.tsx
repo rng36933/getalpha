@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { RCurve as RCurveData } from "@/lib/dashboard/r-curve";
+import type { PnlCurve as PnlCurveData } from "@/lib/dashboard/pnl-curve";
+import { formatCompactMoney, formatSignedMoney } from "@/lib/format/money";
 
 /**
- * The cumulative R curve.
+ * The cumulative P&L curve.
  *
  * One series, so no legend — the card title names it. The accent hue carries
  * identity; green and red stay reserved for the figures, where a sign and a
@@ -12,26 +13,30 @@ import type { RCurve as RCurveData } from "@/lib/dashboard/r-curve";
  *
  * Drawn in a fixed viewBox and scaled by CSS, so it is responsive without
  * measuring the container. The x axis is trade number, not the calendar: see
- * the note in `r-curve.ts` for why.
+ * the note in `pnl-curve.ts` for why.
  */
 
 const W = 720;
 const H = 220;
-const PAD = { top: 14, right: 14, bottom: 20, left: 38 };
+const PAD = { top: 14, right: 14, bottom: 20, left: 52 };
 
 const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 
-function format(value: number): string {
-  return `${value > 0 ? "+" : ""}${value.toFixed(2)}R`;
-}
-
-export default function RCurve({ curve }: { curve: RCurveData }) {
+export default function PnlCurve({
+  curve,
+  currency,
+}: {
+  curve: PnlCurveData;
+  currency: string | null;
+}) {
   const [hover, setHover] = useState<number | null>(null);
 
-  const { points, min, max, final, maxDrawdownR } = curve;
+  const { points, min, max, final, maxDrawdown } = curve;
 
-  // A flat curve would divide by zero. One R of headroom keeps a dead-flat
+  const format = (value: number) => formatSignedMoney(value, currency);
+
+  // A flat curve would divide by zero. A little headroom keeps a dead-flat
   // account drawn along the middle rather than smeared across the whole box.
   const span = max - min || 1;
   const padded = { lo: min - span * 0.08, hi: max + span * 0.08 };
@@ -39,16 +44,16 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
 
   const x = (n: number) =>
     PAD.left + ((n - 1) / Math.max(points.length - 1, 1)) * PLOT_W;
-  const y = (value: number) =>
-    PAD.top + ((padded.hi - value) / range) * PLOT_H;
+  const y = (value: number) => PAD.top + ((padded.hi - value) / range) * PLOT_H;
 
   const zeroY = y(0);
 
   const line = points.map((p) => `${x(p.n)},${y(p.cumulative)}`).join(" ");
 
-  // Summed from the coordinates rather than measured off the DOM. `getTotalLength`
-  // would need a ref and a layout pass to learn something the geometry already
-  // knows, and the dash animation needs the number before the first paint.
+  // Summed from the coordinates rather than measured off the DOM.
+  // `getTotalLength` would need a ref and a layout pass to learn something the
+  // geometry already knows, and the dash animation needs the number before the
+  // first paint.
   const lineLength = points.reduce((sum, point, index) => {
     if (index === 0) return 0;
     const previous = points[index - 1];
@@ -88,7 +93,7 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
 
         <span className="flex items-baseline gap-2">
           <span className="figure text-base text-warning">
-            −{maxDrawdownR.toFixed(2)}R
+            {formatSignedMoney(-maxDrawdown, currency)}
           </span>
           <span className="text-xs text-muted">deepest fall from a peak</span>
         </span>
@@ -98,11 +103,11 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
         viewBox={`0 0 ${W} ${H}`}
         className="mt-3 w-full touch-none"
         role="img"
-        aria-label={`Cumulative R over ${points.length} trades, ending at ${format(final)}, with a deepest fall from a peak of ${maxDrawdownR.toFixed(2)}R.`}
+        aria-label={`Cumulative profit and loss over ${points.length} trades, ending at ${format(final)}, with a deepest fall from a peak of ${format(-maxDrawdown)}.`}
         onMouseLeave={() => setHover(null)}
       >
         <defs>
-          <linearGradient id="rcurve-fill" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="pnlcurve-fill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
             <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.02" />
           </linearGradient>
@@ -127,14 +132,14 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
               textAnchor="end"
               className="fill-[var(--muted)] text-[10px] tabular-nums"
             >
-              {value > 0 ? `+${value}` : value}
+              {formatCompactMoney(value, currency)}
             </text>
           </g>
         ))}
 
         {/* The fill arrives after the line has drawn itself, so the shape reads
             as being built rather than switched on. */}
-        <polygon points={area} fill="url(#rcurve-fill)" className="fade-in" />
+        <polygon points={area} fill="url(#pnlcurve-fill)" className="fade-in" />
 
         <polyline
           points={line}
@@ -159,7 +164,7 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
           cy={y(last.cumulative)}
           r={4}
           fill="var(--accent)"
-          stroke="var(--surface)"
+          stroke="var(--background)"
           strokeWidth={2}
           className="fade-in"
         />
@@ -180,7 +185,7 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
               cy={y(active.cumulative)}
               r={5}
               fill="var(--foreground)"
-              stroke="var(--surface)"
+              stroke="var(--background)"
               strokeWidth={2}
             />
           </g>
@@ -213,14 +218,14 @@ export default function RCurve({ curve }: { curve: RCurveData }) {
             </span>
             <span
               className={`tabular-nums ${
-                active.r > 0
+                active.pnl > 0
                   ? "text-positive"
-                  : active.r < 0
+                  : active.pnl < 0
                     ? "text-negative"
                     : ""
               }`}
             >
-              {format(active.r)}
+              {format(active.pnl)}
             </span>
             <span className="tabular-nums">
               running {format(active.cumulative)}

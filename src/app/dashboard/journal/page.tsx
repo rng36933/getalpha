@@ -3,6 +3,8 @@ import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
 import TradeList, { type TradeRow } from "@/components/TradeList";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
+import { formatSignedMoney } from "@/lib/format/money";
+import { getAccountCurrency } from "@/lib/mt5/account";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -48,6 +50,8 @@ async function loadTrades(userId: string): Promise<TradeRow[]> {
 export default async function JournalPage() {
   const { userId } = await auth();
 
+  const currency = await getAccountCurrency(userId);
+
   let trades: TradeRow[] = [];
   let failed = false;
 
@@ -60,15 +64,17 @@ export default async function JournalPage() {
     }
   }
 
-  const closed = trades.filter((t) => t.metrics.realizedR !== null);
-  const totalR = closed.reduce((sum, t) => sum + (t.metrics.realizedR ?? 0), 0);
-  const wins = closed.filter((t) => (t.metrics.realizedR ?? 0) > 0).length;
+  // Every trade with a result, not only the ones that had a stop. These tiles
+  // used to count R, which existed on well under half the journal.
+  const closed = trades.filter((t) => t.pnl !== null);
+  const totalPnl = closed.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+  const wins = closed.filter((t) => (t.pnl ?? 0) > 0).length;
 
   return (
     <>
       <PageHeader
         title="Journal"
-        subtitle="Every closed trade, straight from your terminal. The R-multiple is computed, never typed."
+        subtitle="Every closed trade, straight from your terminal. Nothing here is typed by hand."
       />
 
       <div className="space-y-4">
@@ -79,14 +85,17 @@ export default async function JournalPage() {
                 {closed.length}
               </p>
             </Card>
-            <Card title="Total R">
+            <Card title="Total P&L">
               <p
                 className={`text-2xl font-semibold tracking-tight ${
-                  totalR > 0 ? "text-positive" : totalR < 0 ? "text-negative" : ""
+                  totalPnl > 0
+                    ? "text-positive"
+                    : totalPnl < 0
+                      ? "text-negative"
+                      : ""
                 }`}
               >
-                {totalR > 0 ? "+" : ""}
-                {totalR.toFixed(2)}
+                {formatSignedMoney(totalPnl, currency)}
               </p>
             </Card>
             <Card title="Win rate">
@@ -94,9 +103,9 @@ export default async function JournalPage() {
                 {Math.round((wins / closed.length) * 100)}%
               </p>
             </Card>
-            <Card title="Average R">
+            <Card title="Average">
               <p className="text-2xl font-semibold tracking-tight">
-                {(totalR / closed.length).toFixed(2)}
+                {formatSignedMoney(totalPnl / closed.length, currency)}
               </p>
             </Card>
           </div>
@@ -109,7 +118,7 @@ export default async function JournalPage() {
               nothing has been lost.
             </p>
           ) : (
-            <TradeList trades={trades} />
+            <TradeList trades={trades} currency={currency} />
           )}
         </Card>
       </div>

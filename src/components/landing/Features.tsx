@@ -118,15 +118,15 @@ export default function Features() {
               <Readout label="Planned RR" value="2.40" />
             </div>
             <div>
-              <Readout label="Result" value="+1.80R" tone="text-emerald-400" />
+              <Readout label="Result" value="+€340.00" tone="text-emerald-400" />
               <Readout label="Exit" value="Target" />
             </div>
           </div>
         }
       >
-        R-multiples, planned reward-to-risk and risk as a share of equity are
-        calculated from what you record. You never type an R, so you can never
-        flatter one.
+        Your P&amp;L, the risk you took as a share of the account, and the
+        reward you planned against it — all read straight from the terminal. You
+        never type a number in, so you can never flatter one.
       </Cell>
 
       <Cell

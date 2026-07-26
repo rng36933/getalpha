@@ -332,7 +332,7 @@ export default async function LandingPage({
 
                 <ul className="mt-7 grid gap-3 text-[14px] text-zinc-400">
                   {[
-                    "Trade journal with computed R-multiples",
+                    "Trade journal with computed P&L and risk",
                     "Cumulative R curve and outcome distribution",
                     "Live charts for your watchlist",
                     "Economic calendar in your own timezone",

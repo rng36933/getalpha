@@ -20,7 +20,7 @@ type Mt5PromptProps = {
 
 const REASONS = [
   "Every closed trade lands in the journal by itself — including the ones you would never have bothered to type in, which are usually the ones worth reading later.",
-  "The stop, the size and the units per lot come from the terminal, so the R-multiple is right rather than approximately right.",
+  "The stop, the size and the units per lot come from the terminal, so the risk and the result are exact rather than approximate.",
   "The per-pair breakdown needs a body of trades before it can say anything. Ninety days of history arrives on the first sync; typing it by hand does not happen.",
 ];
 

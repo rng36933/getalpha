@@ -4,11 +4,12 @@ import {
   type Bucket,
   type PairBreakdown,
 } from "@/lib/analysis/per-pair";
+import { formatSignedMoney } from "@/lib/format/money";
 
-/** "+1.80R", because a sign reads faster than a colour alone. */
-function formatR(value: number | null): string {
+/** Always signed, because a sign reads faster than a colour alone. */
+function money(value: number | null, currency: string | null): string {
   if (value === null) return "—";
-  return `${value > 0 ? "+" : ""}${value.toFixed(2)}R`;
+  return formatSignedMoney(value, currency);
 }
 
 function toneFor(value: number | null): string {
@@ -51,17 +52,19 @@ function BucketRow({
   bucket,
   hint,
   scale,
+  currency,
 }: {
   bucket: Bucket;
   hint?: string;
-  /** Largest absolute total R in this table, so bars share one scale. */
+  /** Largest absolute total in this table, so bars share one scale. */
   scale: number;
+  currency: string | null;
 }) {
   const thin = bucket.scored < MIN_SAMPLE_FOR_RATE;
-  const r = bucket.totalR ?? 0;
-  // Both sides measured against the same number, or a −2R bar would look the
-  // same length as a +6R one and the chart would be worse than the text.
-  const width = scale > 0 ? (Math.abs(r) / scale) * 50 : 0;
+  const total = bucket.totalPnl ?? 0;
+  // Both sides measured against the same number, or a small loss would look the
+  // same length as a large win and the chart would be worse than the text.
+  const width = scale > 0 ? (Math.abs(total) / scale) * 50 : 0;
 
   return (
     <tr className="border-t border-line">
@@ -90,10 +93,10 @@ function BucketRow({
             {width > 0 ? (
               <span
                 className={`absolute top-0 h-full rounded-sm ${
-                  r > 0 ? "bg-positive/70" : "bg-negative/70"
+                  total > 0 ? "bg-positive/70" : "bg-negative/70"
                 }`}
                 style={
-                  r > 0
+                  total > 0
                     ? { left: "50%", width: `${width}%` }
                     : { right: "50%", width: `${width}%` }
                 }
@@ -102,10 +105,10 @@ function BucketRow({
           </div>
           <span
             className={`w-14 shrink-0 text-right font-mono text-xs tabular-nums ${toneFor(
-              bucket.totalR,
+              bucket.totalPnl,
             )}`}
           >
-            {formatR(bucket.totalR)}
+            {money(bucket.totalPnl, currency)}
           </span>
         </div>
       </td>
@@ -117,15 +120,17 @@ function BucketTable({
   caption,
   buckets,
   hints,
+  currency,
 }: {
   caption: string;
   buckets: Bucket[];
   hints?: Record<string, string>;
+  currency: string | null;
 }) {
   if (buckets.length === 0) return null;
 
   const scale = Math.max(
-    ...buckets.map((bucket) => Math.abs(bucket.totalR ?? 0)),
+    ...buckets.map((bucket) => Math.abs(bucket.totalPnl ?? 0)),
     0,
   );
 
@@ -137,7 +142,7 @@ function BucketTable({
             <th className="py-1 pr-3 text-left font-normal">{caption}</th>
             <th className="py-1 pr-3 text-right font-normal">Trades</th>
             <th className="py-1 pr-3 text-right font-normal">Win rate</th>
-            <th className="py-1 pl-2 text-right font-normal">Total R</th>
+            <th className="py-1 pl-2 text-right font-normal">Total P&L</th>
           </tr>
         </thead>
         <tbody>
@@ -147,6 +152,7 @@ function BucketTable({
               bucket={bucket}
               hint={hints?.[bucket.key]}
               scale={scale}
+              currency={currency}
             />
           ))}
         </tbody>
@@ -166,7 +172,13 @@ function riskNote(pair: PairBreakdown): string | undefined {
   return "in line with the rest of your book";
 }
 
-export default function PairAnalysis({ pair }: { pair: PairBreakdown }) {
+export default function PairAnalysis({
+  pair,
+  currency,
+}: {
+  pair: PairBreakdown;
+  currency: string | null;
+}) {
   const thin = pair.scored < MIN_SAMPLE_FOR_RATE;
 
   return (
@@ -178,7 +190,7 @@ export default function PairAnalysis({ pair }: { pair: PairBreakdown }) {
           note={
             pair.scored === pair.trades
               ? undefined
-              : `${pair.scored} with an R-multiple`
+              : `${pair.scored} closed`
           }
         />
         <Stat
@@ -191,25 +203,25 @@ export default function PairAnalysis({ pair }: { pair: PairBreakdown }) {
           }
         />
         <Stat
-          label="Total R"
-          value={formatR(pair.totalR)}
-          tone={toneFor(pair.totalR)}
+          label="Total P&L"
+          value={money(pair.totalPnl, currency)}
+          tone={toneFor(pair.totalPnl)}
         />
         <Stat
           label="Expectancy"
-          value={formatR(pair.expectancyR)}
-          tone={toneFor(pair.expectancyR)}
+          value={money(pair.expectancyPnl, currency)}
+          tone={toneFor(pair.expectancyPnl)}
           note="per trade"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Average win" value={formatR(pair.averageWinR)} />
-        <Stat label="Average loss" value={formatR(pair.averageLossR)} />
+        <Stat label="Average win" value={money(pair.averageWin, currency)} />
+        <Stat label="Average loss" value={money(pair.averageLoss, currency)} />
         <Stat
           label="Worst"
-          value={formatR(pair.worstLossR)}
-          tone={toneFor(pair.worstLossR)}
+          value={money(pair.worstLoss, currency)}
+          tone={toneFor(pair.worstLoss)}
         />
         <Stat
           label="Median risk"
@@ -231,8 +243,9 @@ export default function PairAnalysis({ pair }: { pair: PairBreakdown }) {
           ) : null}
           {pair.withoutStop > 0 ? (
             <li className="text-warning">
-              {pair.withoutStop} taken without a stop. No defined risk means no
-              R-multiple, so those trades are invisible to every figure here.
+              {pair.withoutStop} taken without a stop. They count towards every
+              figure above, but nothing here can say whether the size was
+              sensible — there was no risk defined to compare it against.
             </li>
           ) : null}
           {pair.withoutNotes > 0 ? (
@@ -249,13 +262,22 @@ export default function PairAnalysis({ pair }: { pair: PairBreakdown }) {
           caption="By session"
           buckets={pair.sessions}
           hints={SESSION_HOURS}
+          currency={currency}
         />
-        <BucketTable caption="By weekday" buckets={pair.weekdays} />
+        <BucketTable
+          caption="By weekday"
+          buckets={pair.weekdays}
+          currency={currency}
+        />
       </div>
 
       {pair.afterResult.length > 0 ? (
         <div>
-          <BucketTable caption="By what came before" buckets={pair.afterResult} />
+          <BucketTable
+            caption="By what came before"
+            buckets={pair.afterResult}
+            currency={currency}
+          />
           <p className="mt-2 text-xs text-muted">
             &ldquo;Before&rdquo; means the previous trade anywhere in your
             journal, not only on this instrument — a loss on one pair is what

@@ -59,14 +59,14 @@ export const metadata: Metadata = {
     url: siteUrl,
     title: "getALPHA — a trading desk that judges your process, not your luck",
     description:
-      "A trading journal that computes your R-multiples, a pre-session risk brief, and a written review of how you took the trade.",
+      "A trading journal that computes your P&L and risk, a pre-session brief, and a written review of how you took the trade.",
     locale: "en",
   },
   twitter: {
     card: "summary_large_image",
     title: "getALPHA — a trading desk that judges your process",
     description:
-      "A trading journal that computes your R-multiples, a pre-session risk brief, and a written review of how you took the trade.",
+      "A trading journal that computes your P&L and risk, a pre-session brief, and a written review of how you took the trade.",
   },
   robots: {
     index: true,

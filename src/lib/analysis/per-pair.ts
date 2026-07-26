@@ -74,30 +74,36 @@ export type Bucket = {
   label: string;
   /** Trades opened in this slice, including ones still open. */
   trades: number;
-  /** Of those, the ones with a defined risk and a result, so an R exists. */
+  /** Of those, the ones that have closed with a result. */
   scored: number;
   winRatePercent: number | null;
-  totalR: number | null;
-  expectancyR: number | null;
+  totalPnl: number | null;
+  expectancyPnl: number | null;
 };
 
 export type PairBreakdown = {
   asset: string;
   trades: number;
-  /** Trades an R-multiple could be computed for. Everything below rests on it. */
+  /** Trades that closed with a result. Everything below rests on it. */
   scored: number;
   openTrades: number;
-  /** Trades with no stop recorded: no defined risk, so no R, so not scored. */
+  /**
+   * Trades with no stop recorded.
+   *
+   * They still count towards every figure here, because a result in money
+   * exists whether or not a stop was set. What they cannot say is whether the
+   * size was sensible — there was no defined risk to compare it against.
+   */
   withoutStop: number;
   /** Scored trades still missing the two written notes. */
   withoutNotes: number;
 
   winRatePercent: number | null;
-  totalR: number | null;
-  expectancyR: number | null;
-  averageWinR: number | null;
-  averageLossR: number | null;
-  worstLossR: number | null;
+  totalPnl: number | null;
+  expectancyPnl: number | null;
+  averageWin: number | null;
+  averageLoss: number | null;
+  worstLoss: number | null;
 
   medianRiskPercent: number | null;
   /**
@@ -126,7 +132,7 @@ export type JournalAnalysis = {
 type Scored = {
   asset: string;
   openedAt: Date;
-  r: number | null;
+  pnl: number | null;
   riskPercent: number | null;
   hasStop: boolean;
   hasNotes: boolean;
@@ -153,7 +159,7 @@ function median(values: number[]): number {
 }
 
 function summarise(key: string, label: string, rows: Scored[]): Bucket {
-  const rs = rows.map((row) => row.r).filter((r): r is number => r !== null);
+  const rs = rows.map((row) => row.pnl).filter((r): r is number => r !== null);
   const wins = rs.filter((r) => r > 0).length;
 
   return {
@@ -162,8 +168,8 @@ function summarise(key: string, label: string, rows: Scored[]): Bucket {
     trades: rows.length,
     scored: rs.length,
     winRatePercent: rs.length > 0 ? round((wins / rs.length) * 100, 1) : null,
-    totalR: rs.length > 0 ? round(rs.reduce((sum, r) => sum + r, 0), 2) : null,
-    expectancyR: rs.length > 0 ? round(mean(rs), 2) : null,
+    totalPnl: rs.length > 0 ? round(rs.reduce((sum, r) => sum + r, 0), 2) : null,
+    expectancyPnl: rs.length > 0 ? round(mean(rs), 2) : null,
   };
 }
 
@@ -183,11 +189,12 @@ export function analyseJournal(trades: Trade[]): JournalAnalysis {
 
   for (const trade of chronological) {
     const metrics = computeTradeMetrics(trade);
+    const pnl = trade.pnl?.toNumber() ?? null;
 
     scored.push({
       asset: trade.asset,
       openedAt: trade.createdAt,
-      r: metrics.realizedR,
+      pnl,
       riskPercent: metrics.riskPercent,
       hasStop: metrics.flags.stopWasSet && !metrics.flags.stopOnWrongSideOfEntry,
       hasNotes:
@@ -199,8 +206,12 @@ export function analyseJournal(trades: Trade[]): JournalAnalysis {
     // Only a resolved trade moves the streak on. An open position has not gone
     // either way yet, and calling it a win because it is green would make the
     // next trade's label depend on when the page was loaded.
-    if (metrics.realizedR !== null) {
-      previous = metrics.realizedR > 0 ? "WIN" : "LOSS";
+    //
+    // A scratch counts as a loss here rather than being skipped: "the trade
+    // after a break-even" is not a bucket anybody reasons about, and dropping
+    // it would silently attach the next trade to the result before it.
+    if (pnl !== null) {
+      previous = pnl > 0 ? "WIN" : "LOSS";
     }
   }
 
@@ -229,7 +240,7 @@ export function analyseJournal(trades: Trade[]): JournalAnalysis {
     pairs,
     medianRiskPercent: journalMedianRisk,
     totalTrades: scored.length,
-    totalScored: scored.filter((row) => row.r !== null).length,
+    totalScored: scored.filter((row) => row.pnl !== null).length,
   };
 }
 
@@ -238,7 +249,7 @@ function breakdownFor(
   rows: Scored[],
   journalMedianRisk: number | null,
 ): PairBreakdown {
-  const rs = rows.map((row) => row.r).filter((r): r is number => r !== null);
+  const rs = rows.map((row) => row.pnl).filter((r): r is number => r !== null);
   const wins = rs.filter((r) => r > 0);
   const losses = rs.filter((r) => r <= 0);
 
@@ -288,11 +299,11 @@ function breakdownFor(
 
     winRatePercent:
       rs.length > 0 ? round((wins.length / rs.length) * 100, 1) : null,
-    totalR: rs.length > 0 ? round(rs.reduce((sum, r) => sum + r, 0), 2) : null,
-    expectancyR: rs.length > 0 ? round(mean(rs), 2) : null,
-    averageWinR: wins.length > 0 ? round(mean(wins), 2) : null,
-    averageLossR: losses.length > 0 ? round(mean(losses), 2) : null,
-    worstLossR: rs.length > 0 ? round(Math.min(...rs), 2) : null,
+    totalPnl: rs.length > 0 ? round(rs.reduce((sum, r) => sum + r, 0), 2) : null,
+    expectancyPnl: rs.length > 0 ? round(mean(rs), 2) : null,
+    averageWin: wins.length > 0 ? round(mean(wins), 2) : null,
+    averageLoss: losses.length > 0 ? round(mean(losses), 2) : null,
+    worstLoss: rs.length > 0 ? round(Math.min(...rs), 2) : null,
 
     medianRiskPercent: medianRisk,
     riskVsOwnMedian:

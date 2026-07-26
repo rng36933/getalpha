@@ -90,7 +90,9 @@ test("splits the journal by instrument, most-traded first", () => {
   assert.equal(analysis.totalScored, 3);
 });
 
-test("win rate, expectancy and total R come from the R-multiples", () => {
+test("win rate, expectancy and total come from the realised P&L", () => {
+  // The builder writes `pnl` as ten currency units per R, so these four are
+  // +20, −10, −10, +20.
   const [pair] = analyseJournal([
     trade({ openedAt: "2026-07-01T08:00:00Z", r: 2 }),
     trade({ openedAt: "2026-07-02T08:00:00Z", r: -1 }),
@@ -100,11 +102,11 @@ test("win rate, expectancy and total R come from the R-multiples", () => {
 
   assert.equal(pair.scored, 4);
   assert.equal(pair.winRatePercent, 50);
-  assert.equal(pair.totalR, 2);
-  assert.equal(pair.expectancyR, 0.5);
-  assert.equal(pair.averageWinR, 2);
-  assert.equal(pair.averageLossR, -1);
-  assert.equal(pair.worstLossR, -1);
+  assert.equal(pair.totalPnl, 20);
+  assert.equal(pair.expectancyPnl, 5);
+  assert.equal(pair.averageWin, 20);
+  assert.equal(pair.averageLoss, -10);
+  assert.equal(pair.worstLoss, -10);
 });
 
 test("an open trade counts as a trade but never as a result", () => {
@@ -119,7 +121,7 @@ test("an open trade counts as a trade but never as a result", () => {
   assert.equal(pair.winRatePercent, 100);
 });
 
-test("a trade with no stop has no defined risk and is counted apart", () => {
+test("a trade with no stop still counts, but is flagged as undefined risk", () => {
   const [pair] = analyseJournal([
     trade({ openedAt: "2026-07-01T08:00:00Z", r: 1 }),
     trade({ openedAt: "2026-07-02T08:00:00Z", r: 1, noStop: true }),
@@ -127,8 +129,11 @@ test("a trade with no stop has no defined risk and is counted apart", () => {
 
   assert.equal(pair.trades, 2);
   assert.equal(pair.withoutStop, 1);
-  // No stop means no R, so it cannot be scored as a win either.
-  assert.equal(pair.scored, 1);
+  // It made money, so it scores. This is the difference the move from R to P&L
+  // makes: R needed a stop to exist at all, which silently dropped more than
+  // half of a real journal out of every figure on the page. The trade is still
+  // counted apart, because nothing here can say whether its size was sensible.
+  assert.equal(pair.scored, 2);
 });
 
 test("risk is compared against the trader's own median, not a rule of thumb", () => {

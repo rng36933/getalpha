@@ -21,7 +21,7 @@ export type PaidPlan = {
 
 /** What the free tier gets. Listed so the pricing page can be honest about it. */
 export const FREE_FEATURES = [
-  "Trade journal with R-multiples and planned RR",
+  "Trade journal with computed P&L, risk and planned reward-to-risk",
   "Live price charts for your watchlist",
   "Economic calendar",
 ] as const;

@@ -1,10 +1,10 @@
 import type { Trade } from "@/generated/prisma/client";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
-import { buildRCurve, type RCurve } from "./r-curve";
+import { buildPnlCurve, type PnlCurve } from "./pnl-curve";
 import {
-  buildRDistribution,
-  type RDistribution,
-} from "./r-distribution";
+  buildPnlDistribution,
+  type PnlDistribution,
+} from "./pnl-distribution";
 
 /**
  * Everything the dashboard cards show, computed from the journal.
@@ -28,7 +28,6 @@ export type ClosedTrade = {
   id: string;
   asset: string;
   direction: "BUY" | "SELL";
-  realizedR: number | null;
   pnl: number | null;
   closedAt: string;
 };
@@ -44,12 +43,12 @@ export type Exposure = {
 export type Performance = {
   closedCount: number;
   winRatePercent: number | null;
-  /** Sum of R across closed trades. */
-  totalR: number | null;
-  /** Average R per trade — the number that says whether the edge is real. */
-  expectancyR: number | null;
+  /** Sum of realised P&L across closed trades, in the account currency. */
+  totalPnl: number | null;
+  /** Average result per trade — the number that says whether the edge is real. */
+  expectancyPnl: number | null;
   /**
-   * Gross win R divided by gross loss R.
+   * Gross winnings divided by gross losses.
    *
    * Null rather than Infinity when there are no losses yet: a profit factor
    * with no losing trades in it is not a fact about an edge, it is a fact
@@ -65,10 +64,10 @@ export type DashboardSummary = {
   recentTrades: ClosedTrade[];
   exposure: Exposure[];
   performance: Performance;
-  /** Null until there are two scored trades to draw a line through. */
-  rCurve: RCurve | null;
-  /** Null until at least one trade has an R. */
-  rDistribution: RDistribution | null;
+  /** Null until there are two closed trades to draw a line through. */
+  pnlCurve: PnlCurve | null;
+  /** Null until at least one trade has a result. */
+  pnlDistribution: PnlDistribution | null;
 };
 
 function round(value: number, decimals: number): number {
@@ -78,7 +77,7 @@ function round(value: number, decimals: number): number {
 
 export function summariseTrades(trades: Trade[]): DashboardSummary {
   const openPositions: OpenPosition[] = [];
-  const closed: { trade: Trade; realizedR: number | null }[] = [];
+  const closed: Trade[] = [];
   const riskByAsset = new Map<string, number>();
 
   let withoutStop = 0;
@@ -110,7 +109,7 @@ export function summariseTrades(trades: Trade[]): DashboardSummary {
       continue;
     }
 
-    closed.push({ trade, realizedR: metrics.realizedR });
+    closed.push(trade);
   }
 
   /* ------------------------------------------------------------- exposure */
@@ -127,61 +126,63 @@ export function summariseTrades(trades: Trade[]): DashboardSummary {
 
   /* ---------------------------------------------------------- performance */
 
-  const scored = closed
-    .map((entry) => entry.realizedR)
-    .filter((r): r is number => r !== null);
+  // Every closed trade with a result, not only the ones that had a stop. That
+  // is the whole point of the swap: on this desk's own journal, R existed on 69
+  // trades out of 220, so every figure below used to describe under a third of
+  // the account it claimed to summarise.
+  const results = closed
+    .map((trade) => trade.pnl?.toNumber() ?? null)
+    .filter((pnl): pnl is number => pnl !== null);
 
-  const wins = scored.filter((r) => r > 0);
-  const losses = scored.filter((r) => r < 0);
+  const wins = results.filter((pnl) => pnl > 0);
+  const losses = results.filter((pnl) => pnl < 0);
 
-  const grossWin = wins.reduce((sum, r) => sum + r, 0);
-  const grossLoss = Math.abs(losses.reduce((sum, r) => sum + r, 0));
-  const totalR = scored.reduce((sum, r) => sum + r, 0);
+  const grossWin = wins.reduce((sum, pnl) => sum + pnl, 0);
+  const grossLoss = Math.abs(losses.reduce((sum, pnl) => sum + pnl, 0));
+  const totalPnl = results.reduce((sum, pnl) => sum + pnl, 0);
 
   const performance: Performance = {
     closedCount: closed.length,
     winRatePercent:
-      scored.length > 0 ? round((wins.length / scored.length) * 100, 0) : null,
-    totalR: scored.length > 0 ? round(totalR, 2) : null,
-    expectancyR: scored.length > 0 ? round(totalR / scored.length, 2) : null,
+      results.length > 0 ? round((wins.length / results.length) * 100, 0) : null,
+    totalPnl: results.length > 0 ? round(totalPnl, 2) : null,
+    expectancyPnl:
+      results.length > 0 ? round(totalPnl / results.length, 2) : null,
     profitFactor: grossLoss > 0 ? round(grossWin / grossLoss, 2) : null,
     withoutStop,
   };
 
   /* -------------------------------------------------------- recent trades */
 
-  const recentTrades: ClosedTrade[] = closed
-    .slice(0, 6)
-    .map(({ trade, realizedR }) => ({
-      id: trade.id,
-      asset: trade.asset,
-      direction: trade.direction,
-      realizedR,
-      pnl: trade.pnl?.toNumber() ?? null,
-      closedAt: (trade.closedAt ?? trade.createdAt).toISOString(),
-    }));
+  const recentTrades: ClosedTrade[] = closed.slice(0, 6).map((trade) => ({
+    id: trade.id,
+    asset: trade.asset,
+    direction: trade.direction,
+    pnl: trade.pnl?.toNumber() ?? null,
+    closedAt: (trade.closedAt ?? trade.createdAt).toISOString(),
+  }));
 
   /* ------------------------------------------------------------- the curve */
 
   // Built from the same `closed` set the figures above come from, so the line
   // and the total can never disagree about what happened.
-  const rCurve = buildRCurve(
-    closed.map(({ trade, realizedR }) => ({
+  const pnlCurve = buildPnlCurve(
+    closed.map((trade) => ({
       closedAt: trade.closedAt,
       createdAt: trade.createdAt,
       asset: trade.asset,
-      realizedR,
+      pnl: trade.pnl?.toNumber() ?? null,
     })),
   );
 
-  const rDistribution = buildRDistribution(scored);
+  const pnlDistribution = buildPnlDistribution(results);
 
   return {
     openPositions,
     recentTrades,
     exposure,
     performance,
-    rCurve,
-    rDistribution,
+    pnlCurve,
+    pnlDistribution,
   };
 }

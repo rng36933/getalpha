@@ -16,7 +16,7 @@ type Mt5ConnectProps = {
 const REASONS = [
   "Every trade lands in the journal by itself — including the ones you would not have bothered to type in, which are usually the ones worth reading later.",
   "Open positions show what they risk while they are still open, not after.",
-  "The stop, the size and the units per lot come from the terminal, so the R-multiple is right rather than approximately right.",
+  "The stop, the size and the units per lot come from the terminal, so the risk and the result are exact rather than approximate.",
 ];
 
 const STEPS = [

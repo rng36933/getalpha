@@ -6,6 +6,7 @@ import CoachReviewPanel from "@/components/CoachReviewPanel";
 import TradeNotes, { type Notes } from "@/components/TradeNotes";
 import type { TradeMetrics } from "@/lib/ai/trade-metrics";
 import type { CoachReview } from "@/lib/ai/types";
+import { formatSignedMoney } from "@/lib/format/money";
 
 export type TradeRow = {
   id: string;
@@ -34,10 +35,9 @@ const EXIT_LABEL: Record<TradeMetrics["exitClassification"], string> = {
   UNKNOWN: "—",
 };
 
-/** Two decimals and a sign, because "+1.80R" reads faster than "1.8". */
-function formatR(value: number | null): string {
+function formatResult(value: number | null, currency: string | null): string {
   if (value === null) return "—";
-  return `${value > 0 ? "+" : ""}${value.toFixed(2)}R`;
+  return formatSignedMoney(value, currency);
 }
 
 function toneFor(value: number | null): string {
@@ -54,8 +54,9 @@ const OUTCOMES: { value: Outcome; label: string }[] = [
   { value: "WINS", label: "Wins" },
   { value: "LOSSES", label: "Losses" },
   { value: "OPEN", label: "Open" },
-  // Not a result but the thing most worth being able to isolate: trades taken
-  // with no defined risk are invisible to every R figure in the app.
+  // Not a result but the thing most worth being able to isolate: a trade taken
+  // with no stop has no defined risk, so nothing here can say whether its size
+  // was sensible — only what it happened to make or lose.
   { value: "NO_STOP", label: "No stop" },
 ];
 
@@ -69,17 +70,17 @@ type ReviewState =
   | { status: "error"; message: string; upgrade?: boolean };
 
 /**
- * The realised R as a bar as well as a number.
+ * The realised result as a bar as well as a number.
  *
  * Read from the centre and scaled against the biggest result on the page, so a
- * −0.4R and a +3R stop looking alike at a glance. Every row still carries its
- * own figure, which is what keeps the bar honest for anyone who cannot separate
- * the two hues.
+ * small loss and a large win stop looking alike at a glance. Every row still
+ * carries its own figure, which is what keeps the bar honest for anyone who
+ * cannot separate the two hues.
  */
-function RBar({ r, scale }: { r: number | null; scale: number }) {
-  if (r === null || scale <= 0) return null;
+function ResultBar({ value, scale }: { value: number | null; scale: number }) {
+  if (value === null || scale <= 0) return null;
 
-  const width = (Math.abs(r) / scale) * 50;
+  const width = (Math.abs(value) / scale) * 50;
 
   return (
     <span
@@ -89,10 +90,10 @@ function RBar({ r, scale }: { r: number | null; scale: number }) {
       <span className="absolute left-1/2 top-0 h-full w-px bg-line" />
       <span
         className={`absolute top-0 h-full rounded-sm ${
-          r > 0 ? "bg-positive/70" : "bg-negative/70"
+          value > 0 ? "bg-positive/70" : "bg-negative/70"
         }`}
         style={
-          r > 0
+          value > 0
             ? { left: "50%", width: `${width}%` }
             : { right: "50%", width: `${width}%` }
         }
@@ -101,7 +102,13 @@ function RBar({ r, scale }: { r: number | null; scale: number }) {
   );
 }
 
-export default function TradeList({ trades }: { trades: TradeRow[] }) {
+export default function TradeList({
+  trades,
+  currency,
+}: {
+  trades: TradeRow[];
+  currency: string | null;
+}) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [notesId, setNotesId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<string, ReviewState>>({});
@@ -136,8 +143,8 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
   const rows = withEdits.filter((row) => {
     if (asset !== "ALL" && row.asset !== asset) return false;
     if (setup !== "ALL" && row.setup !== setup) return false;
-    if (outcome === "WINS" && !((row.metrics.realizedR ?? 0) > 0)) return false;
-    if (outcome === "LOSSES" && !((row.metrics.realizedR ?? 0) < 0)) return false;
+    if (outcome === "WINS" && !((row.pnl ?? 0) > 0)) return false;
+    if (outcome === "LOSSES" && !((row.pnl ?? 0) < 0)) return false;
     if (outcome === "OPEN" && row.metrics.exitClassification !== "STILL_OPEN") {
       return false;
     }
@@ -149,8 +156,8 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
 
   // One scale for every bar on the page, so the lengths are comparable to each
   // other rather than each row being drawn against itself.
-  const rScale = Math.max(
-    ...rows.map((row) => Math.abs(row.metrics.realizedR ?? 0)),
+  const resultScale = Math.max(
+    ...rows.map((row) => Math.abs(row.pnl ?? 0)),
     0,
   );
 
@@ -407,13 +414,13 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
                   </td>
                   <td className="py-3 pr-3">
                     <span className="flex items-center justify-end gap-2.5">
-                      <RBar r={trade.metrics.realizedR} scale={rScale} />
+                      <ResultBar value={trade.pnl} scale={resultScale} />
                       <span
-                        className={`w-16 text-right font-mono tabular-nums ${toneFor(
-                          trade.metrics.realizedR,
+                        className={`w-20 text-right font-mono tabular-nums ${toneFor(
+                          trade.pnl,
                         )}`}
                       >
-                        {formatR(trade.metrics.realizedR)}
+                        {formatResult(trade.pnl, currency)}
                       </span>
                     </span>
                   </td>

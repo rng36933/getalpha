@@ -7,8 +7,8 @@ import DayTapeReadout from "@/components/DayTapeReadout";
 import Mt5Prompt from "@/components/Mt5Prompt";
 import PageHeader from "@/components/PageHeader";
 import PairNews from "@/components/PairNews";
-import RCurve from "@/components/RCurve";
-import RDistribution from "@/components/RDistribution";
+import PnlCurve from "@/components/PnlCurve";
+import PnlDistribution from "@/components/PnlDistribution";
 import SessionBriefPanel from "@/components/SessionBriefPanel";
 import WatchlistManager from "@/components/WatchlistManager";
 import {
@@ -41,13 +41,13 @@ const EMPTY_SUMMARY: DashboardSummary = {
   performance: {
     closedCount: 0,
     winRatePercent: null,
-    totalR: null,
-    expectancyR: null,
+    totalPnl: null,
+    expectancyPnl: null,
     profitFactor: null,
     withoutStop: 0,
   },
-  rCurve: null,
-  rDistribution: null,
+  pnlCurve: null,
+  pnlDistribution: null,
 };
 
 /**
@@ -81,24 +81,34 @@ async function loadSummary(userId: string | null): Promise<DashboardSummary> {
  * to them. A failure here hides the prompt rather than the dashboard — pestering
  * somebody who is already synced is worse than saying nothing.
  */
-async function loadMt5State(
-  userId: string | null,
-): Promise<{ connected: boolean; receiving: boolean }> {
-  if (!userId) return { connected: false, receiving: true };
+async function loadMt5State(userId: string | null): Promise<{
+  connected: boolean;
+  receiving: boolean;
+  /**
+   * The account's currency, as the terminal reported it.
+   *
+   * Null until a terminal has said, and every money figure on this page is
+   * then printed without a symbol. That is deliberate: a P&L labelled in the
+   * wrong currency reads as a fact, while a bare number reads as what it is.
+   */
+  currency: string | null;
+}> {
+  if (!userId) return { connected: false, receiving: true, currency: null };
 
   try {
     const connection = await prisma.mtConnection.findUnique({
       where: { userId },
-      select: { lastSeenAt: true },
+      select: { lastSeenAt: true, currency: true },
     });
 
     return {
       connected: connection !== null,
       receiving: connection?.lastSeenAt != null,
+      currency: connection?.currency ?? null,
     };
   } catch (error) {
     console.error("Dashboard could not read the MetaTrader connection:", error);
-    return { connected: false, receiving: true };
+    return { connected: false, receiving: true, currency: null };
   }
 }
 
@@ -341,35 +351,41 @@ export default async function DashboardPage({
         </Card>
 
         <Card title="Risk exposure">
-          <RiskExposure exposure={summary.exposure} />
+          <RiskExposure exposure={summary.exposure} currency={mt5.currency} />
         </Card>
 
         <Card title="Recent trades">
-          <RecentTrades trades={summary.recentTrades} />
+          <RecentTrades trades={summary.recentTrades} currency={mt5.currency} />
         </Card>
 
         {/* Summary before detail: the shape of the account first, the figures
             that describe it underneath. */}
-        {summary.rCurve ? (
+        {summary.pnlCurve ? (
           <Card
-            title="Cumulative R, trade by trade"
+            title="Cumulative P&L, trade by trade"
             className="md:col-span-2 xl:col-span-3"
           >
-            <RCurve curve={summary.rCurve} />
+            <PnlCurve curve={summary.pnlCurve} currency={mt5.currency} />
           </Card>
         ) : null}
 
-        {summary.rDistribution ? (
+        {summary.pnlDistribution ? (
           <Card
             title="Where the results land"
             className="md:col-span-2 xl:col-span-3"
           >
-            <RDistribution data={summary.rDistribution} />
+            <PnlDistribution
+              data={summary.pnlDistribution}
+              currency={mt5.currency}
+            />
           </Card>
         ) : null}
 
         <Card title="Performance" className="md:col-span-2 xl:col-span-3">
-          <PerformanceStats performance={summary.performance} />
+          <PerformanceStats
+            performance={summary.performance}
+            currency={mt5.currency}
+          />
         </Card>
       </div>
     </>

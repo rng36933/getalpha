@@ -1,41 +1,64 @@
-import type { RDistribution as Data } from "@/lib/dashboard/r-distribution";
+import type { PnlDistribution as Data } from "@/lib/dashboard/pnl-distribution";
+import { formatCompactMoney, formatMoney } from "@/lib/format/money";
 
 /**
- * The shape of a trader's outcomes, as columns.
+ * The shape of a trader's results, as columns.
  *
  * A histogram, because the question is where results cluster along an ordered
- * scale — and columns are the one form where a spike at −1R, which is what
- * honoured stops look like, is visible before anything is read.
+ * scale — and columns are the one form where a fat left tail is visible before
+ * anything is read.
  *
  * Red left of break-even, green right of it, with the boundary drawn. The count
  * sits above every column that has one, so the colour is a second encoding
  * rather than the only one.
+ *
+ * The bin width is derived from the trader's own typical result rather than
+ * fixed, because money has a scale and R did not — see `pnl-distribution.ts`.
  */
-export default function RDistribution({ data }: { data: Data }) {
-  const { bins, scored, peak, worseThanPlanned, withinPlan } = data;
+export default function PnlDistribution({
+  data,
+  currency,
+}: {
+  data: Data;
+  currency: string | null;
+}) {
+  const { bins, scored, peak, step, worstLoss, medianLoss } = data;
+
+  // How far outside the usual a bad day went. This is the money answer to the
+  // question R answered with "worse than planned": without a stop on the record
+  // there is no plan to compare against, but there is still a typical loss, and
+  // a worst loss several times that size is the same warning.
+  const outlierFactor =
+    worstLoss !== null && medianLoss !== null && medianLoss > 0
+      ? worstLoss / medianLoss
+      : null;
 
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
         <span className="flex items-baseline gap-2">
           <span className="figure text-[1.5rem]">{scored}</span>
-          <span className="text-xs text-muted">trades with an R</span>
+          <span className="text-xs text-muted">closed trades</span>
         </span>
 
         <span className="flex items-baseline gap-2">
           <span
             className={`figure text-[1.5rem] ${
-              worseThanPlanned > 0 ? "text-warning" : "text-muted"
+              outlierFactor !== null && outlierFactor >= 3
+                ? "text-warning"
+                : "text-muted"
             }`}
           >
-            {worseThanPlanned}
+            {worstLoss === null ? "—" : formatMoney(worstLoss, currency)}
           </span>
-          <span className="text-xs text-muted">lost more than planned</span>
+          <span className="text-xs text-muted">worst single loss</span>
         </span>
 
         <span className="flex items-baseline gap-2">
-          <span className="figure text-[1.5rem] text-muted">{withinPlan}</span>
-          <span className="text-xs text-muted">stopped within plan</span>
+          <span className="figure text-[1.5rem] text-muted">
+            {medianLoss === null ? "—" : formatMoney(medianLoss, currency)}
+          </span>
+          <span className="text-xs text-muted">typical loss</span>
         </span>
       </div>
 
@@ -45,7 +68,8 @@ export default function RDistribution({ data }: { data: Data }) {
         {bins.map((bin, index) => {
           const height = peak > 0 ? (bin.count / peak) * 100 : 0;
           // The break-even boundary: drawn once, on the first winning bin.
-          const isFirstWin = bin.sign === "WIN" && bins[index - 1]?.sign === "LOSS";
+          const isFirstWin =
+            bin.sign === "WIN" && bins[index - 1]?.sign === "LOSS";
 
           return (
             <div
@@ -86,15 +110,17 @@ export default function RDistribution({ data }: { data: Data }) {
                 : ""
             }`}
           >
-            {bin.label}
+            {bin.labelValue === null
+              ? ""
+              : formatCompactMoney(bin.labelValue, currency)}
           </span>
         ))}
       </div>
 
       <p className="mt-4 border-t border-line pt-3 text-xs leading-relaxed text-muted">
-        {worseThanPlanned > 0
-          ? `${worseThanPlanned} of ${scored} lost more than the risk they were sized for. A stop that is honoured produces −1R; past that it was moved, widened, or never really there.`
-          : "Every loss came in at or inside the risk it was sized for, which is what a stop is for."}
+        {outlierFactor !== null && outlierFactor >= 3
+          ? `Your worst loss is ${outlierFactor.toFixed(1)}× your typical one. A single loss that far outside the usual is a stop that was moved, widened, or never really there.`
+          : `Each column is ${formatMoney(step, currency)} wide, sized from your own typical result rather than a fixed amount.`}
       </p>
     </div>
   );

@@ -8,6 +8,7 @@ import { analyseJournal, type JournalAnalysis } from "@/lib/analysis/per-pair";
 import { fetchEconomicCalendar } from "@/lib/market-data/calendar";
 import { currenciesFromSymbols } from "@/lib/market-data/currencies";
 import { toEconomicEvents } from "@/lib/market-data/display";
+import { getAccountCurrency } from "@/lib/mt5/account";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -46,7 +47,10 @@ export default async function PairsPage({
   const { userId } = await auth();
   const { pair: requested } = await searchParams;
 
-  const analysis = userId ? await loadAnalysis(userId) : null;
+  const [analysis, currency] = await Promise.all([
+    userId ? loadAnalysis(userId) : Promise.resolve(null),
+    getAccountCurrency(userId),
+  ]);
 
   if (analysis === null) {
     return (
@@ -76,14 +80,14 @@ export default async function PairsPage({
               journal — it has no opinion of its own about any pair.
             </p>
             <p className="mt-2 text-sm text-muted">
-              Log a few trades with a stop price, or connect MetaTrader, and the
-              record appears here.
+              Connect MetaTrader and ninety days of history arrives on the first
+              sync, broken down per instrument.
             </p>
             <Link
-              href="/dashboard/journal"
+              href="/dashboard"
               className="mt-4 inline-block text-sm text-accent hover:underline"
             >
-              Go to the journal
+              Connect MetaTrader
             </Link>
           </div>
         </Card>
@@ -135,7 +139,7 @@ export default async function PairsPage({
 
       <div className="space-y-4">
         <Card title={`${selected.asset} — your record`}>
-          <PairAnalysis pair={selected} />
+          <PairAnalysis pair={selected} currency={currency} />
         </Card>
 
         <Card
