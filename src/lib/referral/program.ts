@@ -2,12 +2,19 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "./code";
 import { checkEmail, normalizeMailbox } from "./email-check";
+import {
+  INVITES_PER_REWARD,
+  MAX_REWARDS,
+  REWARD_DAYS,
+  rewardsEarned,
+} from "./rewards";
 
-/** Qualified invites needed before a bonus is granted. */
-export const INVITES_PER_REWARD = 3;
-
-/** How long a granted bonus lasts. */
-export const REWARD_DAYS = 7;
+export {
+  INVITES_PER_REWARD,
+  MAX_REWARDS,
+  REWARD_DAYS,
+  rewardsEarned,
+} from "./rewards";
 
 /** Clerk's user filter accepts at most 100 ids per call. */
 const CLERK_BATCH = 100;
@@ -16,11 +23,13 @@ export type ReferralStatus = {
   code: string;
   /** Invites that count towards a bonus. */
   qualifiedInvites: number;
-  /** Sign-ups whose email is not verified yet, so they do not count. */
+  /** Sign-ups that have not qualified yet — unverified, or not yet trading. */
   pendingInvites: number;
   invitesUntilNextReward: number;
   /** Bonuses already granted, newest first. */
   rewards: { grantedAt: Date; expiresAt: Date; active: boolean }[];
+  /** True once this account has earned every bonus the programme offers. */
+  maxRewardsReached: boolean;
 };
 
 /**
@@ -130,6 +139,7 @@ export async function ensureReferralLinked(
 
 /** The mailbox behind an account, or null if it has no verified primary. */
 type ClerkUser = {
+  id: string;
   primaryEmailAddressId: string | null;
   emailAddresses: {
     id: string;
@@ -147,10 +157,15 @@ function primaryOf(user: ClerkUser) {
 /**
  * Counts invites that actually qualify.
  *
- * Three filters, each closing a different way of inviting yourself.
+ * Four filters, each closing a different way of inviting yourself.
  *
  * **Verified.** A sign-up counts only once its address is confirmed, because
  * verification is the cheapest check that costs a fraudster something real.
+ *
+ * **Actually used it.** One journalled trade. A confirmed address proves somebody
+ * controls a mailbox; a trade proves somebody sat down and used the thing they
+ * were invited to — and it is the only reading of "qualified" that matches what
+ * the programme is for, which is people who turn up rather than registrations.
  *
  * **One mailbox, one invite.** Verification alone was not enough: Gmail hands
  * out unlimited spellings of the same inbox, so `me+a@`, `me+b@` and `m.e@`
@@ -178,6 +193,27 @@ async function countQualified(
   if (invited.length === 0) return { qualified: 0, pending: 0 };
 
   const clerk = await clerkClient();
+
+  /**
+   * Which invited accounts have actually used the product.
+   *
+   * The filter that costs a farm something other than email addresses. A
+   * verified inbox proves somebody controls a mailbox; one journalled trade
+   * proves somebody sat down and used the thing they were invited to. It is also
+   * the only version of "qualified" that matches what the programme is for —
+   * paying for people who turn up, not for registrations.
+   *
+   * One grouped query rather than a count per invitee: at a hundred invites that
+   * would be a hundred round trips to answer one question.
+   */
+  const withTrades = new Set(
+    (
+      await prisma.trade.groupBy({
+        by: ["userId"],
+        where: { userId: { in: invited.map((row) => row.userId) } },
+      })
+    ).map((row) => row.userId),
+  );
 
   // Seeded with the inviter's own mailbox, so an alias of it is already "seen"
   // by the time their invites are counted.
@@ -218,6 +254,14 @@ async function countQualified(
       const mailbox = normalizeMailbox(primary.emailAddress);
       if (!mailbox || seen.has(mailbox)) continue;
 
+      // Signed up, confirmed, and has not used it. Genuinely one step from
+      // qualifying, so it is pending rather than discarded — unlike a duplicate
+      // mailbox, which can never qualify however long it waits.
+      if (!withTrades.has(user.id)) {
+        pending += 1;
+        continue;
+      }
+
       seen.add(mailbox);
       qualified += 1;
     }
@@ -241,7 +285,7 @@ async function grantDueRewards(
   qualified: number,
   now: Date,
 ): Promise<void> {
-  const earned = Math.floor(qualified / INVITES_PER_REWARD);
+  const earned = rewardsEarned(qualified);
 
   for (let n = 1; n <= earned; n += 1) {
     const threshold = n * INVITES_PER_REWARD;
@@ -276,16 +320,22 @@ export async function referralStatus(
   });
 
   const remainder = qualified % INVITES_PER_REWARD;
+  const maxRewardsReached = rewardsEarned(qualified) >= MAX_REWARDS;
 
   return {
     code,
     qualifiedInvites: qualified,
     pendingInvites: pending,
-    invitesUntilNextReward: INVITES_PER_REWARD - remainder,
+    // Zero once the ceiling is reached: counting down to a reward that will
+    // never be granted is the panel lying about its own rules.
+    invitesUntilNextReward: maxRewardsReached
+      ? 0
+      : INVITES_PER_REWARD - remainder,
     rewards: rewards.map((reward) => ({
       ...reward,
       active: reward.expiresAt.getTime() > now.getTime(),
     })),
+    maxRewardsReached,
   };
 }
 

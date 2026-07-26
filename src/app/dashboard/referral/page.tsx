@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import ReferralPanel from "@/components/ReferralPanel";
 import {
   INVITES_PER_REWARD,
+  MAX_REWARDS,
   REWARD_DAYS,
   referralStatus,
 } from "@/lib/referral/program";
@@ -60,7 +61,7 @@ export default async function ReferralPage() {
     <>
       <PageHeader
         title="Referrals"
-        subtitle={`Invite ${INVITES_PER_REWARD} people who confirm their email and get ${REWARD_DAYS} days of Pro.`}
+        subtitle={`Invite ${INVITES_PER_REWARD} people who confirm their email and log a trade, and get ${REWARD_DAYS} days of Pro — up to ${MAX_REWARDS} times.`}
       />
 
       <div className="max-w-2xl">
@@ -73,6 +74,8 @@ export default async function ReferralPage() {
             invitesUntilNextReward={status.invitesUntilNextReward}
             invitesPerReward={INVITES_PER_REWARD}
             rewardDays={REWARD_DAYS}
+            maxRewards={MAX_REWARDS}
+            maxRewardsReached={status.maxRewardsReached}
             rewards={status.rewards.map((reward) => ({
               grantedAt: reward.grantedAt.toISOString(),
               expiresAt: reward.expiresAt.toISOString(),

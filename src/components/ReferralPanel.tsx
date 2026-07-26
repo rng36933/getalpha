@@ -11,6 +11,9 @@ type ReferralPanelProps = {
   invitesPerReward: number;
   rewardDays: number;
   rewards: { grantedAt: string; expiresAt: string; active: boolean }[];
+  /** Every bonus the programme offers has been earned. */
+  maxRewardsReached: boolean;
+  maxRewards: number;
 };
 
 export default function ReferralPanel({
@@ -22,6 +25,8 @@ export default function ReferralPanel({
   invitesPerReward,
   rewardDays,
   rewards,
+  maxRewardsReached,
+  maxRewards,
 }: ReferralPanelProps) {
   const [copied, setCopied] = useState(false);
 
@@ -92,11 +97,13 @@ export default function ReferralPanel({
         </div>
 
         <p className="mt-3 text-sm text-muted">
-          {invitesUntilNextReward === invitesPerReward && qualifiedInvites > 0
-            ? `Bonus earned. Invite ${invitesPerReward} more for another ${rewardDays} days.`
-            : `Invite ${invitesUntilNextReward} more ${
-                invitesUntilNextReward === 1 ? "person" : "people"
-              } to earn ${rewardDays} days of Pro.`}
+          {maxRewardsReached
+            ? `You have earned all ${maxRewards} bonuses the programme offers — ${maxRewards * rewardDays} days in total. Further invites are still welcome; they no longer add days.`
+            : invitesUntilNextReward === invitesPerReward && qualifiedInvites > 0
+              ? `Bonus earned. Invite ${invitesPerReward} more for another ${rewardDays} days.`
+              : `Invite ${invitesUntilNextReward} more ${
+                  invitesUntilNextReward === 1 ? "person" : "people"
+                } to earn ${rewardDays} days of Pro.`}
         </p>
       </div>
 
@@ -108,7 +115,7 @@ export default function ReferralPanel({
           </dd>
         </div>
         <div className="rounded-lg border border-line bg-surface-raised p-4">
-          <dt className="text-xs text-muted">Awaiting verification</dt>
+          <dt className="text-xs text-muted">Not counting yet</dt>
           <dd className="mt-1 text-2xl font-semibold tracking-tight text-muted">
             {pendingInvites}
           </dd>
@@ -116,9 +123,10 @@ export default function ReferralPanel({
       </dl>
 
       <p className="text-xs leading-relaxed text-muted">
-        An invite counts once the person you invited has signed up and confirmed
-        their email address. Until then it sits in &ldquo;awaiting
-        verification&rdquo;.
+        An invite counts once that person has confirmed their email address{" "}
+        <em>and</em> logged their first trade. The programme pays for people who
+        turn up, not for registrations — and one mailbox counts once, however
+        many addresses it can be spelled with.
       </p>
 
       {activeReward ? (
