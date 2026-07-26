@@ -14,12 +14,20 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 const isPublicRoute = createRouteMatcher([
   "/login(.*)",
   "/register(.*)",
+  // Readable before signing up. A policy you can only see after agreeing to it
+  // is not a policy, and the sign-up screen links straight to these.
+  "/terms",
+  "/privacy",
+  "/disclaimer",
   // Stripe has no Clerk session. The webhook authenticates itself with a
   // signature over the raw body instead.
   "/api/billing/webhook",
   // Nor does Vercel's scheduler. That route checks CRON_SECRET itself and
   // refuses everything when the secret is unset.
   "/api/cron/(.*)",
+  // Clerk has no session with itself. That route verifies a svix signature
+  // over the raw body instead.
+  "/api/webhooks/(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

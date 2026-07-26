@@ -80,6 +80,26 @@ model WatchlistItem {
   @@index([userId, sortOrder])
 }
 
+/// Proof that a user accepted the legal documents, and which version.
+///
+/// One row per acceptance, never updated. When a document changes its version
+/// changes with it, the existing row stops matching, and the user is asked
+/// again — leaving the older row in place as the record of what they agreed to
+/// at the time. An overwritten row would destroy exactly the evidence this
+/// table exists to hold.
+model LegalAcceptance {
+  id     String @id @default(uuid())
+  userId String
+
+  /// e.g. "terms@2026-07-26|privacy@2026-07-26|disclaimer@2026-07-26".
+  documentVersion String
+
+  acceptedAt DateTime @default(now())
+
+  @@unique([userId, documentVersion])
+  @@index([userId, acceptedAt])
+}
+
 /// Who wants email, and which kind.
 ///
 /// Opt-in, never opt-out: a row exists only once a user has asked for
