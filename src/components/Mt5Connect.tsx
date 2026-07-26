@@ -29,8 +29,16 @@ const STEPS = [
     body: "Download it, then in MT5 open File → Open Data Folder → MQL5 → Experts, and drop it in.",
   },
   {
+    // The step whose absence sends everybody to support. MetaTrader's Navigator
+    // lists compiled .ex5 programs, so the .mq5 source it was just given is
+    // invisible until this happens — and the symptom is "it isn't there", which
+    // reads like the download failed.
+    title: "Compile it — this is the step people miss",
+    body: "Double-click getALPHA-Sync.mq5 to open it in MetaEditor and press F7. It should report 0 errors. Until you do this the Navigator will not list it: MetaTrader only shows compiled programs, and what you downloaded is the readable source.",
+  },
+  {
     title: "Refresh and attach it",
-    body: "In the Navigator panel, right-click Expert Advisors → Refresh. Drag getALPHA-Sync onto any chart, paste the key into ConnectionToken, and press OK.",
+    body: "Back in MT5, right-click Expert Advisors in the Navigator → Refresh. Drag getALPHA-Sync onto any chart, paste the key into ConnectionToken, and press OK.",
   },
   {
     title: "Allow it to reach us",

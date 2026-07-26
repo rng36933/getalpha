@@ -95,7 +95,7 @@ export default function Mt5Prompt({ connected, receiving }: Mt5PromptProps) {
           Connect MetaTrader
         </Link>
         <span className="text-xs text-muted">
-          Four steps, desktop terminal only. The phone app cannot run programs.
+          Five steps, desktop terminal only — one of them is compiling the file, which is the one everybody misses. The phone app cannot run programs.
         </span>
       </div>
     </section>
