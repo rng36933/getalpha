@@ -80,6 +80,42 @@ model WatchlistItem {
   @@index([userId, sortOrder])
 }
 
+enum SupportKind {
+  BUG
+  FEEDBACK
+  QUESTION
+}
+
+enum SupportStatus {
+  OPEN
+  CLOSED
+}
+
+/// A bug report or a piece of feedback from a signed-in user.
+///
+/// Stored here rather than forwarded to a chat webhook: a message is worth
+/// nothing if it scrolls past unread, and a row can be listed, filtered and
+/// marked done. Forwarding can be added later on top of this without changing
+/// where the record lives.
+model SupportTicket {
+  id     String @id @default(uuid())
+  userId String
+
+  kind    SupportKind
+  message String
+
+  /// Which page they were on. The single most useful field on a bug report,
+  /// and the one nobody ever includes when asked to type it.
+  pageUrl String?
+
+  status SupportStatus @default(OPEN)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
 /// Someone who asked to hear about the product before signing up.
 model WaitlistEntry {
   id    String @id @default(uuid())

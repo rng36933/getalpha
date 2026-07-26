@@ -3,10 +3,19 @@ import { sendDailyBrief } from "@/lib/email/daily-brief";
 import { EmailConfigError } from "@/lib/email/resend";
 
 /**
- * Generating a brief is a Claude call; a cold start plus the model plus the
- * sends does not fit in the default ceiling.
+ * 60, not 300.
+ *
+ * A cold start, a Claude call and the sends would happily use 300 seconds, but
+ * Vercel's Hobby plan refuses any value above 60 — and it refuses it at deploy
+ * time, not at build time, so the build passes locally and in CI and the
+ * deployment fails afterwards with nothing in the compiler output to explain
+ * it. Raise this only alongside a plan that allows it.
+ *
+ * The job fits: the brief takes roughly 36 seconds and the sends are batched.
+ * If it ever does time out, the day stays claimed with nothing sent, so a
+ * failed run is visible as a DailyBriefEmail row with recipientCount 0.
  */
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 /**
  * Whether this request really came from the scheduler.
