@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -60,11 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // TODO: Clerk's sign-in card renders in its own default theme, which may
-    // look light against this dark app. Tune `appearance` once the screens are
-    // visible — the variable names changed in Clerk v7 and guessing them
-    // without being able to see the result is not worth a broken build.
-    <ClerkProvider>
+    <ClerkProvider appearance={clerkAppearance}>
       <html
         lang="en"
         className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
