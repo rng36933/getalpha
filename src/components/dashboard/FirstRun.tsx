@@ -39,19 +39,18 @@ function wasDismissed(): boolean {
   }
 }
 
+/**
+ * Three lines, not three paragraphs.
+ *
+ * This banner used to run taller than a phone screen: somebody's first visit
+ * meant scrolling past a screen and a half of explanation before reaching a
+ * single number. The argument survives at a third of the length — and a wall of
+ * text making the case for clarity was making the opposite case.
+ */
 const FACTS = [
-  {
-    title: "Your win rate, per pair",
-    body: "Not a general statistic. Yours on GBPUSD against yours on gold, from the trades you recorded.",
-  },
-  {
-    title: "Where your losses cluster",
-    body: "The session, the weekday, the trade straight after a loss. Patterns nobody spots in their own record by reading it.",
-  },
-  {
-    title: "What you actually risk",
-    body: "Risk per trade against your own median, and how often a trade went on with no stop at all.",
-  },
+  "Your win rate per pair — yours on gold against yours on GBPUSD.",
+  "Where your losses cluster: the session, the weekday, the trade after a loss.",
+  "What you actually risk, against your own median rather than a rule of thumb.",
 ];
 
 export default function FirstRun() {
@@ -73,52 +72,53 @@ export default function FirstRun() {
   }
 
   return (
-    <section className="relative mb-4 rounded-xl border border-accent/30 bg-accent-soft p-5 sm:p-6">
+    <section className="relative mb-4 rounded-xl border border-accent/30 bg-accent-soft p-4 pr-11 sm:p-5">
       <button
         type="button"
         onClick={dismiss}
         aria-label="Dismiss"
-        className="absolute right-3 top-3 rounded-md px-2 py-1 text-lg leading-none text-muted transition-colors hover:text-foreground"
+        className="absolute right-2 top-2 rounded-md px-2 py-1 text-lg leading-none text-muted transition-colors hover:text-foreground"
       >
         ×
       </button>
 
-      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent">
-        How this desk works
-      </p>
-
-      <h2 className="mt-2 max-w-2xl text-lg font-semibold tracking-tight text-balance sm:text-xl">
-        Every number here is measured from your own trading.
+      <h2 className="max-w-xl text-base font-semibold tracking-tight text-balance sm:text-lg">
+        These cards stay empty until you record a trade.
       </h2>
 
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-        Not a forecast, not a signal, and not somebody else&rsquo;s backtest.
-        These cards stay empty until you record a trade, because there is
-        nothing true to put in them before then — and a dashboard that fills
-        itself with predictions is showing you guesses dressed as data.
+      <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-muted">
+        Every number here is measured from your own trading — never a forecast,
+        a signal, or somebody else&rsquo;s backtest. Then you get:
       </p>
 
-      <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <ul className="mt-3 flex flex-col gap-1.5">
         {FACTS.map((fact) => (
-          <div key={fact.title} className="border-t border-accent/20 pt-3">
-            <dt className="text-sm font-medium">{fact.title}</dt>
-            <dd className="mt-1 text-[13px] leading-relaxed text-muted">
-              {fact.body}
-            </dd>
-          </div>
+          <li
+            key={fact}
+            className="grid grid-cols-[0.9rem_1fr] gap-2 text-[13px] leading-snug text-muted"
+          >
+            <span aria-hidden="true" className="text-accent">
+              →
+            </span>
+            <span>{fact}</span>
+          </li>
         ))}
-      </dl>
+      </ul>
 
-      <div className="mt-5 flex flex-wrap items-center gap-4">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
         <Link
           href="/dashboard/journal"
-          className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-background transition-[filter] hover:brightness-110"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-[filter] hover:brightness-110"
         >
           Record your first trade
         </Link>
 
         <span className="text-xs text-muted">
-          Takes about a minute. The R-multiple is computed, never typed.
+          Or sync MetaTrader in{" "}
+          <Link href="/dashboard/settings" className="underline hover:text-foreground">
+            Settings
+          </Link>{" "}
+          and it fills itself.
         </span>
       </div>
     </section>

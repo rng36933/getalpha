@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import ConsentGate from "@/components/ConsentGate";
+import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
 import { hasAcceptedCurrentTerms } from "@/lib/legal/acceptance";
 import { CURRENT_LEGAL_VERSION, LEGAL_PAGES } from "@/lib/legal/documents";
@@ -52,9 +53,14 @@ export default async function AppLayout({
   if (userId) await linkReferral(userId);
 
   return (
-    <div className="flex min-h-screen">
+    // A column on a phone, so the top bar can be sticky and the content can run
+    // the full width; a row from `sm` up, where the sidebar returns.
+    <div className="flex min-h-screen flex-col sm:flex-row">
+      <MobileNav />
       <Sidebar />
-      <main className="min-w-0 flex-1 px-5 py-8 sm:px-8 lg:px-10">
+      {/* The bottom padding clears the fixed tab bar. Without it the last card
+          on every page sits underneath the navigation. */}
+      <main className="min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-8 sm:py-8 sm:pb-8 lg:px-10">
         {children}
       </main>
     </div>

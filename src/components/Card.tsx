@@ -18,8 +18,10 @@ export default function Card({
   children,
 }: CardProps) {
   return (
+    // Less inner padding on a phone: 20px of card padding inside 16px of page
+    // padding spent a fifth of a 360-pixel screen on empty margin.
     <section
-      className={`rounded-xl border border-line bg-surface p-5 ${className}`}
+      className={`rounded-xl border border-line bg-surface p-4 sm:p-5 ${className}`}
     >
       <header className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium">{title}</h2>
