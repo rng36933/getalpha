@@ -2,12 +2,15 @@ import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import DayTapeReadout from "@/components/DayTapeReadout";
 import AmbientCandles from "@/components/landing/AmbientCandles";
 import Features from "@/components/landing/Features";
 import Ticker from "@/components/landing/Ticker";
 import VerdictCard from "@/components/landing/VerdictCard";
 import WaitlistForm from "@/components/WaitlistForm";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
+import { fetchCandles } from "@/lib/market-data/candles";
+import { computeDayTape } from "@/lib/market-data/tape";
 import { normaliseReferralCode } from "@/lib/referral/code";
 
 export const metadata: Metadata = {
@@ -49,6 +52,20 @@ export default async function LandingPage({
 
   const { ref } = await searchParams;
   const referralCode = normaliseReferralCode(ref);
+
+  // Both series are cached per symbol@timeframe in the database, the same rows
+  // the dashboard reads, so a visitor costs nothing at the price provider.
+  const [landingDaily, landingIntraday] = await Promise.all([
+    fetchCandles("XAU/USD", "D1"),
+    fetchCandles("XAU/USD", "M15"),
+  ]);
+
+  const landingTape = computeDayTape({
+    symbol: "XAU/USD",
+    label: "XAUUSD",
+    daily: landingDaily.data,
+    intraday: landingIntraday.data,
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,14 +119,78 @@ export default async function LandingPage({
                 expensive kind of luck.
               </p>
 
-              <div className="mt-8 max-w-md">
-                <WaitlistForm referralCode={referralCode} />
+              {/*
+                The front door, open.
+
+                This was a waitlist form and nothing else — on a product that is
+                deployed, takes registrations and charges cards. Somebody who
+                wanted to try it had to notice the small button in the header,
+                and everybody else was invited to give an address and wait for a
+                thing that already exists. A pre-launch page left up after the
+                launch.
+              */}
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href="/register"
+                  className="rounded-lg bg-accent px-6 py-3 text-center font-semibold text-background transition-[filter] hover:brightness-110"
+                >
+                  Start free
+                </Link>
+
+                <p className="text-sm text-muted">
+                  The journal, charts and calendar cost nothing.
+                  <br className="hidden sm:inline" /> No card, no trial clock.
+                </p>
               </div>
+
+              <p className="mt-4 text-xs text-muted">
+                Rather be told when the AI modules change?{" "}
+                <Link
+                  href="#keep-in-touch"
+                  className="text-accent underline-offset-2 hover:underline"
+                >
+                  Leave an address instead
+                </Link>
+                .
+              </p>
             </div>
 
             <VerdictCard />
           </div>
         </section>
+
+        {/* Today's gold, measured, on the public page.
+            Every other figure here is a labelled example — this one is the real
+            session, read live. A page that argues it reports facts rather than
+            forecasts should be willing to show one. */}
+        {/* Only while gold is actually trading.
+            A section headed "Live, right now" showing a flat line and a "market
+            closed" warning is worse than no section: it is the shop window, and
+            every weekend visitor would meet a product that looks asleep. When
+            the market is shut the page simply does not make the claim. */}
+        {landingTape && !landingTape.barelyTraded ? (
+          <section className="border-t border-line py-12 sm:py-16">
+            <div className="mx-auto max-w-5xl px-5 sm:px-8">
+              <Eyebrow>Live, right now</Eyebrow>
+              <h2 className="mt-3.5 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                Gold&rsquo;s session, as the desk reads it.
+              </h2>
+              <p className="mt-3.5 max-w-2xl text-muted">
+                Not a screenshot and not an example. This is the live readout,
+                the same one on the dashboard — every arrow a measurement of a
+                session that has already happened.
+              </p>
+
+              <div className="surface-lit mt-8 rounded-xl border border-line p-4 sm:p-6">
+                <DayTapeReadout
+                  tape={landingTape}
+                  fetchedAt={landingDaily.fetchedAt}
+                  stale={landingDaily.status === "CACHED"}
+                />
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section id="how" className="border-t border-line py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
@@ -199,9 +280,37 @@ export default async function LandingPage({
           </div>
         </section>
 
+        {/* The waitlist, kept but demoted to what it now is: a way to hear about
+            the paid modules without signing up for anything. It is no longer the
+            only door on the page. */}
+        <section
+          id="keep-in-touch"
+          className="border-t border-line py-14 sm:py-20"
+        >
+          <div className="mx-auto max-w-5xl px-5 sm:px-8">
+            <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+              <div>
+                <Eyebrow>Not ready to sign up</Eyebrow>
+                <h2 className="mt-3.5 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                  Then don&rsquo;t. Leave an address instead.
+                </h2>
+                <p className="mt-3.5 max-w-xl text-muted">
+                  One note when the AI modules change in a way worth knowing
+                  about. Not a newsletter, and not a queue — the desk is open,
+                  and you can walk in whenever you like.
+                </p>
+              </div>
+
+              <div className="max-w-md">
+                <WaitlistForm referralCode={referralCode} />
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="border-t border-line py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
-            <div className="rounded-xl border border-line bg-surface p-5 sm:p-7">
+            <div className="surface-lit rounded-xl border border-line p-5 sm:p-7">
               <Eyebrow>What this is not</Eyebrow>
               <p className="mt-3 max-w-3xl text-muted">
                 getALPHA is an educational and informational tool. It is not an
