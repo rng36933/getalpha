@@ -314,9 +314,13 @@ void Send(const string body, const int count)
    char result[];
    string responseHeaders;
 
-   StringToCharArray(body, post, 0, StringLen(body), CP_UTF8);
-   // StringToCharArray appends a terminating zero; sending it would make the
-   // body invalid JSON.
+   // WHOLE_ARRAY, not StringLen(body). Given an explicit count, MQL5 copies
+   // exactly that many characters and appends no terminating zero — so the
+   // resize below removed the last real byte instead, the closing brace, and
+   // every sync was rejected as invalid JSON one character short of correct.
+   StringToCharArray(body, post, 0, WHOLE_ARRAY, CP_UTF8);
+   // The whole-string copy does append a terminating zero, and sending that
+   // byte would itself make the body invalid. This drops exactly that byte.
    ArrayResize(post, ArraySize(post) - 1);
 
    string headers = "Content-Type: application/json\r\n"
