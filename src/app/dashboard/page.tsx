@@ -3,6 +3,7 @@ import Card from "@/components/Card";
 import DataQualityNotice from "@/components/DataQualityNotice";
 import PageHeader from "@/components/PageHeader";
 import PriceChart from "@/components/PriceChart";
+import SessionBriefPanel from "@/components/SessionBriefPanel";
 import { fetchDailyCandles } from "@/lib/market-data/candles";
 import { getWatchlist } from "@/lib/watchlist";
 
@@ -57,7 +58,9 @@ export default async function DashboardPage() {
             </p>
           )}
         </Card>
-        <Card title="Equity Curve" hint="Chart module" height="h-56" />
+        <Card title="AI Session Brief">
+          <SessionBriefPanel />
+        </Card>
         <Card
           title="Account Summary"
           hint="Balance / equity / drawdown"
