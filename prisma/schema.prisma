@@ -255,10 +255,19 @@ model AiUsageLog {
 
   costUsd Decimal @db.Decimal(12, 6)
 
+  /// True while a call is in flight and `costUsd` is the worst case rather
+  /// than what was actually spent.
+  ///
+  /// The row is written before the request, under a lock, so two calls issued
+  /// at the same moment cannot both read the same "spent so far" and both pass
+  /// a limit only one of them fits under.
+  pending Boolean @default(false)
+
   createdAt DateTime @default(now())
 
   @@index([createdAt])
   @@index([userId, createdAt])
+  @@index([pending, createdAt])
 }
 
 model Trade {

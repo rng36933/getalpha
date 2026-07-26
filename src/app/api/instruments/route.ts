@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { InstrumentKind } from "@/generated/prisma/client";
+import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { searchInstruments } from "@/lib/watchlist";
 
 const KINDS: InstrumentKind[] = ["FOREX", "CRYPTO", "COMMODITY"];
@@ -16,6 +17,11 @@ export async function GET(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
+
+  // Every call is a raw ranked SQL query and the UI fires one per keystroke, so
+  // this is the cheapest route to abuse into real database load.
+  const limited = enforceRateLimit(`instruments:${userId}`, LIMITS.search);
+  if (limited) return limited;
 
   const params = new URL(request.url).searchParams;
   const query = params.get("q") ?? "";

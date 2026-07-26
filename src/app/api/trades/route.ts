@@ -4,6 +4,8 @@ import { Prisma, TradeDirection } from "@/generated/prisma/client";
 import type { Trade } from "@/generated/prisma/client";
 import { safeLabel, track } from "@/lib/analytics";
 import { prisma } from "@/lib/prisma";
+import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
+import { requireJsonRequest } from "@/lib/request-guards";
 
 function unauthorized() {
   return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -148,6 +150,12 @@ export async function GET() {
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) return unauthorized();
+
+  const limited = enforceRateLimit(`trades:${userId}`, LIMITS.write);
+  if (limited) return limited;
+
+  const wrongType = requireJsonRequest(request);
+  if (wrongType) return wrongType;
 
   let body: unknown;
 

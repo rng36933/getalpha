@@ -9,9 +9,18 @@ import {
 } from "@/lib/ai/trade-metrics";
 import type { CoachInput } from "@/lib/ai/types";
 import { prisma } from "@/lib/prisma";
+import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
+import { requireJsonRequest } from "@/lib/request-guards";
 
 /** How many prior trades the review is benchmarked against. */
 const HISTORY_WINDOW = 50;
+
+/**
+ * A review at `effort: "xhigh"` takes around 36 seconds in production, and
+ * Vercel's default ceiling is 60. Set explicitly so the margin is a decision
+ * rather than a default nobody looked at.
+ */
+export const maxDuration = 60;
 
 /**
  * POST /api/ai/coach
@@ -28,6 +37,14 @@ export async function POST(request: Request) {
 
   const denied = await requirePaidAccess(userId);
   if (denied) return denied;
+
+  // The daily budget is the ceiling on spend; this is the ceiling on how fast
+  // one account can walk up to it.
+  const limited = enforceRateLimit(`ai:${userId}`, LIMITS.ai);
+  if (limited) return limited;
+
+  const wrongType = requireJsonRequest(request);
+  if (wrongType) return wrongType;
 
   let body: unknown;
 

@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
+import { requireJsonRequest } from "@/lib/request-guards";
 import {
   MAX_WATCHLIST_SIZE,
   addToWatchlist,
@@ -32,6 +34,12 @@ export async function GET() {
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) return unauthorized();
+
+  const limited = enforceRateLimit(`watchlist:${userId}`, LIMITS.write);
+  if (limited) return limited;
+
+  const wrongType = requireJsonRequest(request);
+  if (wrongType) return wrongType;
 
   let body: unknown;
   try {
@@ -86,6 +94,9 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   const { userId } = await auth();
   if (!userId) return unauthorized();
+
+  const limited = enforceRateLimit(`watchlist:${userId}`, LIMITS.write);
+  if (limited) return limited;
 
   const symbol = new URL(request.url).searchParams.get("symbol");
   if (!symbol) {

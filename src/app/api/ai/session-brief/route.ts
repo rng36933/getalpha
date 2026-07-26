@@ -10,7 +10,9 @@ import { aiErrorResponse, badRequest, isRecord } from "@/lib/ai/http";
 import { generateSessionBrief } from "@/lib/ai/session-brief";
 import { track } from "@/lib/analytics";
 import { requirePaidAccess } from "@/lib/billing/guard";
+import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import type { TradingSession } from "@/lib/ai/types";
+import { requireJsonRequest } from "@/lib/request-guards";
 import {
   collectMarketSnapshot,
   isSnapshotEmpty,
@@ -19,6 +21,13 @@ import {
 } from "@/lib/market-data/snapshot";
 
 const SESSIONS: TradingSession[] = ["LONDON", "NEW_YORK", "ASIA"];
+
+/**
+ * Collecting three providers and then generating takes most of a minute on a
+ * cold cache. Vercel's default ceiling is 60s; set explicitly so the margin is
+ * a decision rather than a default nobody looked at.
+ */
+export const maxDuration = 60;
 
 /**
  * POST /api/ai/session-brief
@@ -40,6 +49,12 @@ export async function POST(request: Request) {
   // for free to everyone who arrives second.
   const denied = await requirePaidAccess(userId);
   if (denied) return denied;
+
+  const limited = enforceRateLimit(`ai:${userId}`, LIMITS.ai);
+  if (limited) return limited;
+
+  const wrongType = requireJsonRequest(request);
+  if (wrongType) return wrongType;
 
   let body: unknown;
 

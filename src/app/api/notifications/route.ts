@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireJsonRequest } from "@/lib/request-guards";
 
 function unauthorized() {
   return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -31,6 +32,9 @@ export async function GET() {
 export async function PUT(request: Request) {
   const { userId } = await auth();
   if (!userId) return unauthorized();
+
+  const wrongType = requireJsonRequest(request);
+  if (wrongType) return wrongType;
 
   let body: unknown;
   try {

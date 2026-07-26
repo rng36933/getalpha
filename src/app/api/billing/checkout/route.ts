@@ -7,6 +7,7 @@ import {
   stripe,
 } from "@/lib/billing/stripe";
 import { findOrCreateCustomer } from "@/lib/billing/subscription";
+import { requireJsonRequest } from "@/lib/request-guards";
 
 /**
  * POST /api/billing/checkout
@@ -23,6 +24,9 @@ export async function POST(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
+
+  const wrongType = requireJsonRequest(request);
+  if (wrongType) return wrongType;
 
   let body: unknown;
   try {

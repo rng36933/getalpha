@@ -5,6 +5,17 @@ import { describeError, fetchWithTimeout, type SourceResult } from "./types";
 /** Bars requested per symbol. Six months of trading days fills the chart. */
 const BAR_COUNT = 180;
 
+/**
+ * How long a stored series is served before the provider is asked again.
+ *
+ * Without this, every dashboard load spends one of the eight API credits the
+ * free plan allows per minute — so nine page loads in a minute, which is two
+ * people using the app, starts returning 429 for everyone including the brief.
+ * These are daily bars: the newest one moves intraday, the other 179 are
+ * settled history, and nobody reads a six-month daily chart for a price tick.
+ */
+const FRESH_FOR_MS = 15 * 60 * 1000;
+
 type TwelveDataBar = {
   datetime?: string;
   open?: string;
@@ -53,6 +64,19 @@ export async function fetchDailyCandles(
   symbol: string,
   now: Date = new Date(),
 ): Promise<SourceResult<Candle[]>> {
+  // Served from storage while it is fresh, so page loads do not each cost a
+  // credit. This is the cache, not just the outage fallback — the same rows
+  // serve both purposes and only the age test differs.
+  const stored = await recallSnapshot<Candle[]>("PRICE_SERIES", symbol);
+
+  if (stored && now.getTime() - stored.fetchedAt.getTime() < FRESH_FOR_MS) {
+    return {
+      data: stored.data,
+      status: "LIVE",
+      fetchedAt: stored.fetchedAt.toISOString(),
+    };
+  }
+
   const key = process.env.TWELVE_DATA_API_KEY;
 
   if (!key) {

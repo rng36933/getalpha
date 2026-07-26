@@ -1,6 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { AiFeature } from "@/generated/prisma/client";
-import { assertWithinDailyBudget, recordUsage } from "./budget";
+import { releaseReservation, reserveBudget, settleReservation } from "./budget";
 import { AI_BETAS, AI_MODEL, getAnthropicClient, stableStringify } from "./client";
 import type { AiResult, AiUsage } from "./types";
 
@@ -42,44 +42,62 @@ export async function invokeStructured<T>({
   effort = "medium",
   maxTokens = 8000,
 }: InvokeOptions): Promise<AiResult<T>> {
-  // Checked before the request, not after: a limit enforced afterwards is a
-  // report, not a limit. Also checked before the client is built, because the
-  // budget is a policy decision that does not depend on credentials.
-  await assertWithinDailyBudget(AI_MODEL, maxTokens);
+  // Reserved before the request, not counted after: a limit enforced
+  // afterwards is a report, not a limit. Reserved before the client is built
+  // too, because the budget is a policy decision that does not depend on
+  // credentials.
+  const reservation = await reserveBudget(feature, userId, AI_MODEL, maxTokens);
 
-  const client = getAnthropicClient();
+  let client;
+  try {
+    client = getAnthropicClient();
+  } catch (error) {
+    // Nothing was sent, so nothing was spent.
+    await releaseReservation(reservation.id);
+    throw error;
+  }
 
-  const message = await client.beta.messages.create({
-    model: AI_MODEL,
-    max_tokens: maxTokens,
-    betas: [...AI_BETAS],
-    fallbacks: "default",
-    // The stable system prompt goes first and is cached; volatile data follows
-    // it, so repeated calls only pay full price for the changing part.
-    system: [
-      {
-        type: "text",
-        text: system,
-        cache_control: { type: "ephemeral" },
+  let message: Anthropic.Beta.BetaMessage;
+
+  try {
+    message = await client.beta.messages.create({
+      model: AI_MODEL,
+      max_tokens: maxTokens,
+      betas: [...AI_BETAS],
+      fallbacks: "default",
+      // The stable system prompt goes first and is cached; volatile data
+      // follows it, so repeated calls only pay full price for the changing
+      // part.
+      system: [
+        {
+          type: "text",
+          text: system,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      output_config: {
+        effort,
+        format: { type: "json_schema", schema },
       },
-    ],
-    output_config: {
-      effort,
-      format: { type: "json_schema", schema },
-    },
-    messages: [
-      {
-        role: "user",
-        content: `${instruction}\n\n<data>\n${stableStringify(userPayload)}\n</data>`,
-      },
-    ],
-  });
+      messages: [
+        {
+          role: "user",
+          content: `${instruction}\n\n<data>\n${stableStringify(userPayload)}\n</data>`,
+        },
+      ],
+    });
+  } catch (error) {
+    // A transport or API failure produced no usage to bill. Holding the
+    // reservation would retire budget for a call that never happened.
+    await releaseReservation(reservation.id);
+    throw error;
+  }
 
-  // Record before inspecting the result. A refused or truncated response still
-  // consumed tokens and still costs money, so it must hit the ledger even
-  // though the caller is about to get an error.
+  // Settled before the result is inspected. A refused or truncated response
+  // still consumed tokens and still costs money, so it must reach the ledger
+  // even though the caller is about to get an error.
   const usage = readUsage(message);
-  const costUsd = await recordUsage(feature, userId, usage);
+  const costUsd = await settleReservation(reservation.id, usage);
 
   if (message.stop_reason === "refusal") {
     throw new AiResponseError(

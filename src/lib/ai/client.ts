@@ -1,7 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-/** Model used for every AI feature. */
-export const AI_MODEL = "claude-opus-5";
+/**
+ * Model used for every AI feature.
+ *
+ * Overridable by environment so a deprecated model can be swapped in the
+ * Vercel dashboard instead of in a deploy — providers retire versions on their
+ * own schedule, and the paid features stop working the day one goes. An
+ * unknown model is billed at the most expensive known rate rather than at
+ * zero, so an override cannot quietly blind the spending cap.
+ */
+export const AI_MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-5";
 
 /**
  * Server-side fallback: if Claude's safety classifiers decline a request,
