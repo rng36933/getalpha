@@ -177,11 +177,66 @@ function Stat({
 }) {
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
-      <p className={`mt-0.5 text-xl font-semibold tabular-nums ${tone}`}>
-        {value}
+      <p className="eyebrow">{label}</p>
+      <p className={`figure mt-1.5 text-[1.5rem] ${tone}`}>{value}</p>
+      {hint ? <p className="mt-1 text-[11px] text-muted">{hint}</p> : null}
+    </div>
+  );
+}
+
+/**
+ * A win rate given a shape as well as a number.
+ *
+ * A bar rather than a ring or a gauge: the quantity is a proportion of one whole
+ * thing, and a straight line is the one form where "a bit over half" is legible
+ * without reading the figure. The 50% mark is drawn because that is the number
+ * this one gets compared against, and a rate with no reference is a number
+ * floating on its own.
+ */
+function WinRateMeter({ percent }: { percent: number }) {
+  return (
+    <div className="mt-2">
+      <div className="relative h-1.5 overflow-hidden rounded-full bg-surface-raised">
+        <span
+          className={`absolute inset-y-0 left-0 rounded-full ${
+            percent >= 50 ? "bg-positive/80" : "bg-negative/80"
+          }`}
+          style={{ width: `${Math.min(Math.max(percent, 0), 100)}%` }}
+        />
+        <span className="absolute inset-y-0 left-1/2 w-px bg-line" />
+      </div>
+      <p className="mt-1 text-[11px] text-muted">
+        {percent >= 50 ? "above" : "below"} an even split
       </p>
-      {hint ? <p className="text-[11px] text-muted">{hint}</p> : null}
+    </div>
+  );
+}
+
+/**
+ * Gross win R against gross loss R, drawn as the two sides of the same bar.
+ *
+ * The profit factor is a ratio, and a ratio is the one thing a single bar cannot
+ * show. Two segments of one bar can: how much of the total R moved was won and
+ * how much was lost.
+ */
+function ProfitFactorBar({ factor }: { factor: number }) {
+  // factor = win / loss, so the won share of the whole is factor / (factor + 1).
+  const wonShare = (factor / (factor + 1)) * 100;
+
+  return (
+    <div className="mt-2">
+      <div className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
+        <span
+          className="rounded-l-full bg-positive/80"
+          style={{ width: `${wonShare}%` }}
+        />
+        <span className="flex-1 rounded-r-full bg-negative/80" />
+      </div>
+      <p className="mt-1 text-[11px] text-muted">
+        {factor >= 1
+          ? `${factor.toFixed(2)}R won per 1R lost`
+          : `only ${factor.toFixed(2)}R won per 1R lost`}
+      </p>
     </div>
   );
 }
@@ -203,37 +258,59 @@ export function PerformanceStats({ performance }: { performance: Performance }) 
           label="Closed"
           value={String(performance.closedCount)}
         />
-        <Stat
-          label="Win rate"
-          value={
-            performance.winRatePercent === null
-              ? "—"
-              : `${performance.winRatePercent}%`
-          }
-        />
+        <div>
+          <Stat
+            label="Win rate"
+            value={
+              performance.winRatePercent === null
+                ? "—"
+                : `${performance.winRatePercent}%`
+            }
+          />
+          {performance.winRatePercent !== null ? (
+            <WinRateMeter percent={performance.winRatePercent} />
+          ) : null}
+        </div>
         <Stat
           label="Total R"
           value={formatR(performance.totalR)}
           tone={rTone(performance.totalR)}
         />
-        <Stat
-          label="Expectancy"
-          value={formatR(performance.expectancyR)}
-          tone={rTone(performance.expectancyR)}
-          hint="per trade"
-        />
+        <div>
+          <Stat
+            label="Profit factor"
+            value={
+              performance.profitFactor === null
+                ? "—"
+                : performance.profitFactor.toFixed(2)
+            }
+            tone={
+              performance.profitFactor === null
+                ? ""
+                : performance.profitFactor >= 1
+                  ? "text-positive"
+                  : "text-negative"
+            }
+          />
+          {performance.profitFactor === null ? (
+            // Deliberately not infinity: no losses yet is a fact about the
+            // sample, not about an edge.
+            <p className="mt-1 text-[11px] text-muted">no losing trade yet</p>
+          ) : (
+            <ProfitFactorBar factor={performance.profitFactor} />
+          )}
+        </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-3 text-xs text-muted">
+      <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-line pt-3 text-xs text-muted">
         <span>
-          Profit factor{" "}
-          <span className="font-mono tabular-nums text-foreground">
-            {/* Deliberately not shown as infinity: no losses yet is a fact
-                about the sample, not about an edge. */}
-            {performance.profitFactor === null
-              ? "not yet — no losing trade"
-              : performance.profitFactor.toFixed(2)}
-          </span>
+          Expectancy{" "}
+          <span
+            className={`font-mono tabular-nums ${rTone(performance.expectancyR)}`}
+          >
+            {formatR(performance.expectancyR)}
+          </span>{" "}
+          per trade
         </span>
 
         {performance.withoutStop > 0 ? (

@@ -53,6 +53,39 @@ type ReviewState =
   | { status: "ready"; review: CoachReview }
   | { status: "error"; message: string; upgrade?: boolean };
 
+/**
+ * The realised R as a bar as well as a number.
+ *
+ * Read from the centre and scaled against the biggest result on the page, so a
+ * −0.4R and a +3R stop looking alike at a glance. Every row still carries its
+ * own figure, which is what keeps the bar honest for anyone who cannot separate
+ * the two hues.
+ */
+function RBar({ r, scale }: { r: number | null; scale: number }) {
+  if (r === null || scale <= 0) return null;
+
+  const width = (Math.abs(r) / scale) * 50;
+
+  return (
+    <span
+      aria-hidden="true"
+      className="relative hidden h-1.5 w-16 shrink-0 sm:block"
+    >
+      <span className="absolute left-1/2 top-0 h-full w-px bg-line" />
+      <span
+        className={`absolute top-0 h-full rounded-sm ${
+          r > 0 ? "bg-positive/70" : "bg-negative/70"
+        }`}
+        style={
+          r > 0
+            ? { left: "50%", width: `${width}%` }
+            : { right: "50%", width: `${width}%` }
+        }
+      />
+    </span>
+  );
+}
+
 export default function TradeList({ trades }: { trades: TradeRow[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [notesId, setNotesId] = useState<string | null>(null);
@@ -65,6 +98,13 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
 
   const rows = trades.map((trade) =>
     edits[trade.id] ? { ...trade, ...edits[trade.id] } : trade,
+  );
+
+  // One scale for every bar on the page, so the lengths are comparable to each
+  // other rather than each row being drawn against itself.
+  const rScale = Math.max(
+    ...rows.map((row) => Math.abs(row.metrics.realizedR ?? 0)),
+    0,
   );
 
   function stateOf(id: string): ReviewState {
@@ -226,12 +266,17 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
                   <td className="py-3 pr-3 text-xs text-muted">
                     {EXIT_LABEL[trade.metrics.exitClassification]}
                   </td>
-                  <td
-                    className={`py-3 pr-3 text-right font-mono ${toneFor(
-                      trade.metrics.realizedR,
-                    )}`}
-                  >
-                    {formatR(trade.metrics.realizedR)}
+                  <td className="py-3 pr-3">
+                    <span className="flex items-center justify-end gap-2.5">
+                      <RBar r={trade.metrics.realizedR} scale={rScale} />
+                      <span
+                        className={`w-16 text-right font-mono tabular-nums ${toneFor(
+                          trade.metrics.realizedR,
+                        )}`}
+                      >
+                        {formatR(trade.metrics.realizedR)}
+                      </span>
+                    </span>
                   </td>
                   <td className="py-3 pr-3 text-right">
                     <button
