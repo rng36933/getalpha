@@ -1,36 +1,65 @@
 import Card from "@/components/Card";
+import DataQualityNotice from "@/components/DataQualityNotice";
+import { CotList, ReadingList } from "@/components/MacroReadings";
 import PageHeader from "@/components/PageHeader";
+import { fetchCotPositioning } from "@/lib/market-data/cot";
+import {
+  INFLATION_SERIES,
+  POLICY_SERIES,
+  YIELD_SERIES,
+  fetchMacroSeries,
+  readingsFor,
+} from "@/lib/market-data/fred";
 
 export const metadata = {
   title: "Macro Desk",
 };
 
 /**
- * Rate expectations used to have a card here and no longer does.
+ * Built entirely on sources that cost nothing: FRED for yields, the dollar,
+ * inflation and policy rates, and the CFTC's own feed for positioning.
  *
- * Everything else on this page can be built from official sources that cost
- * nothing — FRED for yields, CPI and PCE, the CFTC's own feed for positioning,
- * and central bank meeting dates which are published a year ahead. Implied
- * policy odds are the exception: they come from Fed funds futures, and futures
- * data is a monthly subscription with a separate exchange licence on top —
- * showing it to paying subscribers is redistribution, not personal use.
- *
- * Removed rather than left as a placeholder promising something that is not
- * coming soon. If it is ever worth the licence, it comes back.
+ * What is deliberately absent is implied policy odds. Those come from Fed funds
+ * futures, and futures data is a monthly subscription with a separate exchange
+ * licence on top — showing it to paying subscribers is redistribution, not
+ * personal use. A card promising it is not coming would be worse than no card.
  */
-export default function MacroDeskPage() {
+export default async function MacroDeskPage() {
+  const [macro, cot] = await Promise.all([
+    fetchMacroSeries(),
+    fetchCotPositioning(),
+  ]);
+
   return (
     <>
       <PageHeader
         title="Macro Desk"
-        subtitle="Inflation prints, cross-asset context and positioning."
+        subtitle="Rates, the dollar, inflation and positioning — the context a session sits in."
+      />
+
+      <DataQualityNotice
+        sources={[
+          { label: "Macro series", result: macro },
+          { label: "Positioning", result: cot },
+        ]}
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card title="DXY / Yields" hint="Cross-asset module" height="h-56" />
-        <Card title="Inflation Prints" hint="CPI / PCE table" />
-        <Card title="Central Bank Watch" hint="Meeting tracker" />
-        <Card title="Commitment of Traders" hint="COT positioning" />
+        <Card title="Yields and the dollar">
+          <ReadingList readings={readingsFor(macro.data, YIELD_SERIES)} />
+        </Card>
+
+        <Card title="Inflation">
+          <ReadingList readings={readingsFor(macro.data, INFLATION_SERIES)} />
+        </Card>
+
+        <Card title="Policy rates">
+          <ReadingList readings={readingsFor(macro.data, POLICY_SERIES)} />
+        </Card>
+
+        <Card title="Positioning" className="md:col-span-2 xl:col-span-3">
+          <CotList rows={cot.data} />
+        </Card>
       </div>
     </>
   );

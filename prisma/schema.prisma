@@ -298,6 +298,10 @@ enum MarketDataKind {
   TECHNICAL_LEVELS
   NEWS_HEADLINES
   PRICE_SERIES
+  /// Yields, the dollar index, inflation and policy rates, from FRED.
+  MACRO_SERIES
+  /// Weekly futures positioning, from the CFTC's own feed.
+  COT_POSITIONING
 }
 
 /// Last-known-good market data, written on every successful provider fetch.
