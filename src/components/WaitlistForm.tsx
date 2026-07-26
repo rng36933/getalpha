@@ -61,12 +61,12 @@ export default function WaitlistForm({ referralCode }: WaitlistFormProps) {
           placeholder="you@example.com"
           aria-label="Email address"
           disabled={state === "sending"}
-          className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm outline-none placeholder:text-muted focus:border-accent"
+          className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-4 py-2.5 text-[15px] outline-none placeholder:text-muted focus:border-accent"
         />
         <button
           type="submit"
           disabled={state === "sending"}
-          className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
+          className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-background transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted disabled:hover:brightness-100"
         >
           {state === "sending" ? "Joining…" : "Join the waitlist"}
         </button>
