@@ -85,7 +85,13 @@ export default clerkMiddleware(async (auth, request) => {
 export const config = {
   matcher: [
     // Everything except Next internals and static files.
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    //
+    // `mq5` is in the list deliberately. It is the MetaTrader program, and it
+    // holds no secret — the connection token is pasted in by whoever installs
+    // it. Leaving it out meant Clerk protected it and the download answered 404
+    // to anyone not signed in, which is a confusing way to serve a file whose
+    // whole purpose is being readable before you trust it.
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|mq5|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // API routes are matched explicitly so they are never skipped.
     "/(api|trpc)(.*)",
   ],
