@@ -1,6 +1,10 @@
 import type { Trade } from "@/generated/prisma/client";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
 import { buildRCurve, type RCurve } from "./r-curve";
+import {
+  buildRDistribution,
+  type RDistribution,
+} from "./r-distribution";
 
 /**
  * Everything the dashboard cards show, computed from the journal.
@@ -63,6 +67,8 @@ export type DashboardSummary = {
   performance: Performance;
   /** Null until there are two scored trades to draw a line through. */
   rCurve: RCurve | null;
+  /** Null until at least one trade has an R. */
+  rDistribution: RDistribution | null;
 };
 
 function round(value: number, decimals: number): number {
@@ -168,5 +174,14 @@ export function summariseTrades(trades: Trade[]): DashboardSummary {
     })),
   );
 
-  return { openPositions, recentTrades, exposure, performance, rCurve };
+  const rDistribution = buildRDistribution(scored);
+
+  return {
+    openPositions,
+    recentTrades,
+    exposure,
+    performance,
+    rCurve,
+    rDistribution,
+  };
 }

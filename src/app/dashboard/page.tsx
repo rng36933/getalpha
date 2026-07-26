@@ -8,6 +8,7 @@ import Mt5Prompt from "@/components/Mt5Prompt";
 import PageHeader from "@/components/PageHeader";
 import PairNews from "@/components/PairNews";
 import RCurve from "@/components/RCurve";
+import RDistribution from "@/components/RDistribution";
 import SessionBriefPanel from "@/components/SessionBriefPanel";
 import WatchlistManager from "@/components/WatchlistManager";
 import {
@@ -46,6 +47,7 @@ const EMPTY_SUMMARY: DashboardSummary = {
     withoutStop: 0,
   },
   rCurve: null,
+  rDistribution: null,
 };
 
 /**
@@ -351,6 +353,15 @@ export default async function DashboardPage({
             className="md:col-span-2 xl:col-span-3"
           >
             <RCurve curve={summary.rCurve} />
+          </Card>
+        ) : null}
+
+        {summary.rDistribution ? (
+          <Card
+            title="Where the results land"
+            className="md:col-span-2 xl:col-span-3"
+          >
+            <RDistribution data={summary.rDistribution} />
           </Card>
         ) : null}
 
