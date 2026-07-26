@@ -67,8 +67,14 @@ their sessions are not meant for real users.
    (it offers to clone the dev instance's settings — take that).
 2. Clerk shows a list of **DNS records** to add for `getalpha.org`
    (`clerk`, `accounts`, `clkmail`, plus two `clk._domainkey` CNAMEs).
-   Add them where the domain's DNS lives, then press *Verify* in Clerk.
-   Propagation is usually minutes, occasionally hours.
+
+   **The DNS for this domain is hosted by Vercel** — checked 2026-07-26, the
+   nameservers are `ns1.vercel-dns.com` / `ns2.vercel-dns.com`. So the records
+   go in the Vercel dashboard (Domains → `getalpha.org` → DNS), not at the
+   registrar. None of the Clerk records exist yet.
+
+   Then press *Verify* in Clerk. Propagation is usually minutes, occasionally
+   hours.
 3. **OAuth credentials.** Production Google/GitHub sign-in needs your own
    OAuth app; Clerk's shared dev credentials do not work in production.
    Skip only if email-and-password is the only method offered.
