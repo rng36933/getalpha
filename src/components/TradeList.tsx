@@ -47,6 +47,21 @@ function toneFor(value: number | null): string {
   return "text-muted";
 }
 
+type Outcome = "ALL" | "WINS" | "LOSSES" | "OPEN" | "NO_STOP";
+
+const OUTCOMES: { value: Outcome; label: string }[] = [
+  { value: "ALL", label: "All" },
+  { value: "WINS", label: "Wins" },
+  { value: "LOSSES", label: "Losses" },
+  { value: "OPEN", label: "Open" },
+  // Not a result but the thing most worth being able to isolate: trades taken
+  // with no defined risk are invisible to every R figure in the app.
+  { value: "NO_STOP", label: "No stop" },
+];
+
+const selectClass =
+  "rounded-lg border border-line bg-surface-raised px-2.5 py-1.5 text-xs text-foreground outline-none focus:border-accent";
+
 type ReviewState =
   | { status: "idle" }
   | { status: "loading" }
@@ -96,9 +111,41 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
   // appear when the page refreshes itself.
   const [edits, setEdits] = useState<Record<string, Notes>>({});
 
-  const rows = trades.map((trade) =>
+  // Filtering is client-side on purpose. The page already has every row it is
+  // going to show, so a round trip per filter would spend a request to hide
+  // rows the browser is holding.
+  const [asset, setAsset] = useState("ALL");
+  const [setup, setSetup] = useState("ALL");
+  const [outcome, setOutcome] = useState<Outcome>("ALL");
+
+  const withEdits = trades.map((trade) =>
     edits[trade.id] ? { ...trade, ...edits[trade.id] } : trade,
   );
+
+  // Filter options come from what is actually in the journal, so nobody is
+  // offered a pair or a setup that would return nothing.
+  const assets = [...new Set(withEdits.map((row) => row.asset))].sort();
+  const setups = [
+    ...new Set(
+      withEdits
+        .map((row) => row.setup)
+        .filter((setup): setup is string => setup !== null && setup !== ""),
+    ),
+  ].sort();
+
+  const rows = withEdits.filter((row) => {
+    if (asset !== "ALL" && row.asset !== asset) return false;
+    if (setup !== "ALL" && row.setup !== setup) return false;
+    if (outcome === "WINS" && !((row.metrics.realizedR ?? 0) > 0)) return false;
+    if (outcome === "LOSSES" && !((row.metrics.realizedR ?? 0) < 0)) return false;
+    if (outcome === "OPEN" && row.metrics.exitClassification !== "STILL_OPEN") {
+      return false;
+    }
+    if (outcome === "NO_STOP" && row.metrics.flags.stopWasSet) return false;
+    return true;
+  });
+
+  const filtered = rows.length !== withEdits.length;
 
   // One scale for every bar on the page, so the lengths are comparable to each
   // other rather than each row being drawn against itself.
@@ -175,7 +222,10 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
     }
   }
 
-  if (rows.length === 0) {
+  // The whole journal, not the filtered view. "No trades yet" is a different
+  // statement from "nothing matches those filters", and showing the first when
+  // the second is true tells somebody their records are gone.
+  if (withEdits.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted">
         No trades yet. Log one above and the R-multiple appears here.
@@ -184,7 +234,95 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      {/* Filters in one row above the table, as a toolbar rather than scattered
+          controls. Only offered when there is more than one thing to choose
+          between — a select with a single option is furniture. */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div
+          role="group"
+          aria-label="Filter by outcome"
+          className="flex flex-wrap gap-1"
+        >
+          {OUTCOMES.map((option) => {
+            const active = outcome === option.value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setOutcome(option.value)}
+                aria-pressed={active}
+                className={`rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${
+                  active
+                    ? "border-accent bg-accent-soft text-accent"
+                    : "border-line text-muted hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {assets.length > 1 ? (
+          <select
+            value={asset}
+            onChange={(event) => setAsset(event.target.value)}
+            aria-label="Filter by instrument"
+            className={selectClass}
+          >
+            <option value="ALL">Every instrument</option>
+            {assets.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : null}
+
+        {setups.length > 1 ? (
+          <select
+            value={setup}
+            onChange={(event) => setSetup(event.target.value)}
+            aria-label="Filter by setup"
+            className={selectClass}
+          >
+            <option value="ALL">Every setup</option>
+            {setups.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : null}
+
+        {filtered ? (
+          <span className="text-xs text-muted">
+            {rows.length} of {withEdits.length}
+          </span>
+        ) : null}
+      </div>
+
+      {rows.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted">
+          No trades match those filters.{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setAsset("ALL");
+              setSetup("ALL");
+              setOutcome("ALL");
+            }}
+            className="text-accent hover:underline"
+          >
+            Clear them
+          </button>
+          .
+        </p>
+      ) : null}
+
+      <div className={`overflow-x-auto ${rows.length === 0 ? "hidden" : ""}`}>
       <table className="w-full min-w-[900px] text-sm">
         <thead>
           <tr className="border-b border-line text-[11px] uppercase tracking-wider text-muted">
@@ -379,6 +517,7 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
