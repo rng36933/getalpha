@@ -10,6 +10,7 @@ import {
   isActive,
   type NavItem,
 } from "@/components/nav-items";
+import PlanBadge from "@/components/PlanBadge";
 
 /**
  * Navigation for a phone: a slim bar at the top for identity, and a thumb-reach
@@ -64,7 +65,7 @@ function Tab({
   );
 }
 
-export default function MobileNav() {
+export default function MobileNav({ pro }: Readonly<{ pro: boolean }>) {
   const pathname = usePathname();
 
   /**
@@ -97,11 +98,19 @@ export default function MobileNav() {
           </span>
         </Link>
 
-        <UserButton
-          appearance={{
-            elements: { userButtonAvatarBox: "width: 1.85rem; height: 1.85rem" },
-          }}
-        />
+        {/* The badge and not the name: a phone header has room for one of them,
+            and which plan you are on is the part you cannot get from the
+            avatar. Tapping through to Clerk's menu still shows the name. */}
+        <div className="flex items-center gap-2">
+          <PlanBadge pro={pro} />
+          <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: "width: 1.85rem; height: 1.85rem",
+              },
+            }}
+          />
+        </div>
       </header>
 
       {more ? (

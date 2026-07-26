@@ -4,6 +4,7 @@ import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActive } from "@/components/nav-items";
+import PlanBadge from "@/components/PlanBadge";
 
 /**
  * The desktop rail. Hidden below `sm`, where `MobileNav` takes over.
@@ -12,7 +13,10 @@ import { NAV_ITEMS, isActive } from "@/components/nav-items";
  * which spent a sixth of the screen on navigation nobody could read. A rail
  * that cannot show its labels is not a narrow sidebar; it is a worse one.
  */
-export default function Sidebar() {
+export default function Sidebar({
+  name,
+  pro,
+}: Readonly<{ name: string; pro: boolean }>) {
   const pathname = usePathname();
 
   return (
@@ -65,7 +69,10 @@ export default function Sidebar() {
             elements: { userButtonAvatarBox: "width: 2rem; height: 2rem" },
           }}
         />
-        <span className="truncate text-xs text-muted">Account</span>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="truncate text-xs text-muted">{name}</span>
+          <PlanBadge pro={pro} />
+        </div>
       </div>
     </aside>
   );

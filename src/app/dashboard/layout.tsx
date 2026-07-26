@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import ConsentGate from "@/components/ConsentGate";
 import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
+import { checkAccess } from "@/lib/billing/subscription";
 import { hasAcceptedCurrentTerms } from "@/lib/legal/acceptance";
 import { CURRENT_LEGAL_VERSION, LEGAL_PAGES } from "@/lib/legal/documents";
 import { ensureReferralLinked } from "@/lib/referral/program";
@@ -52,12 +53,26 @@ export default async function AppLayout({
   // an account anyone should be credited for inviting.
   if (userId) await linkReferral(userId);
 
+  // The plan is read here rather than in each nav component so the two nav
+  // surfaces cannot disagree about it, the same reason they share NAV_ITEMS.
+  // `checkAccess` is the single definition of entitlement — a comped account
+  // and an unexpired referral week both read as Pro, because both are.
+  const [access, user] = await Promise.all([
+    userId ? checkAccess(userId) : Promise.resolve({ allowed: false } as const),
+    currentUser(),
+  ]);
+
+  const name =
+    user?.fullName ??
+    user?.primaryEmailAddress?.emailAddress ??
+    "Account";
+
   return (
     // A column on a phone, so the top bar can be sticky and the content can run
     // the full width; a row from `sm` up, where the sidebar returns.
     <div className="flex min-h-screen flex-col sm:flex-row">
-      <MobileNav />
-      <Sidebar />
+      <MobileNav pro={access.allowed} />
+      <Sidebar name={name} pro={access.allowed} />
       {/* The bottom padding clears the fixed tab bar. Without it the last card
           on every page sits underneath the navigation. */}
       <main className="min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-8 sm:py-8 sm:pb-8 lg:px-10">
