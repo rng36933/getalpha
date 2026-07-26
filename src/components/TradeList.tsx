@@ -228,7 +228,8 @@ export default function TradeList({ trades }: { trades: TradeRow[] }) {
   if (withEdits.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted">
-        No trades yet. Log one above and the R-multiple appears here.
+        No trades yet. Connect MetaTrader from the dashboard and ninety days of
+        history arrives on the first sync.
       </p>
     );
   }

@@ -1,7 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
-import TradeForm from "@/components/TradeForm";
 import TradeList, { type TradeRow } from "@/components/TradeList";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
 import { prisma } from "@/lib/prisma";
@@ -69,14 +68,10 @@ export default async function JournalPage() {
     <>
       <PageHeader
         title="Journal"
-        subtitle="Record the trade and the reasoning. The R-multiple is computed, never typed."
+        subtitle="Every closed trade, straight from your terminal. The R-multiple is computed, never typed."
       />
 
       <div className="space-y-4">
-        <Card title="Log a trade">
-          <TradeForm />
-        </Card>
-
         {closed.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Card title="Closed trades">
