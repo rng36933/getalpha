@@ -17,6 +17,9 @@ const isPublicRoute = createRouteMatcher([
   // Stripe has no Clerk session. The webhook authenticates itself with a
   // signature over the raw body instead.
   "/api/billing/webhook",
+  // Nor does Vercel's scheduler. That route checks CRON_SECRET itself and
+  // refuses everything when the secret is unset.
+  "/api/cron/(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

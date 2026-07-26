@@ -80,6 +80,43 @@ model WatchlistItem {
   @@index([userId, sortOrder])
 }
 
+/// Who wants email, and which kind.
+///
+/// Opt-in, never opt-out: a row exists only once a user has asked for
+/// something. No row means no email, which is the right default for a product
+/// that holds an address it was given for authentication, not for marketing.
+///
+/// The address itself is not stored — Clerk owns it, and a copy here would go
+/// stale the first time somebody changes it.
+model EmailPreference {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  /// The morning Session Brief, sent before the London open.
+  dailyBrief Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dailyBrief])
+}
+
+/// One row per day the morning email went out.
+///
+/// The send is idempotent on this: Vercel's scheduler offers no exactly-once
+/// guarantee and a Hobby cron fires with up to an hour of jitter, so the job
+/// must be safe to run twice. The unique date is what makes it safe.
+model DailyBriefEmail {
+  /// YYYY-MM-DD in Europe/London — the day the recipient experienced, not UTC.
+  briefDate String @id
+
+  sentAt         DateTime @default(now())
+  recipientCount Int      @default(0)
+  failureCount   Int      @default(0)
+
+  @@index([sentAt])
+}
+
 /// Mirrors Stripe's subscription statuses, narrowed to the ones that change
 /// what a user can do. Stripe's `unpaid` and `paused` both land on PAST_DUE.
 enum SubscriptionStatus {
