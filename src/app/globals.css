@@ -48,6 +48,27 @@
   --color-warning: var(--warning);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* The masthead face. Public page only — see the note in layout.tsx. */
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+}
+
+/*
+ * Display type, for the public page's argument.
+ *
+ * A serif at size on a blue-black ground rather than the warm-paper treatment
+ * the direction started as: a cream landing page handing off to a dark
+ * application at /register is a visible seam at the exact moment somebody
+ * decides to sign up. This takes the editorial voice and leaves the ground
+ * alone.
+ *
+ * Negative tracking because this face sets loose by default at display sizes,
+ * and normal line-height would leave a two-line headline floating apart.
+ */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.02;
 }
 
 body {

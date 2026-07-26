@@ -91,7 +91,11 @@ export default async function LandingPage({
       </header>
 
       <main>
-        <section className="relative py-12 sm:py-20">
+        {/* `overflow-hidden` is load-bearing, not tidiness. The glow below is
+            130vw wide and centred, so on a 375px phone it reached 56px past the
+            right edge and gave the whole page a horizontal scroll — a
+            decoration making the site slide sideways under the thumb. */}
+        <section className="relative overflow-hidden py-12 sm:py-20">
           <AmbientCandles />
 
           {/* The glow sits above the candles and below the content. */}
@@ -104,7 +108,7 @@ export default async function LandingPage({
             <div>
               <Eyebrow>Trading journal · Session brief · Process review</Eyebrow>
 
-              <h1 className="mt-3.5 text-[2.375rem] font-semibold leading-[1.02] tracking-[-0.035em] text-balance sm:text-5xl lg:text-6xl">
+              <h1 className="display mt-4 text-[2.75rem] text-balance sm:text-[3.75rem] lg:text-[4.5rem]">
                 Your best trade this month was{" "}
                 <span className="text-muted line-through decoration-negative decoration-2">
                   a good trade
@@ -172,7 +176,7 @@ export default async function LandingPage({
           <section className="border-t border-line py-12 sm:py-16">
             <div className="mx-auto max-w-5xl px-5 sm:px-8">
               <Eyebrow>Live, right now</Eyebrow>
-              <h2 className="mt-3.5 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+              <h2 className="display mt-4 text-[1.9rem] text-balance sm:text-[2.5rem]">
                 Gold&rsquo;s session, as the desk reads it.
               </h2>
               <p className="mt-3.5 max-w-2xl text-muted">
@@ -195,7 +199,7 @@ export default async function LandingPage({
         <section id="how" className="border-t border-line py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
             <Eyebrow>What you get</Eyebrow>
-            <h2 className="mt-3.5 text-2xl font-semibold tracking-tight text-balance sm:text-4xl">
+            <h2 className="display mt-4 text-[1.9rem] text-balance sm:text-[2.9rem]">
               Three things, and none of them tell you what to buy.
             </h2>
             <p className="mt-3.5 max-w-2xl text-muted">
@@ -212,7 +216,7 @@ export default async function LandingPage({
         <section className="border-t border-line py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
             <Eyebrow>Plans</Eyebrow>
-            <h2 className="mt-3.5 text-2xl font-semibold tracking-tight text-balance sm:text-4xl">
+            <h2 className="display mt-4 text-[1.9rem] text-balance sm:text-[2.9rem]">
               The journal is free. The judgement is not.
             </h2>
             <p className="mt-3.5 max-w-2xl text-muted">
@@ -291,7 +295,7 @@ export default async function LandingPage({
             <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
               <div>
                 <Eyebrow>Not ready to sign up</Eyebrow>
-                <h2 className="mt-3.5 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                <h2 className="display mt-4 text-[1.9rem] text-balance sm:text-[2.5rem]">
                   Then don&rsquo;t. Leave an address instead.
                 </h2>
                 <p className="mt-3.5 max-w-xl text-muted">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 import "./globals.css";
 
@@ -12,6 +12,25 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+/**
+ * The display face, used on the public page and nowhere else.
+ *
+ * The landing page argues a case and the application reports measurements, and
+ * those are different jobs for type: a masthead serif gives the argument a voice
+ * no competitor dashboard has, while inside the app the same face would fight
+ * the instrument-panel reading the numbers depend on.
+ *
+ * Loaded through `next/font`, which self-hosts it at build time — a font fetched
+ * from a CDN at runtime is a request that can fail and leave the page in a
+ * silent fallback nobody chose.
+ */
+const displaySerif = Instrument_Serif({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
 });
 
 /**
@@ -64,7 +83,7 @@ export default function RootLayout({
     <ClerkProvider appearance={clerkAppearance}>
       <html
         lang="en"
-        className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`dark ${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
       >
         <body className="min-h-full bg-background text-foreground">
           {children}
