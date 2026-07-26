@@ -54,9 +54,11 @@ function RangeBar({ tape }: { tape: DayTape }) {
           style={{ left: `${tape.rangePosition}%` }}
         />
       </div>
-      <div className="mt-1.5 flex justify-between font-mono text-[11px] text-muted">
+      <div className="mt-1.5 flex justify-between font-mono text-[11px] tabular-nums text-muted">
         <span>{tape.dayLow}</span>
-        <span className="text-foreground">{tape.lastPrice}</span>
+        <span className="text-foreground">
+          {tape.rangePosition}% of range
+        </span>
         <span>{tape.dayHigh}</span>
       </div>
     </div>
@@ -105,29 +107,32 @@ export default function DayTapeReadout({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div
-          className={`grid size-14 shrink-0 place-items-center rounded-xl ${tone.bg}`}
-        >
-          <Arrow direction={tape.direction} className="size-7" />
+      {/* The measurement is the largest thing on the card, because it is the
+          thing being read. It used to be set at 24px beside a 56px icon, which
+          gave the decoration more weight than the number. */}
+      <div>
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
+          <span className="figure text-[2.75rem] sm:text-[3.5rem]">
+            {tape.lastPrice}
+          </span>
+
+          <span
+            className={`mb-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold tabular-nums ${tone.bg} ${tone.text}`}
+          >
+            <Arrow direction={tape.direction} className="size-3" />
+            {tape.changeAbsolute > 0 ? "+" : ""}
+            {tape.changeAbsolute}
+            <span className="font-normal opacity-70">
+              {tape.changePercent > 0 ? "+" : ""}
+              {tape.changePercent}%
+            </span>
+          </span>
         </div>
 
-        <div className="min-w-0">
-          <p className="flex flex-wrap items-baseline gap-x-2">
-            <span className="font-mono text-2xl font-semibold tracking-tight">
-              {tape.lastPrice}
-            </span>
-            <span className={`font-mono text-sm ${tone.text}`}>
-              {tape.changeAbsolute > 0 ? "+" : ""}
-              {tape.changeAbsolute} ({tape.changePercent > 0 ? "+" : ""}
-              {tape.changePercent}%)
-            </span>
-          </p>
-          <p className="mt-0.5 text-sm text-muted">
-            <span className={tone.text}>{tone.word}</span> on the session, from
-            an open of {tape.dayOpen}.
-          </p>
-        </div>
+        <p className="mt-2 text-sm text-muted">
+          <span className={tone.text}>{tone.word}</span> on the session, from an
+          open of <span className="tnum text-foreground">{tape.dayOpen}</span>.
+        </p>
       </div>
 
       <RangeBar tape={tape} />

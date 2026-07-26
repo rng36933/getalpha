@@ -31,11 +31,11 @@ function Stat({
 }) {
   return (
     <div className="rounded-lg border border-line bg-surface-raised px-3 py-2.5">
-      <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
-      <p className={`mt-1 text-lg font-semibold tracking-tight ${tone}`}>
-        {value}
-      </p>
-      {note ? <p className="mt-0.5 text-[11px] text-muted">{note}</p> : null}
+      <p className="eyebrow">{label}</p>
+      <p className={`figure mt-1.5 text-[1.4rem] ${tone}`}>{value}</p>
+      {note ? (
+        <p className="mt-1 text-[11px] leading-snug text-muted">{note}</p>
+      ) : null}
     </div>
   );
 }

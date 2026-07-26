@@ -16,6 +16,22 @@ export const metadata = {
 };
 
 /**
+ * Never prerendered.
+ *
+ * This is the only page in the dashboard that does not call `auth()`, and
+ * `auth()` is what marks the others dynamic by throwing a control-flow error
+ * during static generation. Without it, Next tried to render this page at build
+ * time, every `no-store` fetch to FRED threw `DynamicServerError`, and the
+ * provider error handling caught all eleven of them and reported a dead
+ * provider — an outage manufactured by the build.
+ *
+ * Declaring it here rather than sniffing for the error inside the fetch helpers:
+ * a control-flow error should never reach a `catch` written for HTTP failures.
+ * See the same trap noted on the dashboard's `loadWatchlist`.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Built entirely on sources that cost nothing: FRED for yields, the dollar,
  * inflation and policy rates, and the CFTC's own feed for positioning.
  *

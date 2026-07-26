@@ -17,6 +17,21 @@
   --positive: #34d399;
   --negative: #f87171;
   --warning: #fbbf24;
+
+  /* ---------------------------------------------------------------------
+     Depth.
+
+     The app had two shadows and one gradient across forty components, so
+     every panel sat on the same plane as the page and the whole thing read
+     as a wireframe. These three values are the entire depth vocabulary:
+     a lit top edge, a long soft shadow, and a surface that is very slightly
+     brighter where the light lands. Nothing here glows — a card that glows
+     implies excitement, and this product exists to argue against trading on
+     that.
+     --------------------------------------------------------------------- */
+  --lift: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --shadow-card: 0 18px 40px -28px rgba(0, 0, 0, 0.9);
+  --surface-top: #171a22;
 }
 
 @theme inline {
@@ -39,6 +54,68 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/*
+  One faint cool wash behind the top of the page, fixed so it does not scroll.
+  A pseudo-element rather than `background-attachment: fixed`, which stutters
+  badly on mobile Safari and Chrome.
+*/
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: 60vh;
+  background: radial-gradient(
+    75% 100% at 50% 0%,
+    rgba(91, 140, 255, 0.07),
+    transparent 72%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Shared surface and figure treatments.
+
+   Plain classes rather than Tailwind utilities because they are used by every
+   card in the app: one definition here beats the same four declarations
+   repeated in forty components and drifting apart.
+   --------------------------------------------------------------------------- */
+
+.surface-lit {
+  background: linear-gradient(180deg, var(--surface-top) 0%, var(--surface) 58%);
+  box-shadow: var(--lift), var(--shadow-card);
+}
+
+/*
+  Any column of digits, lined up.
+
+  Proportional numerals shift column to column as prices tick, which on a page
+  of R-multiples and percentages is a small constant distraction.
+*/
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+  A measurement presented as the thing being read, rather than as a label with
+  a value after it. Used for prices, R-multiples and the stat tiles.
+*/
+.figure {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* Uppercase micro-labels need space between the letters to stay readable. */
+.eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* ---------------------------------------------------------------------------

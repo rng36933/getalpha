@@ -20,11 +20,17 @@ export default function Card({
   return (
     // Less inner padding on a phone: 20px of card padding inside 16px of page
     // padding spent a fifth of a 360-pixel screen on empty margin.
+    //
+    // `surface-lit` is the whole depth treatment — a lit top edge and a long
+    // shadow, defined once in globals.css. It is what stops a page of these
+    // reading as a wireframe.
     <section
-      className={`rounded-xl border border-line bg-surface p-4 sm:p-5 ${className}`}
+      className={`surface-lit relative isolate rounded-xl border border-line p-4 sm:p-5 ${className}`}
     >
       <header className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium">{title}</h2>
+        <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+          {title}
+        </h2>
         {children ? null : (
           <span className="rounded-md bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted">
             Soon
