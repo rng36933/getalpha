@@ -4,6 +4,7 @@ import Card from "@/components/Card";
 import ChartCard from "@/components/ChartCard";
 import DataQualityNotice from "@/components/DataQualityNotice";
 import DayTapeReadout from "@/components/DayTapeReadout";
+import Mt5Prompt from "@/components/Mt5Prompt";
 import PageHeader from "@/components/PageHeader";
 import PairNews from "@/components/PairNews";
 import SessionBriefPanel from "@/components/SessionBriefPanel";
@@ -65,6 +66,35 @@ async function loadSummary(userId: string | null): Promise<DashboardSummary> {
   } catch (error) {
     console.error("Dashboard could not summarise the journal:", error);
     return EMPTY_SUMMARY;
+  }
+}
+
+/**
+ * Whether this account's terminal is set up, and whether it has ever spoken.
+ *
+ * Two separate facts: a key can exist for weeks while MetaTrader sits closed or
+ * blocks the outbound request, and those two states need different things said
+ * to them. A failure here hides the prompt rather than the dashboard — pestering
+ * somebody who is already synced is worse than saying nothing.
+ */
+async function loadMt5State(
+  userId: string | null,
+): Promise<{ connected: boolean; receiving: boolean }> {
+  if (!userId) return { connected: false, receiving: true };
+
+  try {
+    const connection = await prisma.mtConnection.findUnique({
+      where: { userId },
+      select: { lastSeenAt: true },
+    });
+
+    return {
+      connected: connection !== null,
+      receiving: connection?.lastSeenAt != null,
+    };
+  } catch (error) {
+    console.error("Dashboard could not read the MetaTrader connection:", error);
+    return { connected: false, receiving: true };
   }
 }
 
@@ -142,9 +172,10 @@ export default async function DashboardPage({
 
   const timeframe = parseTimeframe(tf);
 
-  const [{ entries, instrument }, summary] = await Promise.all([
+  const [{ entries, instrument }, summary, mt5] = await Promise.all([
     loadWatchlist(symbol),
     loadSummary(userId),
+    loadMt5State(userId),
   ]);
 
   const choices = tapeChoices(
@@ -252,6 +283,12 @@ export default async function DashboardPage({
           />
         </Card>
       </div>
+
+      {/* Under the session readout, not above it: the gold card is what this
+          page is for, and a prompt that pushes it below the fold to advertise a
+          setting has its priorities backwards. It disappears once the terminal
+          is sending. */}
+      <Mt5Prompt connected={mt5.connected} receiving={mt5.receiving} />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="md:col-span-2">
