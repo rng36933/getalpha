@@ -1,6 +1,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "./code";
+import { checkEmail, normalizeMailbox } from "./email-check";
 
 /** Qualified invites needed before a bonus is granted. */
 export const INVITES_PER_REWARD = 3;
@@ -127,16 +128,47 @@ export async function ensureReferralLinked(
   }
 }
 
+/** The mailbox behind an account, or null if it has no verified primary. */
+type ClerkUser = {
+  primaryEmailAddressId: string | null;
+  emailAddresses: {
+    id: string;
+    emailAddress: string;
+    verification: { status: string | null } | null;
+  }[];
+};
+
+function primaryOf(user: ClerkUser) {
+  return user.emailAddresses.find(
+    (address) => address.id === user.primaryEmailAddressId,
+  );
+}
+
 /**
  * Counts invites that actually qualify.
  *
- * A sign-up only counts once its email address is verified. Without that,
- * three throwaway addresses buy a free week, which is the whole of the fraud
- * this program invites — and verification is the cheapest check that costs a
- * fraudster something real.
+ * Three filters, each closing a different way of inviting yourself.
+ *
+ * **Verified.** A sign-up counts only once its address is confirmed, because
+ * verification is the cheapest check that costs a fraudster something real.
+ *
+ * **One mailbox, one invite.** Verification alone was not enough: Gmail hands
+ * out unlimited spellings of the same inbox, so `me+a@`, `me+b@` and `m.e@`
+ * were three verified accounts and one person. Addresses are normalized to the
+ * mailbox they reach and each one is counted once.
+ *
+ * **Not the inviter's own mailbox.** Self-referral was already blocked by user
+ * id, which does nothing about a second account on an alias of the same inbox —
+ * the most obvious trick available, and previously the one that worked.
+ *
+ * What none of this does is stop somebody who owns three real mailboxes at three
+ * providers, and nothing can: an address costs nothing to create, and identity
+ * is not something an email field can establish. The aim is to make the cheap
+ * version fail, not to claim one person cannot hold two accounts.
  */
 async function countQualified(
   code: string,
+  inviterUserId: string,
 ): Promise<{ qualified: number; pending: number }> {
   const invited = await prisma.referral.findMany({
     where: { referredByCode: code },
@@ -146,7 +178,24 @@ async function countQualified(
   if (invited.length === 0) return { qualified: 0, pending: 0 };
 
   const clerk = await clerkClient();
+
+  // Seeded with the inviter's own mailbox, so an alias of it is already "seen"
+  // by the time their invites are counted.
+  const seen = new Set<string>();
+
+  try {
+    const inviter = (await clerk.users.getUser(inviterUserId)) as ClerkUser;
+    const own = normalizeMailbox(primaryOf(inviter)?.emailAddress);
+    if (own) seen.add(own);
+  } catch (error) {
+    // Counting on without it rather than failing the page. The worst case is one
+    // self-invite on an alias slipping through, which the other two filters
+    // still make a poor deal.
+    console.error(`Could not read the inviter's own address (${inviterUserId}):`, error);
+  }
+
   let qualified = 0;
+  let pending = 0;
 
   for (let i = 0; i < invited.length; i += CLERK_BATCH) {
     const batch = invited.slice(i, i + CLERK_BATCH).map((row) => row.userId);
@@ -155,16 +204,29 @@ async function countQualified(
       limit: CLERK_BATCH,
     });
 
-    for (const user of data) {
-      const primary = user.emailAddresses.find(
-        (address) => address.id === user.primaryEmailAddressId,
-      );
+    for (const user of data as ClerkUser[]) {
+      const primary = primaryOf(user);
 
-      if (primary?.verification?.status === "verified") qualified += 1;
+      if (primary?.verification?.status !== "verified") {
+        pending += 1;
+        continue;
+      }
+
+      // A throwaway inbox can technically be verified. It still does not count.
+      if (!checkEmail(primary.emailAddress).ok) continue;
+
+      const mailbox = normalizeMailbox(primary.emailAddress);
+      if (!mailbox || seen.has(mailbox)) continue;
+
+      seen.add(mailbox);
+      qualified += 1;
     }
   }
 
-  return { qualified, pending: invited.length - qualified };
+  // Counted rather than inferred from `invited.length - qualified`, which used
+  // to report a duplicate or a throwaway as "pending" — as though it were one
+  // confirmation away from earning a bonus it could never earn.
+  return { qualified, pending };
 }
 
 /**
@@ -203,7 +265,7 @@ export async function referralStatus(
   now: Date = new Date(),
 ): Promise<ReferralStatus> {
   const code = await getOrCreateCode(userId);
-  const { qualified, pending } = await countQualified(code);
+  const { qualified, pending } = await countQualified(code, userId);
 
   await grantDueRewards(userId, qualified, now);
 
