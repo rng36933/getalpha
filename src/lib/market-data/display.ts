@@ -2,8 +2,15 @@ import type { CalendarInput } from "@/lib/ai/types";
 
 /** One OHLC bar, in the shape `lightweight-charts` expects. */
 export type Candle = {
-  /** YYYY-MM-DD. */
-  time: string;
+  /**
+   * `YYYY-MM-DD` for daily and weekly bars, or seconds since the epoch for
+   * intraday ones.
+   *
+   * Both are valid to the chart library, and intraday has to be a timestamp:
+   * a date string would collapse every bar in a day onto the same point and
+   * the chart would draw one candle where there should be ninety-six.
+   */
+  time: string | number;
   open: number;
   high: number;
   low: number;

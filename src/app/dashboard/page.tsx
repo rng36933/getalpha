@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
+import ChartCard from "@/components/ChartCard";
 import DataQualityNotice from "@/components/DataQualityNotice";
 import PageHeader from "@/components/PageHeader";
-import PriceChart from "@/components/PriceChart";
 import SessionBriefPanel from "@/components/SessionBriefPanel";
 import WatchlistManager from "@/components/WatchlistManager";
 import {
@@ -12,7 +12,11 @@ import {
   RiskExposure,
 } from "@/components/dashboard/DeskCards";
 import { summariseTrades, type DashboardSummary } from "@/lib/dashboard/summary";
-import { fetchDailyCandles } from "@/lib/market-data/candles";
+import {
+  TIMEFRAMES,
+  fetchCandles,
+  parseTimeframe,
+} from "@/lib/market-data/candles";
 import { prisma } from "@/lib/prisma";
 import { MAX_WATCHLIST_SIZE, getWatchlist } from "@/lib/watchlist";
 
@@ -97,17 +101,19 @@ async function loadWatchlist(requested: string | undefined) {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ symbol?: string }>;
+  searchParams: Promise<{ symbol?: string; tf?: string }>;
 }) {
-  const { symbol } = await searchParams;
+  const { symbol, tf } = await searchParams;
   const { userId } = await auth();
+
+  const timeframe = parseTimeframe(tf);
 
   const [{ entries, instrument }, summary] = await Promise.all([
     loadWatchlist(symbol),
     loadSummary(userId),
   ]);
 
-  const candles = await fetchDailyCandles(instrument.symbol);
+  const candles = await fetchCandles(instrument.symbol, timeframe);
 
   return (
     <>
@@ -121,15 +127,22 @@ export default async function DashboardPage({
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card title={`${instrument.label} · D1`} className="md:col-span-2">
-          {candles.data.length > 0 ? (
-            <PriceChart data={candles.data} height={280} />
-          ) : (
-            <p className="grid h-[280px] place-items-center text-center text-sm text-muted">
-              No price history available for {instrument.label} right now.
-            </p>
-          )}
-        </Card>
+        <div className="md:col-span-2">
+          <ChartCard
+            instruments={entries.map((entry) => ({
+              symbol: entry.symbol,
+              label: entry.label,
+            }))}
+            selectedSymbol={instrument.symbol}
+            selectedLabel={instrument.label}
+            timeframe={timeframe}
+            timeframes={Object.entries(TIMEFRAMES).map(([key, value]) => ({
+              key,
+              label: value.label,
+            }))}
+            candles={candles.data}
+          />
+        </div>
         <Card title="AI Session Brief">
           <SessionBriefPanel />
         </Card>
