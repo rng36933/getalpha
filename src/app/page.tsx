@@ -15,6 +15,7 @@ import DayTapeReadout from "@/components/DayTapeReadout";
 import AmbientCandles from "@/components/landing/AmbientCandles";
 import Features from "@/components/landing/Features";
 import Ticker from "@/components/landing/Ticker";
+import TradeTest from "@/components/landing/TradeTest";
 import VerdictCard from "@/components/landing/VerdictCard";
 import WaitlistForm from "@/components/WaitlistForm";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
@@ -431,6 +432,28 @@ export default async function LandingPage({
                 );
               })}
             </ol>
+          </div>
+        </section>
+
+        {/* The argument, tested against a trade the visitor actually took.
+            Placed immediately before the price, because the moment somebody has
+            just seen their own last trade described back to them is the moment
+            the paid module stops being an abstraction. */}
+        <section className="border-t border-white/[0.05] py-14 sm:py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <Eyebrow>Try it on your own</Eyebrow>
+            <Heading>
+              See how getALPHA judges the last trade you took.
+            </Heading>
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-zinc-400">
+              Three questions, none of them about whether it won. That is the
+              whole point — the result is the one input that says nothing about
+              how the decision was made.
+            </p>
+
+            <div className="mt-10">
+              <TradeTest />
+            </div>
           </div>
         </section>
 
