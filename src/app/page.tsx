@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import {
   ArrowRight,
+  AlertTriangle,
   Check,
   LineChart,
   Lock,
@@ -672,21 +673,43 @@ export default async function LandingPage({
           </div>
         </section>
 
-        <section className="border-t border-white/[0.05] py-14 sm:py-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-7">
-              <Eyebrow>What this is not</Eyebrow>
-              <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-zinc-400">
-                getALPHA is an educational and informational tool. It is not an
-                investment adviser or a broker, it does not provide financial
-                advice or trading signals, and every financial decision you make
-                using it is yours alone. Trading leveraged instruments carries a
-                high risk of loss, and past performance is not a reliable
-                indicator of future results.
+        {/* The disclaimer, given weight.
+            It read as the greyest thing on the page, which is the wrong ranking
+            for the one paragraph a reader is most entitled to see. Amber, not
+            the violet used everywhere else — violet means "this is the paid AI
+            module" on every other surface, and spending it here would cost that
+            colour its meaning. Amber already marks risk throughout the app.
+
+            Loud enough to be read, not loud enough to look like a banner ad:
+            one tinted border, one soft halo, and the body text brought up from
+            zinc-400 to zinc-300. */}
+        <section className="relative overflow-hidden border-t border-white/[0.05] py-14 sm:py-20">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-[min(52rem,120vw)] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.10),transparent_65%)]"
+          />
+
+          <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
+            <div className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.04] p-5 shadow-[0_0_40px_-12px_rgba(245,158,11,0.25)] sm:p-7">
+              <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-amber-400">
+                <AlertTriangle className="size-3.5 shrink-0" aria-hidden="true" />
+                What this is not
               </p>
+
+              <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-zinc-300">
+                getALPHA is an educational and informational tool.{" "}
+                <span className="text-white">
+                  It is not an investment adviser or a broker, it does not
+                  provide financial advice or trading signals,
+                </span>{" "}
+                and every financial decision you make using it is yours alone.
+                Trading leveraged instruments carries a high risk of loss, and
+                past performance is not a reliable indicator of future results.
+              </p>
+
               <Link
                 href="/disclaimer"
-                className="mt-4 inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-all duration-300 ease-in-out hover:text-white"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm text-amber-400 transition-all duration-300 ease-in-out hover:text-amber-300"
               >
                 Read the full risk disclaimer
                 <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
