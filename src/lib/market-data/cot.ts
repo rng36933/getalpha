@@ -31,6 +31,28 @@ const MARKETS = [
   { name: "BITCOIN - CHICAGO MERCANTILE EXCHANGE", label: "Bitcoin" },
 ] as const;
 
+/**
+ * Which watchlist instrument each report speaks about.
+ *
+ * Keyed by label rather than carried on `CotRow`, on purpose: the rows are
+ * cached as a snapshot in the database, and a new field would be missing from
+ * every already-stored row until the next successful fetch. A lookup by label
+ * works against old and new snapshots alike.
+ *
+ * The yen contract is quoted the other way round from the pair a trader
+ * watches — the report is on the yen, the watchlist says USD/JPY — but it is
+ * the same market, and the tilt shown is the speculator's position in the yen.
+ * That is what the footnote under the card is for.
+ */
+export const COT_SYMBOLS: Record<string, string> = {
+  Gold: "XAU/USD",
+  Silver: "XAG/USD",
+  Euro: "EUR/USD",
+  Pound: "GBP/USD",
+  Yen: "USD/JPY",
+  Bitcoin: "BTC/USD",
+};
+
 export type CotRow = {
   label: string;
   /** Long minus short among non-commercial traders — the speculative tilt. */

@@ -1,8 +1,9 @@
+import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
 import DataQualityNotice from "@/components/DataQualityNotice";
 import { CotList, ReadingList } from "@/components/MacroReadings";
 import PageHeader from "@/components/PageHeader";
-import { fetchCotPositioning } from "@/lib/market-data/cot";
+import { COT_SYMBOLS, fetchCotPositioning } from "@/lib/market-data/cot";
 import {
   INFLATION_SERIES,
   POLICY_SERIES,
@@ -10,6 +11,7 @@ import {
   fetchMacroSeries,
   readingsFor,
 } from "@/lib/market-data/fred";
+import { getWatchlist } from "@/lib/watchlist";
 
 export const metadata = {
   title: "Macro Desk",
@@ -41,10 +43,22 @@ export const dynamic = "force-dynamic";
  * personal use. A card promising it is not coming would be worse than no card.
  */
 export default async function MacroDeskPage() {
-  const [macro, cot] = await Promise.all([
+  const { userId } = await auth();
+
+  const [macro, cot, watchlist] = await Promise.all([
     fetchMacroSeries(),
     fetchCotPositioning(),
+    userId ? getWatchlist(userId) : Promise.resolve([]),
   ]);
+
+  // Positioning is shown only for what this person actually watches. The report
+  // covers six markets and most traders care about one or two of them; the
+  // other four were noise on every visit. Filtered per user rather than
+  // globally, so somebody following six pairs still sees six.
+  const watched = new Set(watchlist.map((entry) => entry.symbol));
+  const cotRows = cot.data.filter((row) =>
+    watched.has(COT_SYMBOLS[row.label] ?? ""),
+  );
 
   return (
     <>
@@ -74,7 +88,7 @@ export default async function MacroDeskPage() {
         </Card>
 
         <Card title="Positioning" className="md:col-span-2 xl:col-span-3">
-          <CotList rows={cot.data} />
+          <CotList rows={cotRows} />
         </Card>
       </div>
     </>
