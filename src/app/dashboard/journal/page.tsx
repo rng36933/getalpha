@@ -11,8 +11,21 @@ export const metadata = {
   title: "Journal",
 };
 
-/** Enough to see a pattern without turning the page into a report. */
-const PAGE_SIZE = 50;
+/**
+ * The whole journal, capped only against a runaway sync.
+ *
+ * This was fifty, from before the MetaTrader sync existed and a journal was
+ * something you typed by hand. Ninety days of a real account is a few hundred
+ * trades, so the page was showing under a quarter of one — and silently, with
+ * no "show more" and nothing on screen to say the list had been cut. The
+ * per-pair page already reads two thousand, so the same journal answered two
+ * different questions depending on which page you asked.
+ *
+ * The list has filters and every row is compact; several hundred of them is a
+ * long page, which is what a journal is. The cap is a guard against a terminal
+ * resending years of history, not a window onto the record.
+ */
+const MAX_TRADES = 2000;
 
 /**
  * Read straight from the database rather than through /api/trades.
@@ -25,7 +38,7 @@ async function loadTrades(userId: string): Promise<TradeRow[]> {
   const trades = await prisma.trade.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    take: PAGE_SIZE,
+    take: MAX_TRADES,
   });
 
   return trades.map((trade) => ({

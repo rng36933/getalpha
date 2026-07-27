@@ -60,6 +60,12 @@ const OUTCOMES: { value: Outcome; label: string }[] = [
   { value: "NO_STOP", label: "No stop" },
 ];
 
+/** Rows per page. Short enough to read without scrolling past the filters. */
+const PER_PAGE = 25;
+
+const pagerClass =
+  "rounded-lg border border-line px-2.5 py-1.5 text-xs text-muted transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-muted";
+
 const selectClass =
   "rounded-lg border border-line bg-surface-raised px-2.5 py-1.5 text-xs text-foreground outline-none focus:border-accent";
 
@@ -154,8 +160,37 @@ export default function TradeList({
 
   const filtered = rows.length !== withEdits.length;
 
-  // One scale for every bar on the page, so the lengths are comparable to each
-  // other rather than each row being drawn against itself.
+  /**
+   * Which page of the filtered rows is on screen.
+   *
+   * Paged after filtering, not in the query. Paging in the database would make
+   * every filter mean "among these twenty-five" — a "Wins" count that changes
+   * as you turn pages is worse than no filter at all.
+   *
+   * The page number is stored with the filters it belongs to, so narrowing the
+   * list while on page 6 lands you on page 1 of the new result instead of on an
+   * empty page. Derived rather than reset in an effect, which is the cascading
+   * render the React compiler rejects.
+   */
+  const filterKey = `${asset}|${setup}|${outcome}`;
+  const [paging, setPaging] = useState({ key: filterKey, page: 1 });
+
+  const pageCount = Math.max(1, Math.ceil(rows.length / PER_PAGE));
+  const page = Math.min(
+    paging.key === filterKey ? paging.page : 1,
+    pageCount,
+  );
+
+  const start = (page - 1) * PER_PAGE;
+  const visible = rows.slice(start, start + PER_PAGE);
+
+  function goToPage(next: number) {
+    setPaging({ key: filterKey, page: Math.min(Math.max(next, 1), pageCount) });
+  }
+
+  // One scale for every bar in the whole filtered set, not just this page:
+  // scaled per page, the same trade would draw a different length depending on
+  // which page it landed on.
   const resultScale = Math.max(
     ...rows.map((row) => Math.abs(row.pnl ?? 0)),
     0,
@@ -348,7 +383,7 @@ export default function TradeList({
         </thead>
 
         <tbody className="divide-y divide-line">
-          {rows.map((trade) => {
+          {visible.map((trade) => {
             const state = stateOf(trade.id);
             const open = openId === trade.id;
             const editing = notesId === trade.id;
@@ -526,6 +561,46 @@ export default function TradeList({
         </tbody>
       </table>
       </div>
+
+      {/* The pager says where you are in the record, not just how to move.
+          "301–325 of 220 trades" is the sentence somebody actually wants when
+          they are looking for a trade from three weeks ago. Hidden when it
+          would be a control with one destination. */}
+      {pageCount > 1 ? (
+        <nav
+          aria-label="Journal pages"
+          className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3"
+        >
+          <span className="text-xs tabular-nums text-muted">
+            {start + 1}–{Math.min(start + PER_PAGE, rows.length)} of{" "}
+            {rows.length}
+          </span>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => goToPage(page - 1)}
+              disabled={page === 1}
+              className={pagerClass}
+            >
+              Previous
+            </button>
+
+            <span className="px-1 font-mono text-xs tabular-nums text-muted">
+              {page} / {pageCount}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => goToPage(page + 1)}
+              disabled={page === pageCount}
+              className={pagerClass}
+            >
+              Next
+            </button>
+          </div>
+        </nav>
+      ) : null}
     </div>
   );
 }
