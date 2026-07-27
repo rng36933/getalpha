@@ -23,6 +23,22 @@ type InvokeOptions = {
   /** low | medium | high | xhigh | max — controls reasoning depth and spend. */
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
   maxTokens?: number;
+  /**
+   * What the budget reservation assumes this call will cost, in output tokens.
+   *
+   * Defaults to `maxTokens` when omitted, which is the API's hard truncation
+   * ceiling — sized to never cut off a real response, not to describe a
+   * typical one. Reserving against it prices every call as if it were about to
+   * emit the absolute maximum the API allows, which can reserve four or five
+   * times the actual cost. Against a per-account daily cap that gap is what
+   * turns "a handful of reviews a day" into two: the first two calls' real,
+   * settled cost plus one more worst-case reservation is enough to clear the
+   * ceiling on its own.
+   *
+   * Pass a smaller, measured figure here to reserve realistically while
+   * `maxTokens` keeps guarding against a response that actually runs long.
+   */
+  reserveTokens?: number;
 };
 
 /**
@@ -41,12 +57,22 @@ export async function invokeStructured<T>({
   schema,
   effort = "medium",
   maxTokens = 8000,
+  reserveTokens = maxTokens,
 }: InvokeOptions): Promise<AiResult<T>> {
   // Reserved before the request, not counted after: a limit enforced
   // afterwards is a report, not a limit. Reserved before the client is built
   // too, because the budget is a policy decision that does not depend on
   // credentials.
-  const reservation = await reserveBudget(feature, userId, AI_MODEL, maxTokens);
+  //
+  // Priced at `reserveTokens`, not `maxTokens` — see the option's doc comment.
+  // The API call below still passes the full `maxTokens` as its own ceiling;
+  // only the pre-flight budget check uses the smaller, realistic figure.
+  const reservation = await reserveBudget(
+    feature,
+    userId,
+    AI_MODEL,
+    reserveTokens,
+  );
 
   let client;
   try {

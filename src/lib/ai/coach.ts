@@ -158,5 +158,15 @@ export async function reviewTrade(
     // kind of task where reasoning depth changes the answer.
     effort: "xhigh",
     maxTokens: 16000,
+    // The budget reservation, priced separately from the API's own ceiling.
+    //
+    // Measured review calls run about 2,700 output tokens (see AiUsageLog).
+    // 4,000 is roughly 1.5x that measured figure — room for a longer review
+    // than any seen so far, without pricing every reservation as if the model
+    // were about to fill all 16,000 tokens `maxTokens` allows for. At $25 per
+    // million output tokens that is a $0.10 reservation instead of $0.40,
+    // which is what makes `DEFAULT_PER_USER_BUDGET_USD` actually deliver the
+    // five or six reviews a day its own comment promises, rather than two.
+    reserveTokens: 4000,
   });
 }

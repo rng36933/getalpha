@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { DEFAULT_PER_USER_BUDGET_USD } from "../src/lib/ai/budget-limits.ts";
 import {
   costOfUsage,
   isKnownModel,
@@ -68,4 +69,39 @@ test("worst case reserves the whole output budget", () => {
   assert.equal(worstCaseCost("claude-opus-5", 8_000), 0.2);
   // The coach at 16k output could alone consume 20% of a $2 daily budget.
   assert.ok(worstCaseCost("claude-opus-5", 16_000) / 2 === 0.2);
+});
+
+/**
+ * The bug this guards against: reserving the Coach's full `maxTokens` (16,000,
+ * a truncation ceiling sized for the longest plausible response) against the
+ * per-account daily cap meant that two *completed*, cheaply-settled reviews
+ * plus one more worst-case reservation was already enough to clear
+ * `DEFAULT_PER_USER_BUDGET_USD` — a comment in budget-limits.ts promised five
+ * or six reviews a day, and the reservation math actually delivered two.
+ *
+ * `4000` here is `coach.ts`'s `reserveTokens` — the two are not imported from
+ * one place because `coach.ts` pulls in the Anthropic SDK, which the bare node
+ * test runner cannot resolve. If that constant changes, this test's simulated
+ * review count should be re-checked against it by hand.
+ */
+test("the per-account budget delivers roughly the reviews per day it promises", () => {
+  const COACH_RESERVE_TOKENS = 4000;
+  const reserve = worstCaseCost("claude-opus-5", COACH_RESERVE_TOKENS);
+  // The measured average from a real review (AiUsageLog: 742 in / 2664 out).
+  const measuredRealCost = 0.09;
+
+  let spent = 0;
+  let completed = 0;
+
+  // Simulates reserveBudget's gate: a call is allowed only while the
+  // reservation fits under the ceiling alongside what has already settled.
+  while (spent + reserve <= DEFAULT_PER_USER_BUDGET_USD) {
+    spent += measuredRealCost;
+    completed += 1;
+  }
+
+  assert.ok(
+    completed >= 5,
+    `only ${completed} reviews fit before the gate blocks a sixth — the budget comment promises five or six`,
+  );
 });
