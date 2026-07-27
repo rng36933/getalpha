@@ -27,17 +27,53 @@ type LocalTimeProps = {
   at: string | null;
   /** HH:MM in UTC, rendered on the server and until the browser takes over. */
   utc: string;
+  /**
+   * Print the day as well as the clock.
+   *
+   * Worth it wherever the reader's day can differ from the feed's. The calendar
+   * is filtered to one UTC day, but a 22:00 UTC release is one in the morning
+   * of the next day in Vilnius — so a bare "01:00" is a time on a date the
+   * reader has to work out.
+   */
+  withDate?: boolean;
 };
 
-function toLocal(at: string): string | null {
+/** Fixed, so the server's locale cannot change the pre-hydration markup. */
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function toLocal(at: string, withDate: boolean): string | null {
   const parsed = new Date(at);
   if (Number.isNaN(parsed.getTime())) return null;
 
   return new Intl.DateTimeFormat(undefined, {
+    ...(withDate ? { day: "2-digit", month: "short" } : {}),
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   }).format(parsed);
+}
+
+/** The UTC day, for the server render and for anything without a timestamp. */
+function utcDate(at: string): string | null {
+  const [date] = at.split("T");
+  const [, month, day] = date?.split("-") ?? [];
+  const index = Number(month) - 1;
+
+  if (!day || !MONTHS[index]) return null;
+  return `${day} ${MONTHS[index]}`;
 }
 
 /**
@@ -51,13 +87,22 @@ function toLocal(at: string): string | null {
  * This matters more than it looks. A trader reading "15:30" against an open
  * position is reading a deadline; being three hours out is not cosmetic.
  */
-export default function LocalTime({ at, utc }: LocalTimeProps) {
+export default function LocalTime({
+  at,
+  utc,
+  withDate = false,
+}: LocalTimeProps) {
   const hydrated = useHydrated();
-  const local = hydrated && at ? toLocal(at) : null;
+  const local = hydrated && at ? toLocal(at, withDate) : null;
+
+  // Before hydration, and for a record with no timestamp: UTC, with the day in
+  // front when one was asked for and can be read off the ISO string.
+  const day = withDate && at ? utcDate(at) : null;
+  const fallback = day ? `${day} ${utc}` : utc;
 
   return (
     <time dateTime={at ?? undefined} suppressHydrationWarning>
-      {local ?? utc}
+      {local ?? fallback}
     </time>
   );
 }
