@@ -147,10 +147,22 @@ async function fetchSeries(
 
   try {
     const response = await fetchWithTimeout(url, SERIES_TIMEOUT_MS);
-    // 429 and 403 are the two that matter and they were previously
-    // indistinguishable from "no data": one is a rate limit that will pass, the
-    // other is a rejected key that never will.
-    if (!response.ok) return empty(`HTTP ${response.status}`);
+
+    // The status alone was not enough. Eleven lines of "HTTP 400" said only
+    // that FRED had refused, and working out that a 400 from this API means the
+    // key was rejected took a trip through the logs and a test against the same
+    // key from another machine. FRED puts the sentence in the body, so quote
+    // it — the answer belongs in the line that reports the problem.
+    if (!response.ok) {
+      const detail = await response
+        .text()
+        .then((text) => text.replace(/\s+/g, " ").trim().slice(0, 160))
+        .catch(() => "");
+
+      return empty(
+        detail ? `HTTP ${response.status} — ${detail}` : `HTTP ${response.status}`,
+      );
+    }
 
     const body = (await response.json()) as { observations?: FredObservation[] };
 
