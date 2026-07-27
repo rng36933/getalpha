@@ -216,12 +216,25 @@ export default function PairAnalysis({
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Average win" value={money(pair.averageWin, currency)} />
-        <Stat label="Average loss" value={money(pair.averageLoss, currency)} />
-        {/* The day, not the trade. Three losses in a morning is a worse day
-            than one large one, and the old figure could not show that at all.
-            The single worst trade is the note underneath, because the useful
-            question is whether the bad day was one decision or a run of them. */}
+        {/* Days, not trades, and both of them. Three losses in a morning is a
+            worse day than one large one, which the single-trade figure could
+            not show at all — and the two days side by side are the range this
+            instrument actually puts you through. A worst day three times the
+            best is a different instrument from one where they match. */}
+        <Stat
+          label="Best day"
+          value={
+            pair.bestDay === null ? "—" : money(pair.bestDay.total, currency)
+          }
+          tone={toneFor(pair.bestDay?.total ?? null)}
+          note={
+            pair.bestDay === null
+              ? "no day finished up"
+              : `${pair.bestDay.date} · ${pair.bestDay.trades} trade${
+                  pair.bestDay.trades === 1 ? "" : "s"
+                }`
+          }
+        />
         <Stat
           label="Worst day"
           value={
@@ -235,6 +248,17 @@ export default function PairAnalysis({
                   pair.worstDay.trades === 1 ? "" : "s"
                 } · worst single ${money(pair.worstLoss, currency)}`
           }
+        />
+        {/* Paired into one tile so the two days can sit beside each other
+            without pushing the grid to five across. They are read together
+            anyway — an average win smaller than the average loss is the
+            finding, not either number on its own. */}
+        <Stat
+          label="Average win / loss"
+          value={`${money(pair.averageWin, currency)} / ${money(
+            pair.averageLoss,
+            currency,
+          )}`}
         />
         <Stat
           label="Median risk"

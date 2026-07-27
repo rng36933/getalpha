@@ -250,3 +250,22 @@ test("a day that finished up is not a worst day", () => {
   // The worst trade still exists — it just did not make the day a losing one.
   assert.equal(pair.worstLoss, -10);
 });
+
+test("the best day is summed too, and a flat day is neither", () => {
+  const [pair] = analyseJournal([
+    // Two wins on one date beat a single larger win on another.
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: 2 }),
+    trade({ openedAt: "2026-07-01T10:00:00Z", r: 2 }),
+    trade({ openedAt: "2026-07-02T08:00:00Z", r: 3 }),
+    // A date that nets exactly zero is neither the best nor the worst.
+    trade({ openedAt: "2026-07-03T08:00:00Z", r: 1 }),
+    trade({ openedAt: "2026-07-03T10:00:00Z", r: -1 }),
+  ]).pairs;
+
+  assert.equal(pair.bestDay?.total, 40);
+  assert.equal(pair.bestDay?.date, "2026-07-01");
+  assert.equal(pair.bestDay?.trades, 2);
+
+  // The flat day did not become a worst day, and no day finished down.
+  assert.equal(pair.worstDay, null);
+});
