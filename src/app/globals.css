@@ -409,6 +409,36 @@ body::before {
    is an animation that eventually ships without one.
    --------------------------------------------------------------------------- */
 
+/*
+  The connector under the three steps, with something travelling along it.
+
+  The sequence is Connect, Trade, Review, and the thing that makes it worth
+  drawing is that the middle step asks nothing of the trader: the trades move
+  themselves. A dot crossing the line says that in a way three boxes cannot.
+
+  Slow — nine seconds end to end. This sits below the fold and runs forever, so
+  anything quicker becomes a flicker in the corner of the eye while somebody is
+  trying to read the words above it.
+*/
+@keyframes lp-flow {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  8%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.lp-flow {
+  animation: lp-flow 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
 @keyframes ticker-slide {
   from {
     transform: translateX(0);
@@ -468,8 +498,15 @@ body::before {
   /* The landing page's ambient layers, still and finished. */
   .lp-drift,
   .lp-alarm,
+  .lp-flow,
   .lp-shimmer:hover::after {
     animation: none;
+  }
+
+  /* Parked at the start of the line rather than left invisible mid-travel. */
+  .lp-flow {
+    left: 0;
+    opacity: 1;
   }
 
   .lp-drift {

@@ -379,7 +379,20 @@ export default async function LandingPage({
             <Eyebrow>How it fits your week</Eyebrow>
             <Heading>Three steps, and only the first one takes any time.</Heading>
 
-            <ol className="mt-10 grid gap-4 sm:grid-cols-3">
+            {/* The line the trades travel along, behind the cards.
+                Drawn only from `sm` up, where the steps sit side by side and a
+                horizontal line means "in this order". Stacked on a phone the
+                same line would point at nothing. */}
+            <div className="relative mt-10">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-[16%] top-[3.25rem] hidden h-px sm:block"
+              >
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+                <span className="lp-flow absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400 shadow-[0_0_12px_2px_rgba(16,185,129,0.6)]" />
+              </div>
+
+              <ol className="relative grid gap-4 sm:grid-cols-3">
               {[
                 {
                   icon: PlugZap,
@@ -431,7 +444,16 @@ export default async function LandingPage({
                   </li>
                 );
               })}
-            </ol>
+              </ol>
+            </div>
+
+            <p className="mt-6 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-600">
+              <span
+                aria-hidden="true"
+                className="live-dot size-1.5 rounded-full bg-emerald-400"
+              />
+              closed positions sync themselves · nothing typed by hand
+            </p>
           </div>
         </section>
 

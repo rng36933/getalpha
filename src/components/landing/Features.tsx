@@ -1,4 +1,5 @@
 import { Calendar, Lock, Sparkles, TrendingUp } from "lucide-react";
+import CountUp from "@/components/landing/CountUp";
 
 /**
  * The capabilities, as an asymmetric grid.
@@ -16,14 +17,25 @@ function Readout({
   label,
   value,
   tone = "text-zinc-200",
+  live = false,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   tone?: string;
+  /** Marks a reading that moves in the real product, with a pulse to say so. */
+  live?: boolean;
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-white/[0.05] py-1.5 font-mono text-[11px] tabular-nums last:border-b-0">
-      <span className="text-zinc-500">{label}</span>
+      <span className="flex items-center gap-1.5 text-zinc-500">
+        {live ? (
+          <span
+            aria-hidden="true"
+            className="live-dot size-1.5 shrink-0 rounded-full bg-amber-400"
+          />
+        ) : null}
+        {label}
+      </span>
       <span className={tone}>{value}</span>
     </div>
   );
@@ -112,13 +124,28 @@ export default function Features() {
         icon={<TrendingUp className="size-[18px]" aria-hidden="true" />}
         title="A journal that computes"
         demo={
+          // Counted up rather than printed. The sentence under this card says
+          // you never type a number in; a figure that arrives by computing says
+          // it first, and without a word.
           <div className="grid gap-x-8 sm:grid-cols-2">
             <div>
-              <Readout label="Risk" value="0.94%" />
-              <Readout label="Planned RR" value="2.40" />
+              <Readout
+                label="Risk"
+                value={<CountUp value={0.94} decimals={2} suffix="%" />}
+              />
+              <Readout
+                label="Planned RR"
+                value={<CountUp value={2.4} decimals={2} />}
+              />
             </div>
             <div>
-              <Readout label="Result" value="+€340.00" tone="text-emerald-400" />
+              <Readout
+                label="Result"
+                tone="text-emerald-400"
+                value={
+                  <CountUp value={340} decimals={2} prefix="+€" />
+                }
+              />
               <Readout label="Exit" value="Target" />
             </div>
           </div>
@@ -137,7 +164,9 @@ export default function Features() {
           <div>
             <Readout label="Risk tone" value="Cautious" tone="text-amber-400" />
             <Readout label="Driver" value="US CPI 13:30" />
-            <Readout label="Volatility" value="XAUUSD, DXY" />
+            {/* The one reading on this card that moves while you watch it, so
+                it is the one that gets the pulse. */}
+            <Readout label="Volatility" value="XAUUSD, DXY" live />
           </div>
         }
       >
@@ -154,7 +183,14 @@ export default function Features() {
           <div>
             <Readout label="Primary leak" value="Sizing after a loss" />
             <Readout label="Seen in" value="7 of 22 trades" />
-            <Readout label="Cost" value="−4.1R" tone="text-red-400" />
+            {/* Money, not R. The app stopped showing R-multiples, and a landing
+                page quoting a unit the product no longer prints is a promise it
+                does not keep. */}
+            <Readout
+              label="Cost"
+              tone="text-red-400"
+              value={<CountUp value={-612.4} decimals={2} prefix="€" />}
+            />
           </div>
         }
       >
@@ -175,7 +211,16 @@ export default function Features() {
             </div>
             <div>
               <Readout label="09:00 EUR" value="PMI" />
-              <Readout label="Filtered by" value="Your watchlist" />
+              {/* The filter lights up with the card, so the thing being
+                  demonstrated is the thing that reacts to the cursor. */}
+              <Readout
+                label="Filtered by"
+                value={
+                  <span className="rounded border border-white/[0.08] px-1.5 py-0.5 transition-all duration-300 ease-in-out group-hover:border-emerald-400/40 group-hover:bg-emerald-400/10 group-hover:text-emerald-300">
+                    Your watchlist
+                  </span>
+                }
+              />
             </div>
           </div>
         }
