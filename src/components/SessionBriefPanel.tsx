@@ -2,21 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { dashboardCopy } from "@/lib/i18n/app/dashboard";
+import type { Locale } from "@/lib/i18n/locales";
 import type { SessionBrief, TradingSession } from "@/lib/ai/types";
 
-const SESSIONS: { value: TradingSession; label: string }[] = [
-  { value: "LONDON", label: "London" },
-  { value: "NEW_YORK", label: "New York" },
-  { value: "ASIA", label: "Asia" },
-];
-
-const TONE: Record<
-  SessionBrief["riskTone"]["tone"],
-  { label: string; className: string }
-> = {
-  RISK_ON: { label: "Risk on", className: "bg-positive/15 text-positive" },
-  RISK_OFF: { label: "Risk off", className: "bg-negative/15 text-negative" },
-  NEUTRAL: { label: "Neutral", className: "bg-muted/15 text-muted" },
+const TONE_CLASS: Record<SessionBrief["riskTone"]["tone"], string> = {
+  RISK_ON: "bg-positive/15 text-positive",
+  RISK_OFF: "bg-negative/15 text-negative",
+  NEUTRAL: "bg-muted/15 text-muted",
 };
 
 type State =
@@ -44,6 +37,7 @@ export default function SessionBriefPanel({
   instruments,
   personalised,
   truncated,
+  locale,
 }: {
   /** The instruments this reader's brief is written from. */
   instruments: string[];
@@ -51,7 +45,22 @@ export default function SessionBriefPanel({
   personalised: boolean;
   /** True when their watchlist is longer than one brief may cover. */
   truncated: boolean;
+  locale: Locale;
 }) {
+  const copy = dashboardCopy(locale).sessionBrief;
+
+  const SESSIONS: { value: TradingSession; label: string }[] = [
+    { value: "LONDON", label: copy.sessions.london },
+    { value: "NEW_YORK", label: copy.sessions.newYork },
+    { value: "ASIA", label: copy.sessions.asia },
+  ];
+
+  const TONE: Record<SessionBrief["riskTone"]["tone"], string> = {
+    RISK_ON: copy.tone.riskOn,
+    RISK_OFF: copy.tone.riskOff,
+    NEUTRAL: copy.tone.neutral,
+  };
+
   const [session, setSession] = useState<TradingSession>("LONDON");
   const [state, setState] = useState<State>({ status: "idle" });
 
@@ -103,7 +112,7 @@ export default function SessionBriefPanel({
       if (!response.ok) {
         setState({
           status: "error",
-          message: body?.error ?? "The brief could not be produced.",
+          message: body?.error ?? copy.genericError,
           upgrade: body?.reason === "SUBSCRIPTION_REQUIRED",
         });
         return;
@@ -119,7 +128,7 @@ export default function SessionBriefPanel({
     } catch {
       setState({
         status: "error",
-        message: "Could not reach the server. Check your connection.",
+        message: copy.couldNotReach,
       });
     }
   }
@@ -146,10 +155,7 @@ export default function SessionBriefPanel({
 
       <div className="mt-4">
         {state.status === "idle" ? (
-          <p className="text-sm text-muted">
-            Pick a session. Readers watching the same instruments share one
-            brief, so asking twice costs nothing.
-          </p>
+          <p className="text-sm text-muted">{copy.idle}</p>
         ) : null}
 
         {/* Always names the instruments. The brief text says "the supplied
@@ -160,20 +166,20 @@ export default function SessionBriefPanel({
           <p className="mt-3 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
             {coverage.personalised ? (
               <>
-                Covers {coverage.truncated ? "the top of your watchlist" : "your watchlist"}{" "}
-                — {coverage.instruments.join(", ")}.{" "}
+                {copy.coveragePersonalised(
+                  coverage.truncated ? copy.coverageTop : copy.coverageYours,
+                  coverage.instruments.join(", "),
+                )}{" "}
                 {coverage.truncated
-                  ? `One brief reports on at most ${coverage.instruments.length} instruments; reorder the watchlist to change which. `
+                  ? copy.truncatedNote(coverage.instruments.length)
                   : ""}
-                Readers watching the same instruments share one brief per
-                session, which is what keeps it affordable.
+                {copy.sharedNote}
               </>
             ) : (
               <>
-                Covers {coverage.instruments.join(", ")} — the same brief every
-                free account reads.{" "}
+                {copy.coverageFree(coverage.instruments.join(", "))}{" "}
                 <Link href="/dashboard/pricing" className="text-accent hover:underline">
-                  Pro writes it from your own watchlist
+                  {copy.freeLink}
                 </Link>
                 .
               </>
@@ -182,15 +188,12 @@ export default function SessionBriefPanel({
         ) : null}
 
         {state.status === "loading" ? (
-          <p className="text-sm text-muted">
-            Collecting the calendar, levels and headlines, then writing.
-          </p>
+          <p className="text-sm text-muted">{copy.loading}</p>
         ) : null}
 
         {state.status === "generating" ? (
           <p className="text-sm text-muted">
-            Somebody else asked first and it is being written now. Try again in
-            about {state.retryAfterSeconds} seconds.
+            {copy.generating(state.retryAfterSeconds)}
           </p>
         ) : null}
 
@@ -202,7 +205,7 @@ export default function SessionBriefPanel({
                 href="/dashboard/pricing"
                 className="mt-2 inline-block text-sm text-accent hover:underline"
               >
-                See the plans
+                {copy.seePlans}
               </Link>
             ) : null}
           </div>
@@ -213,10 +216,10 @@ export default function SessionBriefPanel({
             <div>
               <span
                 className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-medium ${
-                  TONE[state.brief.riskTone.tone].className
+                  TONE_CLASS[state.brief.riskTone.tone]
                 }`}
               >
-                {TONE[state.brief.riskTone.tone].label}
+                {TONE[state.brief.riskTone.tone]}
               </span>
               <p className="mt-2 text-sm leading-relaxed">
                 {state.brief.riskTone.reason}
@@ -225,7 +228,7 @@ export default function SessionBriefPanel({
 
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted">
-                Key market driver
+                {copy.keyMarketDriver}
               </p>
               <p className="mt-1 text-sm leading-relaxed text-muted">
                 {state.brief.keyMarketDriver}
@@ -234,7 +237,7 @@ export default function SessionBriefPanel({
 
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted">
-                Volatility warning
+                {copy.volatilityWarning}
               </p>
               <p className="mt-1 text-sm leading-relaxed text-muted">
                 {state.brief.watchlistVolatilityWarning}
@@ -243,15 +246,12 @@ export default function SessionBriefPanel({
 
             {state.degraded ? (
               <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
-                Some market data was stale or missing when this was written.
-                Gaps are named rather than filled in.
+                {copy.degradedNote}
               </p>
             ) : null}
 
             <p className="text-[11px] text-muted">
-              {state.cached
-                ? "Served from today's brief for these instruments."
-                : "Written just now."}
+              {state.cached ? copy.servedFromCache : copy.writtenJustNow}
             </p>
           </div>
         ) : null}

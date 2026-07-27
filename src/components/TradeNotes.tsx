@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { journalCopy } from "@/lib/i18n/app/journal";
+import type { Locale } from "@/lib/i18n/locales";
 import { MAX_NOTE_LENGTH } from "@/lib/trades/notes";
 
 /** The four fields a trade can gain after the fact. */
@@ -46,11 +48,14 @@ export default function TradeNotes({
   tradeId,
   notes,
   onSaved,
+  locale,
 }: {
   tradeId: string;
   notes: Notes;
   onSaved: (notes: Notes) => void;
+  locale: Locale;
 }) {
+  const copy = journalCopy(locale).tradeNotes;
   const [draft, setDraft] = useState<Notes>(notes);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +92,7 @@ export default function TradeNotes({
 
       if (!response.ok) {
         setError(
-          body?.details?.[0] ?? body?.error ?? "The notes could not be saved.",
+          body?.details?.[0] ?? body?.error ?? copy.couldNotSave,
         );
         return;
       }
@@ -103,7 +108,7 @@ export default function TradeNotes({
       setSaved(true);
       onSaved(stored);
     } catch {
-      setError("Could not reach the server. Check your connection.");
+      setError(copy.couldNotReach);
     } finally {
       setSaving(false);
     }
@@ -112,7 +117,7 @@ export default function TradeNotes({
   return (
     <form onSubmit={submit} className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Setup">
+        <Field label={copy.setup}>
           <input
             className={inputClass}
             value={draft.setup ?? ""}
@@ -122,7 +127,7 @@ export default function TradeNotes({
           />
         </Field>
 
-        <Field label="Timeframe">
+        <Field label={copy.timeframe}>
           <input
             className={inputClass}
             value={draft.timeframe ?? ""}
@@ -133,10 +138,7 @@ export default function TradeNotes({
         </Field>
       </div>
 
-      <Field
-        label="Market context"
-        hint="What was true before the entry — the level, the session, the release due."
-      >
+      <Field label={copy.marketContext} hint={copy.marketContextHint}>
         <textarea
           className={`${inputClass} min-h-20 resize-y`}
           value={draft.marketContext ?? ""}
@@ -145,10 +147,7 @@ export default function TradeNotes({
         />
       </Field>
 
-      <Field
-        label="How it felt"
-        hint="Impatience, hesitation, revenge after a loss. The review reads this as your own words, not as a diagnosis."
-      >
+      <Field label={copy.howItFelt} hint={copy.howItFeltHint}>
         <textarea
           className={`${inputClass} min-h-20 resize-y`}
           value={draft.emotionalState ?? ""}
@@ -163,12 +162,12 @@ export default function TradeNotes({
           disabled={saving}
           className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {saving ? "Saving…" : "Save notes"}
+          {saving ? copy.saving : copy.save}
         </button>
 
         {error ? <span className="text-sm text-negative">{error}</span> : null}
         {saved && !error ? (
-          <span className="text-sm text-muted">Saved.</span>
+          <span className="text-sm text-muted">{copy.saved}</span>
         ) : null}
       </div>
     </form>

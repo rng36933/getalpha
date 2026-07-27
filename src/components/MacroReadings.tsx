@@ -1,3 +1,5 @@
+import { macroDeskCopy } from "@/lib/i18n/app/macroDesk";
+import type { Locale } from "@/lib/i18n/locales";
 import type { CotRow } from "@/lib/market-data/cot";
 import type { MacroReading } from "@/lib/market-data/fred";
 
@@ -8,13 +10,21 @@ import type { MacroReading } from "@/lib/market-data/fred";
  * of the card. Daily yields and monthly CPI sit side by side, and a reader
  * needs to see that one is from yesterday and the other from three weeks ago.
  */
-export function ReadingList({ readings }: { readings: MacroReading[] }) {
+export function ReadingList({
+  readings,
+  locale,
+}: {
+  readings: MacroReading[];
+  locale: Locale;
+}) {
+  const copy = macroDeskCopy(locale);
+
   if (readings.length === 0) {
     // One quiet line, not a tall centred box. When the provider is down all
     // three cards hit this at once, and three paragraphs of "Not available
     // right now" under a notice that has already explained why reads as a
     // broken page rather than as a missing feed.
-    return <p className="py-1 text-sm text-muted">No readings — see above.</p>;
+    return <p className="py-1 text-sm text-muted">{copy.noReadings}</p>;
   }
 
   return (
@@ -62,7 +72,11 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
               <div
                 className="relative h-1 rounded-full bg-surface-raised"
                 role="img"
-                aria-label={`${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`}
+                aria-label={copy.rangeAriaLabel(
+                  reading.rangePercent,
+                  reading.rangeLow,
+                  reading.rangeHigh,
+                )}
               >
                 <span
                   className="absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-background"
@@ -73,7 +87,7 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
               <div className="mt-1.5 flex items-baseline justify-between gap-2 font-mono text-[10px] tabular-nums text-muted">
                 <span>{reading.rangeLow}</span>
                 <span className="text-accent">
-                  {reading.rangePercent}% of 12m range
+                  {copy.rangeLabel(reading.rangePercent)}
                 </span>
                 <span>{reading.rangeHigh}</span>
               </div>
@@ -99,12 +113,14 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
  * hole, printed — green and red cannot carry the meaning on their own, and this
  * card is read at a glance by people who may not separate the two hues.
  */
-function CotDial({ row }: { row: CotRow }) {
+function CotDial({ row, locale }: { row: CotRow; locale: Locale }) {
+  const copy = macroDeskCopy(locale);
   const total = row.long + row.short;
   const longShare = total > 0 ? (row.long / total) * 100 : 50;
 
   const isLong = row.skew > 0;
   const longArc = (longShare / 100) * CIRCUMFERENCE;
+  const direction = isLong ? "long" : "short";
 
   return (
     <li className="flex flex-col items-center gap-2 text-center">
@@ -113,7 +129,12 @@ function CotDial({ row }: { row: CotRow }) {
           viewBox="0 0 80 80"
           className="size-[4.5rem]"
           role="img"
-          aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
+          aria-label={copy.dialAriaLabel(
+            row.label,
+            Math.round(longShare),
+            Math.abs(row.skew),
+            direction,
+          )}
         >
           {/* Rotated so both arcs start at twelve o'clock, which is where the
               eye starts reading a dial. */}
@@ -157,7 +178,7 @@ function CotDial({ row }: { row: CotRow }) {
           isLong ? "text-positive" : "text-negative"
         }`}
       >
-        net {isLong ? "long" : "short"}
+        {copy.netLabel(direction)}
       </span>
     </li>
   );
@@ -170,39 +191,31 @@ function CotDial({ row }: { row: CotRow }) {
  * so every dial shows the split between the two sides — comparable across all
  * of them, and the same shape whether the market is gold or bitcoin.
  */
-export function CotList({ rows }: { rows: CotRow[] }) {
+export function CotList({ rows, locale }: { rows: CotRow[]; locale: Locale }) {
+  const copy = macroDeskCopy(locale);
+
   if (rows.length === 0) {
-    return (
-      <p className="py-1 text-sm text-muted">
-        Nothing here matches your watchlist. The CFTC publishes this report for
-        gold, silver, the euro, the pound, the yen and bitcoin — add one of those
-        and its positioning appears.
-      </p>
-    );
+    return <p className="py-1 text-sm text-muted">{copy.noPositioning}</p>;
   }
 
   return (
     <div>
       <ul className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-6">
         {rows.map((row) => (
-          <CotDial key={row.label} row={row} />
+          <CotDial key={row.label} row={row} locale={locale} />
         ))}
       </ul>
 
       <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2 rounded-full bg-positive" aria-hidden="true" />
-          long
+          {copy.long}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2 rounded-full bg-negative" aria-hidden="true" />
-          short
+          {copy.short}
         </span>
-        <span>
-          Non-commercial positions from the CFTC, held on {rows[0]?.asOf} and
-          published the following Friday. The lag is the report itself, not this
-          page.
-        </span>
+        <span>{copy.positioningFootnote(rows[0]?.asOf ?? "")}</span>
       </p>
     </div>
   );

@@ -3,6 +3,8 @@ import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
 import SupportForm from "@/components/SupportForm";
 import SupportInbox, { type Ticket } from "@/components/SupportInbox";
+import { supportCopy } from "@/lib/i18n/app/support";
+import { getLocale } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { isSupportReader } from "@/lib/support/admin";
 
@@ -30,6 +32,8 @@ async function loadInbox(): Promise<Ticket[]> {
 export default async function SupportPage() {
   const { userId } = await auth();
   const canRead = isSupportReader(userId);
+  const locale = await getLocale();
+  const copy = supportCopy(locale);
 
   let tickets: Ticket[] = [];
   let inboxFailed = false;
@@ -47,24 +51,25 @@ export default async function SupportPage() {
 
   return (
     <>
-      <PageHeader
-        title="Support"
-        subtitle="Report something broken, or tell us what would make this better."
-      />
+      <PageHeader title={copy.title} subtitle={copy.subtitle} />
 
       <div className="max-w-2xl space-y-4">
-        <Card title="Send a message">
-          <SupportForm />
+        <Card title={copy.sendMessageCardTitle}>
+          <SupportForm locale={locale} />
         </Card>
 
         {canRead ? (
-          <Card title={open > 0 ? `Inbox · ${open} open` : "Inbox"}>
+          <Card
+            title={
+              open > 0 ? copy.inboxCardTitleWithCount(open) : copy.inboxCardTitle
+            }
+          >
             {inboxFailed ? (
               <p className="py-8 text-center text-sm text-muted">
-                The inbox could not be loaded. Reload in a moment.
+                {copy.inboxLoadFailed}
               </p>
             ) : (
-              <SupportInbox tickets={tickets} />
+              <SupportInbox tickets={tickets} locale={locale} />
             )}
           </Card>
         ) : null}

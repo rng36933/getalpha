@@ -1,6 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { LOCALE_COOKIE, suggestLocale } from "@/lib/i18n/locales";
+import {
+  LOCALE_COOKIE,
+  LOCALE_COOKIE_MAX_AGE,
+  suggestLocale,
+} from "@/lib/i18n/locales";
 import { PUBLIC_ROUTES } from "@/lib/public-routes";
 import {
   REFERRAL_CODE_PATTERN,
@@ -26,39 +30,74 @@ export default clerkMiddleware(async (auth, request) => {
     await auth.protect();
   }
 
-  // A visitor from Lithuania is *offered* the Lithuanian page, once.
+  const existingLocaleCookie = request.cookies.get(LOCALE_COOKIE)?.value;
+  const suggestedLocale = suggestLocale({
+    cookie: existingLocaleCookie,
+    country: request.headers.get("x-vercel-ip-country"),
+  });
+
+  // A visitor from Lithuania is *offered* the Lithuanian landing page, once.
   //
-  // Deliberately narrow: only the bare landing page, only when they have not
-  // already chosen a language, and only ever as a redirect to a real URL. Three
-  // things follow from doing it this way rather than swapping the content at
-  // `/`, and each of them is the reason for one of those conditions:
+  // Deliberately narrow: only the bare landing page, only as a redirect to a
+  // real URL, never a content swap at `/` itself. Two things follow from doing
+  // it this way:
   //
   // - Googlebot crawls from the United States, so it is never redirected and
   //   `/` stays the English page it indexes. `/lt` it reaches directly.
-  // - The country is a guess about a person. `LOCALE_COOKIE` is that person's
-  //   own answer, so it is checked first and wins from the moment they click
-  //   the switcher.
   // - The header is absent locally and can be absent at the edge, and
-  //   `suggestLocale` treats absence as "leave them alone" rather than a hint.
-  if (request.nextUrl.pathname === "/") {
-    const locale = suggestLocale({
-      cookie: request.cookies.get(LOCALE_COOKIE)?.value,
-      country: request.headers.get("x-vercel-ip-country"),
-    });
+  //   `suggestLocale` treats absence as "leave them alone" rather than a hint,
+  //   so nothing here redirects on a guess it cannot make.
+  //
+  // The signed-in app is not indexed by anyone, so it has no matching reason to
+  // fork every dashboard route into an `/lt` twin — it reads the same cookie
+  // set below and swaps its own copy without moving the URL at all.
+  if (request.nextUrl.pathname === "/" && suggestedLocale === "lt") {
+    const target = request.nextUrl.clone();
+    target.pathname = "/lt";
 
-    if (locale === "lt") {
-      const target = request.nextUrl.clone();
-      target.pathname = "/lt";
+    // 307, not 308: this is a suggestion about a reader, not a statement that
+    // the page has moved. A permanent redirect would be cached by the browser
+    // and would survive them choosing English, which is the one thing the
+    // switcher must always be able to undo.
+    const redirect = NextResponse.redirect(target, 307);
 
-      // 307, not 308: this is a suggestion about a reader, not a statement that
-      // the page has moved. A permanent redirect would be cached by the browser
-      // and would survive them choosing English, which is the one thing the
-      // switcher must always be able to undo.
-      return NextResponse.redirect(target, 307);
+    if (!existingLocaleCookie) {
+      redirect.cookies.set(LOCALE_COOKIE, suggestedLocale, {
+        maxAge: LOCALE_COOKIE_MAX_AGE,
+        httpOnly: false,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+      });
     }
+
+    return redirect;
   }
 
   const response = NextResponse.next();
+
+  // Written once, on whichever page a visitor happens to land on first —
+  // there is no single "front door" a signed-in dashboard user is guaranteed
+  // to pass through, unlike the landing page's `/`. Without this, someone who
+  // bookmarks straight into `/dashboard` and never once loads `/` would carry
+  // no cookie at all, and every dashboard page would have to fall back to
+  // guessing the country itself instead of reading one settled answer.
+  //
+  // Skipped for API routes: a fetch call gains nothing from a cookie meant for
+  // the next page render, and setting one on every `/api/mt5/sync` ping from a
+  // terminal would be cookie churn with no reader to benefit from it.
+  if (!existingLocaleCookie && !request.nextUrl.pathname.startsWith("/api")) {
+    response.cookies.set(LOCALE_COOKIE, suggestedLocale, {
+      // Not httpOnly: the client-side language switcher writes this same
+      // cookie directly from the browser, so the server setting it httpOnly
+      // would make the two inconsistent about who is allowed to change it.
+      httpOnly: false,
+      maxAge: LOCALE_COOKIE_MAX_AGE,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+  }
 
   // An invite code arrives on the landing page but is only usable after the
   // visitor has signed up, which happens on Clerk's pages. The cookie is what

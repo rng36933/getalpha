@@ -1,34 +1,41 @@
 import LocalTime, { LocalZoneLabel } from "@/components/LocalTime";
+import { calendarCopy, type CalendarCopy } from "@/lib/i18n/app/calendar";
+import type { Locale } from "@/lib/i18n/locales";
 import type { EconomicEvent, ImpactLevel } from "@/lib/market-data/display";
 
-const impactStyles: Record<ImpactLevel, { label: string; className: string }> = {
-  HIGH: { label: "High", className: "bg-negative/15 text-negative" },
-  MEDIUM: { label: "Medium", className: "bg-warning/15 text-warning" },
-  LOW: { label: "Low", className: "bg-muted/15 text-muted" },
+function impactLabel(impact: ImpactLevel, copy: CalendarCopy): string {
+  if (impact === "HIGH") return copy.impact.high;
+  if (impact === "MEDIUM") return copy.impact.medium;
+  return copy.impact.low;
+}
+
+const impactClassName: Record<ImpactLevel, string> = {
+  HIGH: "bg-negative/15 text-negative",
+  MEDIUM: "bg-warning/15 text-warning",
+  LOW: "bg-muted/15 text-muted",
 };
 
-function ImpactBadge({ impact }: { impact: ImpactLevel }) {
-  const { label, className } = impactStyles[impact];
-
+function ImpactBadge({ impact, copy }: { impact: ImpactLevel; copy: CalendarCopy }) {
   return (
     <span
-      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${className}`}
+      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${impactClassName[impact]}`}
     >
-      {label}
+      {impactLabel(impact, copy)}
     </span>
   );
 }
 
 type EconomicCalendarProps = {
   events: EconomicEvent[];
+  locale: Locale;
 };
 
-export default function EconomicCalendar({ events }: EconomicCalendarProps) {
+export default function EconomicCalendar({ events, locale }: EconomicCalendarProps) {
+  const copy = calendarCopy(locale);
+
   if (events.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted">
-        No events scheduled for today.
-      </p>
+      <p className="py-8 text-center text-sm text-muted">{copy.noEventsToday}</p>
     );
   }
 
@@ -36,15 +43,15 @@ export default function EconomicCalendar({ events }: EconomicCalendarProps) {
     <div>
       <div className="hidden items-center gap-3 border-b border-line pb-2 text-[11px] uppercase tracking-wider text-muted sm:flex">
         <span className="w-20 shrink-0 sm:w-24">
-          When <LocalZoneLabel />
+          {copy.columns.when} <LocalZoneLabel />
         </span>
-        <span className="w-10 shrink-0">Ccy</span>
-        <span className="min-w-0 flex-1">Event</span>
-        <span className="w-[70px] shrink-0">Impact</span>
+        <span className="w-10 shrink-0">{copy.columns.ccy}</span>
+        <span className="min-w-0 flex-1">{copy.columns.event}</span>
+        <span className="w-[70px] shrink-0">{copy.columns.impact}</span>
         <div className="flex w-40 shrink-0 justify-end gap-4 text-right">
-          <span className="w-12">Act</span>
-          <span className="w-12">Fcst</span>
-          <span className="w-12">Prev</span>
+          <span className="w-12">{copy.columns.actual}</span>
+          <span className="w-12">{copy.columns.forecast}</span>
+          <span className="w-12">{copy.columns.previous}</span>
         </div>
       </div>
 
@@ -79,7 +86,7 @@ export default function EconomicCalendar({ events }: EconomicCalendarProps) {
               </span>
 
               <span className="w-[70px] shrink-0">
-                <ImpactBadge impact={event.impact} />
+                <ImpactBadge impact={event.impact} copy={copy} />
               </span>
 
               <div className="hidden w-40 shrink-0 justify-end gap-4 text-right font-mono text-xs sm:flex">

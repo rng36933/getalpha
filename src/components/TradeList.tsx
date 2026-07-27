@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { Fragment, useRef, useState } from "react";
 import CoachReviewPanel from "@/components/CoachReviewPanel";
+import LocalTime from "@/components/LocalTime";
 import TradeNotes, { type Notes } from "@/components/TradeNotes";
+import type { CoachBudgetStatus } from "@/lib/ai/budget";
+import { journalCopy } from "@/lib/i18n/app/journal";
+import type { Locale } from "@/lib/i18n/locales";
 import type { TradeMetrics } from "@/lib/ai/trade-metrics";
 import type { CoachReview } from "@/lib/ai/types";
 import { formatSignedMoney } from "@/lib/format/money";
@@ -25,16 +29,6 @@ export type TradeRow = {
   metrics: TradeMetrics;
 };
 
-const EXIT_LABEL: Record<TradeMetrics["exitClassification"], string> = {
-  HIT_TARGET: "Target",
-  HIT_STOP: "Stop",
-  DISCRETIONARY_EXIT: "Discretionary",
-  BEYOND_TARGET: "Past target",
-  BEYOND_STOP: "Past stop",
-  STILL_OPEN: "Open",
-  UNKNOWN: "—",
-};
-
 function formatResult(value: number | null, currency: string | null): string {
   if (value === null) return "—";
   return formatSignedMoney(value, currency);
@@ -48,17 +42,6 @@ function toneFor(value: number | null): string {
 }
 
 type Outcome = "ALL" | "WINS" | "LOSSES" | "OPEN" | "NO_STOP";
-
-const OUTCOMES: { value: Outcome; label: string }[] = [
-  { value: "ALL", label: "All" },
-  { value: "WINS", label: "Wins" },
-  { value: "LOSSES", label: "Losses" },
-  { value: "OPEN", label: "Open" },
-  // Not a result but the thing most worth being able to isolate: a trade taken
-  // with no stop has no defined risk, so nothing here can say whether its size
-  // was sensible — only what it happened to make or lose.
-  { value: "NO_STOP", label: "No stop" },
-];
 
 /** Rows per page. Short enough to read without scrolling past the filters. */
 const PER_PAGE = 25;
@@ -139,12 +122,45 @@ function ResultBar({ value, scale }: { value: number | null; scale: number }) {
 export default function TradeList({
   trades,
   currency,
+  coachBudget,
+  locale,
 }: {
   trades: TradeRow[];
   currency: string | null;
+  /** Null for a Free account, or if the count could not be read. */
+  coachBudget: CoachBudgetStatus | null;
+  locale: Locale;
 }) {
+  const copy = journalCopy(locale);
+
+  const EXIT_LABEL: Record<TradeMetrics["exitClassification"], string> = {
+    HIT_TARGET: copy.table.exitLabels.target,
+    HIT_STOP: copy.table.exitLabels.stop,
+    DISCRETIONARY_EXIT: copy.table.exitLabels.discretionary,
+    BEYOND_TARGET: copy.table.exitLabels.pastTarget,
+    BEYOND_STOP: copy.table.exitLabels.pastStop,
+    STILL_OPEN: copy.table.exitLabels.openTrade,
+    UNKNOWN: copy.table.exitLabels.unknown,
+  };
+
+  const OUTCOMES: { value: Outcome; label: string }[] = [
+    { value: "ALL", label: copy.filters.all },
+    { value: "WINS", label: copy.filters.wins },
+    { value: "LOSSES", label: copy.filters.losses },
+    { value: "OPEN", label: copy.filters.open },
+    // Not a result but the thing most worth being able to isolate: a trade
+    // taken with no stop has no defined risk, so nothing here can say whether
+    // its size was sensible — only what it happened to make or lose.
+    { value: "NO_STOP", label: copy.filters.noStop },
+  ];
+
   // Anchors the scroll when the page changes; the pager sits below the table.
   const topRef = useRef<HTMLDivElement>(null);
+  // Seeded from the server, then decremented locally on each completed
+  // review. A full round trip to re-read the count after every review would
+  // be a second request purely to display a number the client already knows
+  // the answer to, since it just watched the request that spent it succeed.
+  const [reviewsLeft, setReviewsLeft] = useState(coachBudget?.reviewsRemaining ?? null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [notesId, setNotesId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<string, ReviewState>>({});
@@ -270,12 +286,16 @@ export default function TradeList({
       const body = await response.json().catch(() => null);
 
       if (!response.ok) {
+        // A 402 from the daily allowance means zero are left, whatever the
+        // count on screen currently says — the count is an estimate seeded at
+        // page load, and this response is the ground truth overtaking it.
+        if (response.status === 402) setReviewsLeft(0);
+
         setReviews((current) => ({
           ...current,
           [id]: {
             status: "error",
-            message:
-              body?.error ?? "The review could not be produced. Try again.",
+            message: body?.error ?? copy.table.genericError,
             // 403 with this reason is the only failure the user can fix by
             // buying something. Everything else is ours to fix.
             upgrade: body?.reason === "SUBSCRIPTION_REQUIRED",
@@ -283,6 +303,12 @@ export default function TradeList({
         }));
         return;
       }
+
+      // Decremented on a real, completed review — not merely attempted, so a
+      // request that failed above never reaches this line.
+      setReviewsLeft((current) =>
+        current === null ? null : Math.max(0, current - 1),
+      );
 
       setReviews((current) => ({
         ...current,
@@ -293,7 +319,7 @@ export default function TradeList({
         ...current,
         [id]: {
           status: "error",
-          message: "Could not reach the server. Check your connection.",
+          message: copy.table.couldNotReach,
         },
       }));
     }
@@ -305,8 +331,7 @@ export default function TradeList({
   if (withEdits.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted">
-        No trades yet. Connect MetaTrader from the dashboard and ninety days of
-        history arrives on the first sync.
+        {copy.noTradesYet}
       </p>
     );
   }
@@ -315,13 +340,40 @@ export default function TradeList({
     // `scroll-mt-20` clears the sticky top bar on a phone, so scrolling here
     // does not park the filters underneath it.
     <div ref={topRef} className="scroll-mt-20">
+      {/* Reviews remaining today. Placed above the filters so it is the first
+          thing read on this card, not something noticed only after pressing
+          Review and hitting a refusal. Absent entirely for a Free account —
+          see `loadCoachBudget` in the journal page — because a count for a
+          feature that account cannot use at all would just advertise a
+          paywall, not inform anyone. */}
+      {coachBudget && reviewsLeft !== null ? (
+        <p className="mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted">
+          {reviewsLeft > 0 ? (
+            <>
+              <span className="font-medium text-accent">{reviewsLeft}</span>
+              <span>{copy.reviewsBanner.ofEstimate(coachBudget.estimatedDailyReviews)}</span>
+            </>
+          ) : (
+            <span className="text-warning">{copy.reviewsBanner.none}</span>
+          )}
+          <span aria-hidden="true">·</span>
+          <span>
+            {copy.reviewsBanner.resets}{" "}
+            <LocalTime
+              at={coachBudget.resetsAt}
+              utc={coachBudget.resetsAt.slice(11, 16)}
+            />
+          </span>
+        </p>
+      ) : null}
+
       {/* Filters in one row above the table, as a toolbar rather than scattered
           controls. Only offered when there is more than one thing to choose
           between — a select with a single option is furniture. */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div
           role="group"
-          aria-label="Filter by outcome"
+          aria-label={copy.filters.outcomeAria}
           className="flex flex-wrap gap-1"
         >
           {OUTCOMES.map((option) => {
@@ -349,10 +401,10 @@ export default function TradeList({
           <select
             value={asset}
             onChange={(event) => setAsset(event.target.value)}
-            aria-label="Filter by instrument"
+            aria-label={copy.filters.instrumentAria}
             className={selectClass}
           >
-            <option value="ALL">Every instrument</option>
+            <option value="ALL">{copy.filters.everyInstrument}</option>
             {assets.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -365,10 +417,10 @@ export default function TradeList({
           <select
             value={setup}
             onChange={(event) => setSetup(event.target.value)}
-            aria-label="Filter by setup"
+            aria-label={copy.filters.setupAria}
             className={selectClass}
           >
-            <option value="ALL">Every setup</option>
+            <option value="ALL">{copy.filters.everySetup}</option>
             {setups.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -379,14 +431,14 @@ export default function TradeList({
 
         {filtered ? (
           <span className="text-xs text-muted">
-            {rows.length} of {withEdits.length}
+            {copy.filters.filteredCount(rows.length, withEdits.length)}
           </span>
         ) : null}
       </div>
 
       {rows.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted">
-          No trades match those filters.{" "}
+          {copy.filters.noMatches}{" "}
           <button
             type="button"
             onClick={() => {
@@ -396,7 +448,7 @@ export default function TradeList({
             }}
             className="text-accent hover:underline"
           >
-            Clear them
+            {copy.filters.clear}
           </button>
           .
         </p>
@@ -406,16 +458,16 @@ export default function TradeList({
       <table className="w-full min-w-[900px] text-sm">
         <thead>
           <tr className="border-b border-line text-[11px] uppercase tracking-wider text-muted">
-            <th className="py-2 pr-3 text-left font-normal">Date</th>
-            <th className="py-2 pr-3 text-left font-normal">Instrument</th>
-            <th className="py-2 pr-3 text-left font-normal">Side</th>
-            <th className="py-2 pr-3 text-left font-normal">Setup</th>
-            <th className="py-2 pr-3 text-right font-normal">Risk</th>
-            <th className="py-2 pr-3 text-right font-normal">Planned RR</th>
-            <th className="py-2 pr-3 text-left font-normal">Exit</th>
-            <th className="py-2 pr-3 text-right font-normal">Result</th>
-            <th className="py-2 pr-3 text-right font-normal">Notes</th>
-            <th className="py-2 text-right font-normal">Review</th>
+            <th className="py-2 pr-3 text-left font-normal">{copy.table.date}</th>
+            <th className="py-2 pr-3 text-left font-normal">{copy.table.instrument}</th>
+            <th className="py-2 pr-3 text-left font-normal">{copy.table.side}</th>
+            <th className="py-2 pr-3 text-left font-normal">{copy.table.setup}</th>
+            <th className="py-2 pr-3 text-right font-normal">{copy.table.risk}</th>
+            <th className="py-2 pr-3 text-right font-normal">{copy.table.plannedRR}</th>
+            <th className="py-2 pr-3 text-left font-normal">{copy.table.exit}</th>
+            <th className="py-2 pr-3 text-right font-normal">{copy.table.result}</th>
+            <th className="py-2 pr-3 text-right font-normal">{copy.table.notes}</th>
+            <th className="py-2 text-right font-normal">{copy.table.review}</th>
           </tr>
         </thead>
 
@@ -440,10 +492,10 @@ export default function TradeList({
                     {trade.asset}
                     {trade.source === "MT5" ? (
                       <span
-                        title="Synced from MetaTrader. The prices belong to the terminal; the notes are yours."
+                        title={copy.table.mt5Title}
                         className="ml-2 rounded border border-line px-1 py-0.5 align-middle text-[10px] font-normal tracking-wide text-muted"
                       >
-                        MT5
+                        {copy.table.mt5Badge}
                       </span>
                     ) : null}
                   </td>
@@ -455,7 +507,7 @@ export default function TradeList({
                           : "text-negative"
                       }
                     >
-                      {trade.direction === "BUY" ? "Buy" : "Sell"}
+                      {trade.direction === "BUY" ? copy.table.buy : copy.table.sell}
                     </span>
                   </td>
                   <td className="py-3 pr-3 text-muted">{trade.setup ?? "—"}</td>
@@ -463,7 +515,7 @@ export default function TradeList({
                     {trade.metrics.riskPercent === null ? (
                       // Not a missing value to shrug at: no stop means no
                       // defined risk, and the review says so too.
-                      <span className="text-warning">no stop</span>
+                      <span className="text-warning">{copy.table.noStop}</span>
                     ) : (
                       <span
                         className={
@@ -509,7 +561,11 @@ export default function TradeList({
                           : "border-line text-muted"
                       }`}
                     >
-                      {editing ? "Close" : hasNotes ? "Notes" : "Add notes"}
+                      {editing
+                        ? copy.table.close
+                        : hasNotes
+                          ? copy.table.editNotes
+                          : copy.table.addNotes}
                     </button>
                   </td>
                   <td className="py-3 text-right">
@@ -521,12 +577,12 @@ export default function TradeList({
                       className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {state.status === "loading"
-                        ? "Reviewing…"
+                        ? copy.table.reviewing
                         : state.status === "ready"
                           ? open
-                            ? "Hide"
-                            : "Show"
-                          : "Review"}
+                            ? copy.table.hide
+                            : copy.table.show
+                          : copy.table.review}
                     </button>
                   </td>
                 </tr>
@@ -537,9 +593,7 @@ export default function TradeList({
                       <div className="rounded-lg border border-line bg-surface-raised p-4">
                         {trade.source === "MT5" ? (
                           <p className="mb-3 text-xs text-muted">
-                            MetaTrader sends the prices and can never send the
-                            reason. What you write here is the half the review
-                            cannot compute.
+                            {copy.table.mt5NotesHint}
                           </p>
                         ) : null}
 
@@ -552,6 +606,7 @@ export default function TradeList({
                             emotionalState: trade.emotionalState,
                           }}
                           onSaved={(notes) => applyNotes(trade.id, notes)}
+                          locale={locale}
                         />
                       </div>
                     </td>
@@ -564,8 +619,7 @@ export default function TradeList({
                       <div className="rounded-lg border border-line bg-surface-raised p-4">
                         {state.status === "loading" ? (
                           <p className="text-sm text-muted">
-                            Reading the trade against your history. This takes
-                            about half a minute.
+                            {copy.table.reviewLoading}
                           </p>
                         ) : null}
 
@@ -579,14 +633,14 @@ export default function TradeList({
                                 href="/dashboard/pricing"
                                 className="mt-2 inline-block text-sm text-accent hover:underline"
                               >
-                                See the plans
+                                {copy.table.seePlans}
                               </Link>
                             ) : null}
                           </div>
                         ) : null}
 
                         {state.status === "ready" ? (
-                          <CoachReviewPanel review={state.review} />
+                          <CoachReviewPanel review={state.review} locale={locale} />
                         ) : null}
                       </div>
                     </td>
@@ -605,12 +659,15 @@ export default function TradeList({
           would be a control with one destination. */}
       {pageCount > 1 ? (
         <nav
-          aria-label="Journal pages"
+          aria-label={copy.pager.ariaLabel}
           className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3"
         >
           <span className="text-xs tabular-nums text-muted">
-            {start + 1}–{Math.min(start + PER_PAGE, rows.length)} of{" "}
-            {rows.length}
+            {copy.pager.range(
+              start + 1,
+              Math.min(start + PER_PAGE, rows.length),
+              rows.length,
+            )}
           </span>
 
           <div className="flex items-center gap-1.5">
@@ -620,7 +677,7 @@ export default function TradeList({
               disabled={page === 1}
               className={pagerClass}
             >
-              Previous
+              {copy.pager.previous}
             </button>
 
             {pageWindow(page, pageCount).map((entry, index) =>
@@ -638,7 +695,7 @@ export default function TradeList({
                   type="button"
                   onClick={() => goToPage(entry)}
                   aria-current={entry === page ? "page" : undefined}
-                  aria-label={`Page ${entry}`}
+                  aria-label={copy.pager.pageAria(entry)}
                   className={`rounded-lg border px-2.5 py-1.5 font-mono text-xs tabular-nums transition-colors ${
                     entry === page
                       ? "border-accent bg-accent-soft text-accent"
@@ -656,7 +713,7 @@ export default function TradeList({
               disabled={page === pageCount}
               className={pagerClass}
             >
-              Next
+              {copy.pager.next}
             </button>
           </div>
         </nav>

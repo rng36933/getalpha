@@ -3,8 +3,9 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, isActive } from "@/components/nav-items";
+import { navItems, isActive } from "@/components/nav-items";
 import PlanBadge from "@/components/PlanBadge";
+import type { Locale } from "@/lib/i18n/locales";
 
 /**
  * The desktop rail. Hidden below `sm`, where `MobileNav` takes over.
@@ -16,7 +17,8 @@ import PlanBadge from "@/components/PlanBadge";
 export default function Sidebar({
   name,
   pro,
-}: Readonly<{ name: string; pro: boolean }>) {
+  locale,
+}: Readonly<{ name: string; pro: boolean; locale: Locale }>) {
   const pathname = usePathname();
 
   return (
@@ -31,7 +33,7 @@ export default function Sidebar({
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3">
-        {NAV_ITEMS.map((item) => {
+        {navItems(locale).map((item) => {
           const active = isActive(pathname, item.href);
 
           return (
@@ -71,7 +73,7 @@ export default function Sidebar({
         />
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span className="truncate text-xs text-muted">{name}</span>
-          <PlanBadge pro={pro} />
+          <PlanBadge pro={pro} locale={locale} />
         </div>
       </div>
     </aside>

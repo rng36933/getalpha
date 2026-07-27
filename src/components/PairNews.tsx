@@ -1,3 +1,5 @@
+import { dashboardCopy } from "@/lib/i18n/app/dashboard";
+import type { Locale } from "@/lib/i18n/locales";
 import type { NewsInput } from "@/lib/ai/types";
 
 /**
@@ -17,7 +19,11 @@ import type { NewsInput } from "@/lib/ai/types";
  * and when a stored fallback is being shown the ages stay honest about the
  * moment the data describes instead of drifting with the page.
  */
-function age(publishedAt: string, asOf: string): string | null {
+function age(
+  publishedAt: string,
+  asOf: string,
+  copy: ReturnType<typeof dashboardCopy>["newsCard"],
+): string | null {
   const from = new Date(asOf).getTime();
   const at = new Date(publishedAt).getTime();
 
@@ -25,14 +31,14 @@ function age(publishedAt: string, asOf: string): string | null {
 
   const minutes = Math.round((from - at) / 60_000);
 
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return copy.justNow;
+  if (minutes < 60) return copy.minutesAgo(minutes);
 
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return copy.hoursAgo(hours);
 
   const days = Math.round(hours / 24);
-  return days === 1 ? "1d ago" : `${days}d ago`;
+  return days === 1 ? copy.oneDayAgo : copy.daysAgo(days);
 }
 
 export default function PairNews({
@@ -40,6 +46,7 @@ export default function PairNews({
   label,
   asOf,
   emptyReason,
+  locale,
 }: {
   headlines: NewsInput[];
   /** How the instrument is written in the app, e.g. "XAUUSD". */
@@ -48,12 +55,14 @@ export default function PairNews({
   asOf: string | null;
   /** Set when the feed itself failed, rather than simply having nothing. */
   emptyReason?: string;
+  locale: Locale;
 }) {
+  const copy = dashboardCopy(locale).newsCard;
+
   if (headlines.length === 0) {
     return (
       <p className="py-6 text-center text-sm text-muted">
-        {emptyReason ??
-          `Nothing in the last three days naming ${label} or its currencies. The feeds are read live; a quiet list is a quiet market, not a broken panel.`}
+        {emptyReason ?? copy.empty(label)}
       </p>
     );
   }
@@ -64,7 +73,7 @@ export default function PairNews({
         <li key={`${headline.source}-${headline.publishedAt}-${headline.title}`}>
           <div className="flex items-baseline gap-3 py-2.5">
             <span className="w-16 shrink-0 font-mono text-[11px] text-muted">
-              {(asOf ? age(headline.publishedAt, asOf) : null) ??
+              {(asOf ? age(headline.publishedAt, asOf, copy) : null) ??
                 headline.publishedAt.slice(11, 16)}
             </span>
             <div className="min-w-0 flex-1">

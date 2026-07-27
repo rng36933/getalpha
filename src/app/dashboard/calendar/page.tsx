@@ -3,6 +3,8 @@ import Card from "@/components/Card";
 import CalendarView from "@/components/CalendarView";
 import DataQualityNotice from "@/components/DataQualityNotice";
 import PageHeader from "@/components/PageHeader";
+import { calendarCopy } from "@/lib/i18n/app/calendar";
+import { getLocale } from "@/lib/i18n/server";
 import { fetchEconomicCalendar } from "@/lib/market-data/calendar";
 import { currenciesFromSymbols } from "@/lib/market-data/currencies";
 import { toEconomicEvents } from "@/lib/market-data/display";
@@ -36,11 +38,13 @@ export default async function CalendarPage() {
   // `fetchEconomicCalendar` resolves to stored events when the feed is down and
   // to an empty list when there is nothing stored either — it never rejects, so
   // the page renders whatever is available rather than an error screen.
-  const [calendar, currencies] = await Promise.all([
+  const [calendar, currencies, locale] = await Promise.all([
     fetchEconomicCalendar(),
     watchlistCurrencies(userId),
+    getLocale(),
   ]);
 
+  const copy = calendarCopy(locale);
   const events = toEconomicEvents(calendar.data);
 
   const highImpact = events.filter(
@@ -51,31 +55,29 @@ export default async function CalendarPage() {
 
   return (
     <>
-      <PageHeader
-        title="Calendar"
-        subtitle="Today's releases, in your timezone, for the currencies you trade."
-      />
+      <PageHeader title={copy.title} subtitle={copy.subtitle} />
 
       <DataQualityNotice
-        sources={[{ label: "Economic calendar", result: calendar }]}
+        sources={[{ label: copy.calendarSourceLabel, result: calendar }]}
+        locale={locale}
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card title="Economic calendar" className="xl:col-span-2">
-          <CalendarView events={events} currencies={currencies} />
+        <Card title={copy.calendarCardTitle} className="xl:col-span-2">
+          <CalendarView events={events} currencies={currencies} locale={locale} />
         </Card>
 
         {/* Was an empty "Today's Events — high-impact only" placeholder. It is
             the same list filtered twice over, which is what somebody checks
             before deciding whether to trade the session at all. */}
-        <Card title="High impact today">
+        <Card title={copy.highImpactCardTitle}>
           {highImpact.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted">
               {events.length === 0
-                ? "No releases scheduled today."
+                ? copy.noEventsToday
                 : currencies.length > 0
-                  ? "Nothing high-impact for your currencies today."
-                  : "Nothing high-impact scheduled today."}
+                  ? copy.nothingHighImpactForCurrencies
+                  : copy.nothingHighImpact}
             </p>
           ) : (
             <ul className="divide-y divide-line">

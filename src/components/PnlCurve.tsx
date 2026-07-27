@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { dashboardCopy } from "@/lib/i18n/app/dashboard";
+import type { Locale } from "@/lib/i18n/locales";
 import type { PnlCurve as PnlCurveData } from "@/lib/dashboard/pnl-curve";
 import { formatCompactMoney, formatSignedMoney } from "@/lib/format/money";
 
@@ -26,10 +28,13 @@ const PLOT_H = H - PAD.top - PAD.bottom;
 export default function PnlCurve({
   curve,
   currency,
+  locale,
 }: {
   curve: PnlCurveData;
   currency: string | null;
+  locale: Locale;
 }) {
+  const copy = dashboardCopy(locale).pnlCurve;
   const [hover, setHover] = useState<number | null>(null);
 
   const { points, min, max, final, maxDrawdown } = curve;
@@ -88,14 +93,14 @@ export default function PnlCurve({
           >
             {format(final)}
           </span>
-          <span className="text-xs text-muted">over {points.length} trades</span>
+          <span className="text-xs text-muted">{copy.overTrades(points.length)}</span>
         </span>
 
         <span className="flex items-baseline gap-2">
           <span className="figure text-base text-warning">
             {formatSignedMoney(-maxDrawdown, currency)}
           </span>
-          <span className="text-xs text-muted">deepest fall from a peak</span>
+          <span className="text-xs text-muted">{copy.deepestFall}</span>
         </span>
       </div>
 
@@ -103,7 +108,11 @@ export default function PnlCurve({
         viewBox={`0 0 ${W} ${H}`}
         className="mt-3 w-full touch-none"
         role="img"
-        aria-label={`Cumulative profit and loss over ${points.length} trades, ending at ${format(final)}, with a deepest fall from a peak of ${format(-maxDrawdown)}.`}
+        aria-label={copy.ariaLabel(
+          points.length,
+          format(final),
+          format(-maxDrawdown),
+        )}
         onMouseLeave={() => setHover(null)}
       >
         <defs>
@@ -228,12 +237,12 @@ export default function PnlCurve({
               {format(active.pnl)}
             </span>
             <span className="tabular-nums">
-              running {format(active.cumulative)}
+              {copy.running(format(active.cumulative))}
             </span>
             <span>{active.at.slice(0, 10)}</span>
           </span>
         ) : (
-          <span>Hover or tap a point for the trade behind it.</span>
+          <span>{copy.hoverHint}</span>
         )}
       </div>
     </div>

@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import PriceChart from "@/components/PriceChart";
+import { dashboardCopy } from "@/lib/i18n/app/dashboard";
+import type { Locale } from "@/lib/i18n/locales";
 import type { Candle } from "@/lib/market-data/display";
 
 /**
@@ -26,6 +28,7 @@ type ChartCardProps = {
   timeframe: string;
   timeframes: { key: string; label: string }[];
   candles: Candle[];
+  locale: Locale;
 };
 
 /**
@@ -43,9 +46,11 @@ export default function ChartCard({
   timeframe,
   timeframes,
   candles,
+  locale,
 }: ChartCardProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const copy = dashboardCopy(locale).chart;
 
   const selection = `${selectedSymbol}@${timeframe}`;
 
@@ -123,7 +128,7 @@ export default function ChartCard({
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <label className="sr-only" htmlFor="chart-instrument">
-            Instrument
+            {copy.instrumentLabel}
           </label>
           <select
             id="chart-instrument"
@@ -145,7 +150,7 @@ export default function ChartCard({
 
           {pending ? (
             <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
-              loading
+              {copy.loading}
             </span>
           ) : null}
         </div>
@@ -183,7 +188,7 @@ export default function ChartCard({
           />
         ) : (
           <p className="grid h-[300px] place-items-center text-center text-sm text-muted">
-            No {timeframe} bars available for {selectedLabel} right now.
+            {copy.noBars(timeframe, selectedLabel)}
           </p>
         )}
       </div>
@@ -192,9 +197,7 @@ export default function ChartCard({
           chart a trader cannot tell apart from a frozen one, and the honest
           answer is that this is a minute behind, not live. */}
       <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-muted">
-        {refreshedAt
-          ? `updated ${refreshedAt} · refreshes every minute`
-          : "refreshes every minute"}
+        {refreshedAt ? copy.updated(refreshedAt) : copy.refreshesEveryMinute}
       </p>
     </section>
   );

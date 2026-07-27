@@ -1,15 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import PageHeader from "@/components/PageHeader";
 import PricingPlans, { type PlanCard } from "@/components/PricingPlans";
-import {
-  FREE_FEATURES,
-  PAID_PLANS,
-  PRO_FEATURES,
-  priceIdFor,
-} from "@/lib/billing/plans";
+import { PAID_PLANS, priceIdFor } from "@/lib/billing/plans";
 import { isTestMode, sellingIsAllowed, stripe } from "@/lib/billing/stripe";
 import { hasComplimentaryAccess } from "@/lib/billing/complimentary";
 import { getSubscription } from "@/lib/billing/subscription";
+import { pricingCopy, type PricingCopy } from "@/lib/i18n/app/pricing";
+import { getLocale } from "@/lib/i18n/server";
 
 /**
  * Formats a Stripe price for display.
@@ -36,15 +33,16 @@ function formatAmount(amount: number | null, currency: string): string | null {
  * price is the kind of mismatch that ends in a refund. Changing what you charge
  * is a Stripe dashboard edit, not a deploy.
  */
-async function loadPlanCards(): Promise<PlanCard[]> {
+async function loadPlanCards(copy: PricingCopy): Promise<PlanCard[]> {
   const cards = await Promise.all(
     PAID_PLANS.map(async (plan): Promise<PlanCard> => {
       const base = {
         slug: plan.slug,
-        name: plan.name,
-        tagline: plan.tagline,
-        highlight: plan.highlight,
-        features: PRO_FEATURES,
+        name: copy.pro.name,
+        tagline:
+          plan.slug === "pro-yearly" ? copy.pro.yearlyTagline : copy.pro.monthlyTagline,
+        highlight: plan.highlight ? copy.pro.bestValue : undefined,
+        features: copy.pro.features,
       };
 
       const priceId = priceIdFor(plan);
@@ -72,11 +70,11 @@ async function loadPlanCards(): Promise<PlanCard[]> {
 
   const free: PlanCard = {
     slug: "free",
-    name: "Free",
-    tagline: "Everything except the AI modules.",
+    name: copy.free.name,
+    tagline: copy.free.tagline,
     price: "€0",
     interval: "month",
-    features: FREE_FEATURES,
+    features: copy.free.features,
     purchasable: false,
   };
 
@@ -90,9 +88,11 @@ export default async function PricingPage({
 }) {
   const { checkout } = await searchParams;
   const { userId } = await auth();
+  const locale = await getLocale();
+  const copy = pricingCopy(locale);
 
   const [plans, subscription] = await Promise.all([
-    loadPlanCards(),
+    loadPlanCards(copy),
     userId ? getSubscription(userId) : Promise.resolve(null),
   ]);
 
@@ -102,19 +102,14 @@ export default async function PricingPage({
 
   return (
     <>
-      <PageHeader
-        title="Plans"
-        subtitle="The AI Session Brief and AI Coach are the paid modules. Everything else is free."
-      />
+      <PageHeader title={copy.title} subtitle={copy.subtitle} />
 
       {complimentary ? (
         <p
           role="status"
           className="mb-4 rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
         >
-          The AI Session Brief and AI Coach are already unlocked on this account.
-          There is nothing to pay and nothing to subscribe to — ignore the plans
-          below.
+          {copy.complimentaryNotice}
         </p>
       ) : null}
 
@@ -123,8 +118,7 @@ export default async function PricingPage({
           role="status"
           className="mb-4 rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
         >
-          Payment received. Access is granted as soon as Stripe confirms it —
-          usually a second or two. Reload if the AI modules are still locked.
+          {copy.checkoutSuccessNotice}
         </p>
       ) : null}
 
@@ -133,7 +127,7 @@ export default async function PricingPage({
           role="status"
           className="mb-4 rounded-lg border border-line bg-surface px-4 py-3 text-sm text-muted"
         >
-          Checkout was cancelled. Nothing was charged.
+          {copy.checkoutCancelledNotice}
         </p>
       ) : null}
 
@@ -144,14 +138,11 @@ export default async function PricingPage({
           appears only where it is useful and harmless: locally and on previews. */}
       {!sellingIsAllowed() ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-          Payments are not open yet. Pro is not for sale on this site until
-          billing goes live — nothing here can be bought, and nothing will be
-          charged.
+          {copy.sellingClosedNotice}
         </p>
       ) : isTestMode() ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-          Stripe is in test mode. Use card 4242 4242 4242 4242 with any future
-          expiry and any CVC — no real money moves.
+          {copy.testModeNotice}
         </p>
       ) : null}
 
@@ -159,6 +150,7 @@ export default async function PricingPage({
         plans={plans}
         currentPlan={subscription?.planSlug ?? null}
         sellingClosed={!sellingIsAllowed()}
+        locale={locale}
       />
     </>
   );

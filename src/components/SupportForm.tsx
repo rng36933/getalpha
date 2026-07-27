@@ -2,17 +2,20 @@
 
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
-const KINDS = [
-  { value: "BUG", label: "Something is broken" },
-  { value: "FEEDBACK", label: "Feedback or an idea" },
-  { value: "QUESTION", label: "A question" },
-] as const;
+import { supportCopy } from "@/lib/i18n/app/support";
+import type { Locale } from "@/lib/i18n/locales";
 
 const MAX_LENGTH = 2000;
 
-export default function SupportForm() {
+export default function SupportForm({ locale }: { locale: Locale }) {
+  const copy = supportCopy(locale);
   const pathname = usePathname();
+
+  const KINDS = [
+    { value: "BUG", label: copy.form.kinds.bug },
+    { value: "FEEDBACK", label: copy.form.kinds.feedback },
+    { value: "QUESTION", label: copy.form.kinds.question },
+  ] as const;
 
   const [kind, setKind] = useState<string>("BUG");
   const [message, setMessage] = useState("");
@@ -33,7 +36,7 @@ export default function SupportForm() {
 
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        setError(body?.error ?? "Could not send that. Try again.");
+        setError(body?.error ?? copy.form.sendFailed);
         setState("idle");
         return;
       }
@@ -41,7 +44,7 @@ export default function SupportForm() {
       setState("done");
       setMessage("");
     } catch {
-      setError("Could not reach the server. Check your connection.");
+      setError(copy.form.networkError);
       setState("idle");
     }
   }
@@ -53,14 +56,14 @@ export default function SupportForm() {
           role="status"
           className="rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
         >
-          Sent. Thank you — this gets read.
+          {copy.form.sentNotice}
         </p>
         <button
           type="button"
           onClick={() => setState("idle")}
           className="mt-4 text-sm text-accent hover:underline"
         >
-          Send something else
+          {copy.form.sendAnother}
         </button>
       </div>
     );
@@ -71,7 +74,7 @@ export default function SupportForm() {
   return (
     <form onSubmit={submit}>
       <fieldset disabled={state === "sending"}>
-        <legend className="sr-only">What kind of message is this?</legend>
+        <legend className="sr-only">{copy.form.legend}</legend>
 
         <div className="flex flex-wrap gap-2">
           {KINDS.map((option) => (
@@ -97,7 +100,7 @@ export default function SupportForm() {
         </div>
 
         <label htmlFor="support-message" className="sr-only">
-          Your message
+          {copy.form.messageLabel}
         </label>
         <textarea
           id="support-message"
@@ -107,17 +110,13 @@ export default function SupportForm() {
           value={message}
           onChange={(event) => setMessage(event.target.value)}
           placeholder={
-            kind === "BUG"
-              ? "What did you do, what did you expect, and what happened instead?"
-              : "Tell us what you are thinking."
+            kind === "BUG" ? copy.form.placeholderBug : copy.form.placeholderOther
           }
           className="mt-4 w-full resize-y rounded-lg border border-line bg-surface-raised px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-accent"
         />
 
         <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-xs text-muted">
-            The page you are on is attached automatically.
-          </p>
+          <p className="text-xs text-muted">{copy.form.pageAttachedNote}</p>
           <p
             className={`text-xs tabular-nums ${
               remaining < 100 ? "text-warning" : "text-muted"
@@ -140,7 +139,7 @@ export default function SupportForm() {
           type="submit"
           className="mt-4 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
         >
-          {state === "sending" ? "Sending…" : "Send"}
+          {state === "sending" ? copy.form.sending : copy.form.send}
         </button>
       </fieldset>
     </form>

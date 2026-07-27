@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { dashboardCopy } from "@/lib/i18n/app/dashboard";
+import type { Locale } from "@/lib/i18n/locales";
 import { hasGoneQuiet } from "@/lib/mt5/liveness";
 
 /**
@@ -27,19 +29,17 @@ type Mt5PromptProps = {
   receiving: boolean;
   /** ISO timestamp of the last sync, or null if the terminal never sent. */
   lastSeenAt: string | null;
+  locale: Locale;
 };
-
-const REASONS = [
-  "Every closed trade lands in the journal by itself — including the ones you would never have bothered to type in, which are usually the ones worth reading later.",
-  "The stop, the size and the units per lot come from the terminal, so the risk and the result are exact rather than approximate.",
-  "The per-pair breakdown needs a body of trades before it can say anything. Ninety days of history arrives on the first sync; typing it by hand does not happen.",
-];
 
 export default function Mt5Prompt({
   connected,
   receiving,
   lastSeenAt,
+  locale,
 }: Mt5PromptProps) {
+  const copy = dashboardCopy(locale).mt5Prompt;
+
   // Sending, and recently. Nothing to say.
   if (receiving && !hasGoneQuiet(lastSeenAt)) return null;
 
@@ -50,26 +50,18 @@ export default function Mt5Prompt({
     return (
       <section className="surface-lit mb-4 rounded-xl border border-warning/30 p-4 sm:p-5">
         <h2 className="text-[0.9375rem] font-semibold tracking-tight text-warning">
-          Your terminal has stopped sending
+          {copy.stopped.heading}
         </h2>
 
         <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-          Nothing has arrived for a while, so any position opened since then is
-          missing from this desk and the cards below are incomplete. Usually
-          MetaTrader is simply closed — it has to be running. If it is open,
-          press <span className="text-foreground">Ctrl+T</span> and look at the
-          Experts tab: no line beginning{" "}
-          <span className="text-foreground">getALPHA:</span> in the last two
-          minutes means the program is not running, and the usual reason is that
-          another Expert Advisor was attached to the same chart. MetaTrader
-          allows one per chart and replaces the old one without saying so.
+          {copy.stopped.body}
         </p>
 
         <Link
           href="/dashboard/settings"
           className="mt-3.5 inline-block rounded-lg border border-line px-4 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
         >
-          See when it last sent
+          {copy.stopped.link}
         </Link>
       </section>
     );
@@ -83,22 +75,18 @@ export default function Mt5Prompt({
     return (
       <section className="surface-lit mb-4 rounded-xl border border-warning/30 p-4 sm:p-5">
         <h2 className="text-[0.9375rem] font-semibold tracking-tight text-warning">
-          Your key is waiting for the terminal
+          {copy.waiting.heading}
         </h2>
 
         <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-          Nothing has arrived yet. Two things stop it, both fixable in a minute:
-          MetaTrader has to be running, and it blocks every outbound request
-          until <span className="text-foreground">https://www.getalpha.org</span>{" "}
-          is added under Tools → Options → Expert Advisors. The program reports
-          which one it is in MetaTrader&rsquo;s Experts tab.
+          {copy.waiting.body}
         </p>
 
         <Link
           href="/dashboard/settings"
           className="mt-3.5 inline-block rounded-lg border border-line px-4 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
         >
-          Check the steps
+          {copy.waiting.link}
         </Link>
       </section>
     );
@@ -106,23 +94,20 @@ export default function Mt5Prompt({
 
   return (
     <section className="surface-lit mb-4 rounded-xl border border-accent/30 p-4 sm:p-5">
-      <p className="eyebrow text-accent">Stop typing your trades in</p>
+      <p className="eyebrow text-accent">{copy.idle.eyebrow}</p>
 
       <h2 className="mt-1.5 max-w-[34ch] text-base font-semibold tracking-tight text-balance sm:text-lg">
-        Connect MetaTrader and the journal fills itself.
+        {copy.idle.heading}
       </h2>
 
       <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-        A small program runs inside your terminal and sends this desk what you
-        traded. It only ever sends — it cannot place an order or change one, and{" "}
-        <span className="text-foreground">
-          there is no password involved anywhere
-        </span>
-        : your terminal connects to us, never the other way round.
+        {copy.idle.bodyLead}
+        <span className="text-foreground">{copy.idle.bodyEmphasis}</span>
+        {copy.idle.bodyTail}
       </p>
 
       <ul className="mt-3 flex flex-col gap-2">
-        {REASONS.map((reason) => (
+        {copy.idle.reasons.map((reason) => (
           <li
             key={reason}
             className="grid grid-cols-[0.9rem_1fr] gap-2 text-[13px] leading-snug text-muted"
@@ -140,11 +125,9 @@ export default function Mt5Prompt({
           href="/dashboard/settings"
           className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-[filter] hover:brightness-110"
         >
-          Connect MetaTrader
+          {copy.idle.cta}
         </Link>
-        <span className="text-xs text-muted">
-          Five steps, desktop terminal only — one of them is compiling the file, which is the one everybody misses. The phone app cannot run programs.
-        </span>
+        <span className="text-xs text-muted">{copy.idle.footnote}</span>
       </div>
     </section>
   );
