@@ -7,6 +7,7 @@ import {
   CrosshairMode,
   createChart,
   type CandlestickData,
+  type ISeriesApi,
   type Time,
 } from "lightweight-charts";
 import type { Candle } from "@/lib/market-data/display";
@@ -18,6 +19,11 @@ type PriceChartProps = {
 
 export default function PriceChart({ data, height = 320 }: PriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  // The bars the chart was built with, read only while creating it. Held in a
+  // ref so the setup effect can seed the series without listing `data` as a
+  // dependency and rebuilding the whole chart on every refresh.
+  const dataRef = useRef<Candle[]>(data);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -64,7 +70,8 @@ export default function PriceChart({ data, height = 320 }: PriceChartProps) {
       wickDownColor: negative,
     });
 
-    series.setData(data as CandlestickData<Time>[]);
+    seriesRef.current = series;
+    series.setData(dataRef.current as CandlestickData<Time>[]);
     chart.timeScale().fitContent();
 
     // The chart is drawn on a canvas and cannot reflow on its own.
@@ -76,9 +83,27 @@ export default function PriceChart({ data, height = 320 }: PriceChartProps) {
 
     return () => {
       resizeObserver.disconnect();
+      seriesRef.current = null;
       chart.remove();
     };
-  }, [data, height]);
+    // Deliberately not depending on `data`. Rebuilding the chart on every
+    // refresh would throw away wherever the reader had panned or zoomed to,
+    // once a minute, which is worse than not refreshing at all. New bars go in
+    // through the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [height]);
+
+  // New bars, into the existing chart.
+  //
+  // `setData` replaces the series rather than appending: the last candle of a
+  // live timeframe is still forming, so its high, low and close all change
+  // between refreshes. Appending would leave a stale copy of it on the chart
+  // beside the new one. The time scale is left alone on purpose — the reader's
+  // view is theirs.
+  useEffect(() => {
+    dataRef.current = data;
+    seriesRef.current?.setData(data as CandlestickData<Time>[]);
+  }, [data]);
 
   return <div ref={containerRef} className="w-full" />;
 }

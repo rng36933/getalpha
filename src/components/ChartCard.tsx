@@ -1,9 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import PriceChart from "@/components/PriceChart";
 import type { Candle } from "@/lib/market-data/display";
+
+/**
+ * How often the chart asks for new bars.
+ *
+ * Sixty seconds regardless of timeframe, because the cost of asking is not what
+ * it looks like: bars are cached on the server per `symbol@timeframe`, so a
+ * hundred people watching XAUUSD M15 cost exactly what one person costs. Only
+ * the first request after the cache goes stale reaches the provider — three
+ * minutes on M15, an hour on W1 — and every poll in between is answered from
+ * storage. Polling faster would not buy fresher data, only more requests.
+ */
+const REFRESH_MS = 60_000;
 
 type Instrument = { symbol: string; label: string };
 
@@ -34,6 +46,72 @@ export default function ChartCard({
 }: ChartCardProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+
+  const selection = `${selectedSymbol}@${timeframe}`;
+
+  /**
+   * The most recent refresh, tagged with the selection it belongs to.
+   *
+   * Tagged rather than reset in an effect. Copying props into state and syncing
+   * them back is the cascading-render pattern the React compiler rejects, and
+   * it is unnecessary here: which bars to draw is a question the render can
+   * answer on its own. Switching instrument therefore shows the server's bars
+   * for the new one immediately, instead of the previous instrument's until the
+   * first poll lands.
+   */
+  const [fetched, setFetched] = useState<{
+    selection: string;
+    bars: Candle[];
+    at: string;
+  } | null>(null);
+
+  const current = fetched?.selection === selection ? fetched : null;
+  const bars = current?.bars ?? candles;
+  const refreshedAt = current?.at ?? null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function refresh() {
+      // Nothing is worth fetching for a tab nobody is looking at. Without this,
+      // every window left open overnight keeps asking until morning.
+      if (document.visibilityState !== "visible") return;
+
+      try {
+        const params = new URLSearchParams({
+          symbol: selectedSymbol,
+          tf: timeframe,
+        });
+        const response = await fetch(`/api/candles?${params}`);
+        if (!response.ok) return;
+
+        const body: { candles?: Candle[] } = await response.json();
+        if (cancelled || !Array.isArray(body.candles) || body.candles.length === 0) {
+          return;
+        }
+
+        setFetched({
+          selection,
+          bars: body.candles,
+          at: new Date().toLocaleTimeString(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        });
+      } catch {
+        // A failed refresh leaves the last good bars on screen. A chart that
+        // empties itself because one request timed out is worse than a chart
+        // that is a minute behind.
+      }
+    }
+
+    const timer = setInterval(refresh, REFRESH_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [selection, selectedSymbol, timeframe]);
 
   function go(symbol: string, tf: string) {
     const params = new URLSearchParams({ symbol, tf });
@@ -93,12 +171,14 @@ export default function ChartCard({
       </header>
 
       <div className="mt-4">
-        {candles.length > 0 ? (
+        {bars.length > 0 ? (
           // Keyed so switching timeframe rebuilds the chart rather than feeding
-          // a series with different time units into the existing one.
+          // a series with different time units into the existing one. Within one
+          // selection the chart is kept and only its bars are replaced, so a
+          // refresh does not undo wherever the reader had panned to.
           <PriceChart
             key={`${selectedSymbol}-${timeframe}`}
-            data={candles}
+            data={bars}
             height={300}
           />
         ) : (
@@ -107,6 +187,15 @@ export default function ChartCard({
           </p>
         )}
       </div>
+
+      {/* Said out loud rather than implied. A chart that updates silently is a
+          chart a trader cannot tell apart from a frozen one, and the honest
+          answer is that this is a minute behind, not live. */}
+      <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-muted">
+        {refreshedAt
+          ? `updated ${refreshedAt} · refreshes every minute`
+          : "refreshes every minute"}
+      </p>
     </section>
   );
 }
