@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import CoachReviewPanel from "@/components/CoachReviewPanel";
 import TradeNotes, { type Notes } from "@/components/TradeNotes";
 import type { TradeMetrics } from "@/lib/ai/trade-metrics";
@@ -66,6 +66,34 @@ const PER_PAGE = 25;
 const pagerClass =
   "rounded-lg border border-line px-2.5 py-1.5 text-xs text-muted transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-muted";
 
+/**
+ * Which page numbers to show, with gaps.
+ *
+ * First, last, and the pages either side of where you are. Nine pages of
+ * journal is nine buttons, which is fine; a year of trading is forty, which is
+ * a wall. The ends are always offered because "back to the start" and "the
+ * oldest trade I have" are the two jumps people actually make.
+ */
+function pageWindow(page: number, count: number): (number | "gap")[] {
+  if (count <= 7) {
+    return Array.from({ length: count }, (_, index) => index + 1);
+  }
+
+  const pages = new Set([1, count, page, page - 1, page + 1]);
+  const kept = [...pages].filter((n) => n >= 1 && n <= count).sort((a, b) => a - b);
+
+  const out: (number | "gap")[] = [];
+  let previous = 0;
+
+  for (const n of kept) {
+    if (previous && n - previous > 1) out.push("gap");
+    out.push(n);
+    previous = n;
+  }
+
+  return out;
+}
+
 const selectClass =
   "rounded-lg border border-line bg-surface-raised px-2.5 py-1.5 text-xs text-foreground outline-none focus:border-accent";
 
@@ -115,6 +143,8 @@ export default function TradeList({
   trades: TradeRow[];
   currency: string | null;
 }) {
+  // Anchors the scroll when the page changes; the pager sits below the table.
+  const topRef = useRef<HTMLDivElement>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [notesId, setNotesId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<string, ReviewState>>({});
@@ -186,6 +216,11 @@ export default function TradeList({
 
   function goToPage(next: number) {
     setPaging({ key: filterKey, page: Math.min(Math.max(next, 1), pageCount) });
+
+    // Back to the top of the list, because the pager is at the bottom: without
+    // this you press Next and stay looking at the end of the page you just
+    // asked to leave, which reads as though nothing happened.
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   // One scale for every bar in the whole filtered set, not just this page:
@@ -277,7 +312,9 @@ export default function TradeList({
   }
 
   return (
-    <div>
+    // `scroll-mt-20` clears the sticky top bar on a phone, so scrolling here
+    // does not park the filters underneath it.
+    <div ref={topRef} className="scroll-mt-20">
       {/* Filters in one row above the table, as a toolbar rather than scattered
           controls. Only offered when there is more than one thing to choose
           between — a select with a single option is furniture. */}
@@ -586,9 +623,32 @@ export default function TradeList({
               Previous
             </button>
 
-            <span className="px-1 font-mono text-xs tabular-nums text-muted">
-              {page} / {pageCount}
-            </span>
+            {pageWindow(page, pageCount).map((entry, index) =>
+              entry === "gap" ? (
+                <span
+                  key={`gap-${index}`}
+                  aria-hidden="true"
+                  className="px-0.5 text-xs text-muted"
+                >
+                  …
+                </span>
+              ) : (
+                <button
+                  key={entry}
+                  type="button"
+                  onClick={() => goToPage(entry)}
+                  aria-current={entry === page ? "page" : undefined}
+                  aria-label={`Page ${entry}`}
+                  className={`rounded-lg border px-2.5 py-1.5 font-mono text-xs tabular-nums transition-colors ${
+                    entry === page
+                      ? "border-accent bg-accent-soft text-accent"
+                      : "border-line text-muted hover:text-foreground"
+                  }`}
+                >
+                  {entry}
+                </button>
+              ),
+            )}
 
             <button
               type="button"
