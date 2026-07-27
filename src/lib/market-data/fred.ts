@@ -84,6 +84,20 @@ export type MacroReading = {
   direction: -1 | 0 | 1;
   /** The observation date, so a stale print is visible as stale. */
   asOf: string | null;
+  /**
+   * Where the latest print sits inside its own last twelve months, 0–100.
+   *
+   * The number that makes a reading legible to somebody who does not already
+   * know what a normal ten-year yield looks like. It is a share of a whole, so
+   * unlike the raw value it is comparable between a yield, a spread and an
+   * index — which is exactly what a reader scanning three cards wants.
+   *
+   * Null when the year is flat or the series returned too little to bound.
+   */
+  rangePercent: number | null;
+  /** The bounds behind that share, already formatted for display. */
+  rangeLow: string | null;
+  rangeHigh: string | null;
 };
 
 type FredObservation = { date?: string; value?: string };
@@ -126,10 +140,28 @@ async function fetchSeries(
   spec: SeriesSpec,
   apiKey: string,
 ): Promise<SeriesOutcome> {
+  /**
+   * A year of observations, not the last eight.
+   *
+   * "4.71%" answers nothing on its own — a reader has to already know whether
+   * that is high for a ten-year yield. Where it sits inside its own last twelve
+   * months answers it without any prior knowledge, and it is the same question
+   * for a yield, a spread and the dollar index, which is what makes the three
+   * comparable to each other.
+   *
+   * By date rather than by count, because these series are not the same shape:
+   * a year is about 260 observations of a daily yield and twelve of a monthly
+   * inflation print. Asking for a date range gets a year of each.
+   */
+  const yearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
   const url =
     `${BASE}?series_id=${encodeURIComponent(spec.id)}` +
     `&api_key=${encodeURIComponent(apiKey)}&file_type=json` +
-    `&units=${spec.units}&sort_order=desc&limit=8`;
+    `&units=${spec.units}&sort_order=desc&limit=400` +
+    `&observation_start=${yearAgo}`;
 
   const blank: MacroReading = {
     id: spec.id,
@@ -138,6 +170,9 @@ async function fetchSeries(
     change: null,
     direction: 0,
     asOf: null,
+    rangePercent: null,
+    rangeLow: null,
+    rangeHigh: null,
   };
 
   const empty = (error: string): SeriesOutcome => ({
@@ -180,6 +215,19 @@ async function fetchSeries(
 
     const delta = previous ? latest.value - previous.value : null;
 
+    // Where this print sits in its own year. Null rather than 50 when the year
+    // was flat: a series that has not moved has no position inside a range, and
+    // parking the marker in the middle would invent a fact about it.
+    const values = usable.map((observation) => observation.value);
+    const low = Math.min(...values);
+    const high = Math.max(...values);
+    const spread = high - low;
+
+    const rangePercent =
+      spread > 0
+        ? Math.round(((latest.value - low) / spread) * 100)
+        : null;
+
     return {
       reading: {
         id: spec.id,
@@ -191,6 +239,15 @@ async function fetchSeries(
             : `${delta > 0 ? "+" : ""}${delta.toFixed(spec.decimals)}`,
         direction: delta === null || delta === 0 ? 0 : delta > 0 ? 1 : -1,
         asOf: latest.date,
+        rangePercent,
+        rangeLow:
+          rangePercent === null
+            ? null
+            : `${low.toFixed(spec.decimals)}${spec.suffix}`,
+        rangeHigh:
+          rangePercent === null
+            ? null
+            : `${high.toFixed(spec.decimals)}${spec.suffix}`,
       },
       error: null,
     };

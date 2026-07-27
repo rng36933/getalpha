@@ -20,34 +20,65 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
   return (
     <ul className="divide-y divide-line">
       {readings.map((reading) => (
-        <li key={reading.id} className="flex items-baseline gap-3 py-2.5">
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm">{reading.label}</span>
-            {reading.asOf ? (
-              <span className="block font-mono text-[11px] text-muted">
-                {reading.asOf}
-              </span>
-            ) : null}
-          </span>
-
-          <span className="shrink-0 text-right">
-            <span className="block font-mono text-sm tabular-nums">
-              {reading.value ?? "—"}
+        <li key={reading.id} className="py-2.5">
+          <div className="flex items-baseline gap-3">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm">{reading.label}</span>
+              {reading.asOf ? (
+                <span className="block font-mono text-[11px] text-muted">
+                  {reading.asOf}
+                </span>
+              ) : null}
             </span>
-            {reading.change ? (
-              <span
-                className={`block font-mono text-[11px] tabular-nums ${
-                  reading.direction > 0
-                    ? "text-positive"
-                    : reading.direction < 0
-                      ? "text-negative"
-                      : "text-muted"
-                }`}
-              >
-                {reading.change}
+
+            <span className="shrink-0 text-right">
+              <span className="block font-mono text-sm tabular-nums">
+                {reading.value ?? "—"}
               </span>
-            ) : null}
-          </span>
+              {reading.change ? (
+                <span
+                  className={`block font-mono text-[11px] tabular-nums ${
+                    reading.direction > 0
+                      ? "text-positive"
+                      : reading.direction < 0
+                        ? "text-negative"
+                        : "text-muted"
+                  }`}
+                >
+                  {reading.change}
+                </span>
+              ) : null}
+            </span>
+          </div>
+
+          {/* Where the print sits in its own year.
+              "4.71%" tells a reader nothing unless they already know what a
+              normal ten-year yield is. A marker inside the twelve-month range
+              answers "high or low" without any prior knowledge, and because it
+              is a share of a whole it is the one figure here that compares
+              across a yield, a spread and an index. */}
+          {reading.rangePercent !== null ? (
+            <div className="mt-2">
+              <div
+                className="relative h-1 rounded-full bg-surface-raised"
+                role="img"
+                aria-label={`${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`}
+              >
+                <span
+                  className="absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-background"
+                  style={{ left: `${reading.rangePercent}%` }}
+                />
+              </div>
+
+              <div className="mt-1.5 flex items-baseline justify-between gap-2 font-mono text-[10px] tabular-nums text-muted">
+                <span>{reading.rangeLow}</span>
+                <span className="text-accent">
+                  {reading.rangePercent}% of 12m range
+                </span>
+                <span>{reading.rangeHigh}</span>
+              </div>
+            </div>
+          ) : null}
         </li>
       ))}
     </ul>
