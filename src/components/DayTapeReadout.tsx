@@ -1,4 +1,6 @@
 import LocalTime from "@/components/LocalTime";
+import type { Locale } from "@/lib/i18n/locales";
+import { tapeCopy, type TapeCopy } from "@/lib/market-data/tape-copy";
 import type { DayTape, Direction } from "@/lib/market-data/tape";
 
 /**
@@ -10,22 +12,35 @@ import type { DayTape, Direction } from "@/lib/market-data/tape";
  * the session that has happened; it must never be dressed as a forecast.
  */
 
-const TONE: Record<Direction, { text: string; bg: string; word: string }> = {
-  UP: { text: "text-positive", bg: "bg-positive/12", word: "Up" },
-  DOWN: { text: "text-negative", bg: "bg-negative/12", word: "Down" },
-  FLAT: { text: "text-muted", bg: "bg-muted/12", word: "Flat" },
+/** Colour only. The word beside the arrow comes from the dictionary. */
+const TONE: Record<Direction, { text: string; bg: string }> = {
+  UP: { text: "text-positive", bg: "bg-positive/12" },
+  DOWN: { text: "text-negative", bg: "bg-negative/12" },
+  FLAT: { text: "text-muted", bg: "bg-muted/12" },
 };
+
+function toneWord(direction: Direction, copy: TapeCopy["readout"]): string {
+  if (direction === "UP") return copy.up;
+  if (direction === "DOWN") return copy.down;
+  return copy.flat;
+}
 
 /** A solid triangle up or down, a bar for flat. Size follows the font. */
 function Arrow({
   direction,
+  copy,
   className = "size-4",
 }: {
   direction: Direction;
+  copy: TapeCopy["readout"];
   className?: string;
 }) {
   const label =
-    direction === "UP" ? "up" : direction === "DOWN" ? "down" : "little changed";
+    direction === "UP"
+      ? copy.arrowUp
+      : direction === "DOWN"
+        ? copy.arrowDown
+        : copy.arrowFlat;
 
   return (
     <svg
@@ -43,7 +58,7 @@ function Arrow({
 }
 
 /** Where price sits between the day's low and its high. */
-function RangeBar({ tape }: { tape: DayTape }) {
+function RangeBar({ tape, copy }: { tape: DayTape; copy: TapeCopy["readout"] }) {
   if (tape.rangePosition === null) return null;
 
   return (
@@ -57,7 +72,7 @@ function RangeBar({ tape }: { tape: DayTape }) {
       <div className="mt-1.5 flex justify-between font-mono text-[11px] tabular-nums text-muted">
         <span>{tape.dayLow}</span>
         <span className="text-foreground">
-          {tape.rangePosition}% of range
+          {tape.rangePosition}% {copy.ofRange}
         </span>
         <span>{tape.dayHigh}</span>
       </div>
@@ -73,51 +88,54 @@ function RangeBar({ tape }: { tape: DayTape }) {
  * unanimous, which is the sort of small lie that makes a reader stop trusting
  * the big numbers too.
  */
-function agreementLine(tape: DayTape): string {
+function agreementLine(tape: DayTape, copy: TapeCopy["readout"]): string {
   const { up, down, flat } = tape.agreeing;
   const total = tape.readings.length;
 
-  if (total === 0) return "Nothing measurable yet.";
+  if (total === 0) return copy.nothingMeasurable;
 
-  if (up === total) return `All ${total} readings point up.`;
-  if (down === total) return `All ${total} readings point down.`;
-  if (flat === total) {
-    return `All ${total} readings are flat — nothing has moved far enough to call.`;
-  }
+  if (up === total) return copy.allUp(total);
+  if (down === total) return copy.allDown(total);
+  if (flat === total) return copy.allFlat(total);
 
   const parts: string[] = [];
-  if (up > 0) parts.push(`${up} up`);
-  if (down > 0) parts.push(`${down} down`);
-  if (flat > 0) parts.push(`${flat} flat`);
+  if (up > 0) parts.push(copy.countUp(up));
+  if (down > 0) parts.push(copy.countDown(down));
+  if (flat > 0) parts.push(copy.countFlat(flat));
 
   const counts = parts.join(", ");
 
-  if (up > down) return `Leaning up: ${counts}, of ${total}.`;
-  if (down > up) return `Leaning down: ${counts}, of ${total}.`;
+  if (up > down) return copy.leaningUp(counts, total);
+  if (down > up) return copy.leaningDown(counts, total);
 
-  return `No lean either way: ${counts}, of ${total}.`;
+  return copy.noLean(counts, total);
 }
 
 export default function DayTapeReadout({
   tape,
   fetchedAt,
   stale,
+  locale = "en",
 }: {
   tape: DayTape;
   /** When the price series was produced, not when the page rendered. */
   fetchedAt: string | null;
   /** True when the provider failed and this is the last stored series. */
   stale?: boolean;
+  /**
+   * Defaulted to English, because the dashboard is English and always will be.
+   * Only the public Lithuanian page passes anything else.
+   */
+  locale?: Locale;
 }) {
+  const copy = tapeCopy(locale).readout;
   const tone = TONE[tape.direction];
 
   return (
     <div className="space-y-5">
       {tape.barelyTraded ? (
         <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2.5 text-xs leading-relaxed text-warning">
-          This session has barely traded — its whole range so far is a fraction
-          of a normal day. Almost certainly a closed market. The arrows below are
-          correct and mean very little until it opens.
+          {copy.barelyTraded}
         </p>
       ) : null}
 
@@ -138,7 +156,7 @@ export default function DayTapeReadout({
               tape.barelyTraded ? "bg-muted" : "bg-accent live-dot"
             }`}
           />
-          {tape.barelyTraded ? "market closed" : "trading now"}
+          {tape.barelyTraded ? copy.marketClosed : copy.tradingNow}
         </p>
 
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
@@ -149,7 +167,7 @@ export default function DayTapeReadout({
           <span
             className={`mb-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold tabular-nums ${tone.bg} ${tone.text}`}
           >
-            <Arrow direction={tape.direction} className="size-3" />
+            <Arrow direction={tape.direction} copy={copy} className="size-3" />
             {tape.changeAbsolute > 0 ? "+" : ""}
             {tape.changeAbsolute}
             <span className="font-normal opacity-70">
@@ -159,18 +177,32 @@ export default function DayTapeReadout({
           </span>
         </div>
 
+        {/* The direction word is coloured, so the sentence is built from the
+            dictionary with the word already in place and split around it — a
+            template with a hole would not let the middle be styled. */}
         <p className="mt-2 text-sm text-muted">
-          <span className={tone.text}>{tone.word}</span> on the session, from an
-          open of <span className="tnum text-foreground">{tape.dayOpen}</span>.
+          {(() => {
+            const word = toneWord(tape.direction, copy);
+            const sentence = copy.sessionLine(word, String(tape.dayOpen));
+            const [before, after] = sentence.split(word);
+
+            return (
+              <>
+                {before}
+                <span className={tone.text}>{word}</span>
+                {after}
+              </>
+            );
+          })()}
         </p>
       </div>
 
-      <RangeBar tape={tape} />
+      <RangeBar tape={tape} copy={copy} />
 
       <ul className="divide-y divide-line border-y border-line">
         {tape.readings.map((reading) => (
           <li key={reading.key} className="flex items-start gap-3 py-2.5">
-            <Arrow direction={reading.direction} className="mt-0.5 size-4 shrink-0" />
+            <Arrow direction={reading.direction} copy={copy} className="mt-0.5 size-4 shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-baseline justify-between gap-x-3">
                 <span className="text-sm">{reading.label}</span>
@@ -189,44 +221,36 @@ export default function DayTapeReadout({
       </ul>
 
       <div className="space-y-1 text-xs text-muted">
-        <p className="text-foreground">{agreementLine(tape)}</p>
+        <p className="text-foreground">{agreementLine(tape, copy)}</p>
 
         {tape.rangeVsAverage !== null ? (
           <p>
             {tape.rangeVsAverage < 0.05
-              ? "The session's range is under a twentieth of a normal day."
+              ? copy.rangeTiny
               : tape.rangeVsAverage >= 1.3
-                ? `A wider session than usual — ${tape.rangeVsAverage}× the recent average range.`
+                ? copy.rangeWide(tape.rangeVsAverage)
                 : tape.rangeVsAverage <= 0.7
-                  ? `A quieter session than usual — ${tape.rangeVsAverage}× the recent average range.`
-                  : `Range is about normal for this instrument (${tape.rangeVsAverage}× the recent average).`}
+                  ? copy.rangeQuiet(tape.rangeVsAverage)
+                  : copy.rangeNormal(tape.rangeVsAverage)}
           </p>
         ) : null}
 
         <p>
-          Session of {tape.sessionDate}
+          {copy.sessionOf(tape.sessionDate)}
           {fetchedAt ? (
             <>
-              , priced at <LocalTime at={fetchedAt} utc={fetchedAt.slice(11, 16)} />
+              {copy.pricedAt}
+              <LocalTime at={fetchedAt} utc={fetchedAt.slice(11, 16)} />
             </>
           ) : null}
-          . Intraday readings refresh every few minutes, not tick by tick — the
-          free price feed allows eight requests a minute across the whole desk.
+          {copy.refreshNote}
         </p>
 
-        {stale ? (
-          <p className="text-warning">
-            The price feed did not answer just now, so this is the last series we
-            stored. The arrows describe that moment, not this one.
-          </p>
-        ) : null}
+        {stale ? <p className="text-warning">{copy.staleNote}</p> : null}
       </div>
 
       <p className="border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-        Every arrow above is a measurement of the session that has already
-        happened — where price sits against its open, its range and its own
-        average. None of it is a forecast, and none of it is a suggestion to buy
-        or sell anything.
+        {copy.footnote}
       </p>
     </div>
   );

@@ -3,6 +3,8 @@
 import { ArrowRight, ShieldAlert, ShieldCheck, ShieldX } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { landingCopy, type LandingCopy } from "@/lib/i18n/landing";
+import type { Locale } from "@/lib/i18n/locales";
 
 /**
  * Three questions about the visitor's own last trade, judged on the spot.
@@ -32,29 +34,35 @@ type Verdict = {
   cta: string;
 };
 
-const STYLE: Record<
-  Severity,
-  { icon: typeof ShieldX; ring: string; text: string; label: string }
-> = {
+const STYLE: Record<Severity, { icon: typeof ShieldX; ring: string; text: string }> = {
   CRITICAL: {
     icon: ShieldX,
     ring: "border-red-500/30 bg-red-500/[0.07]",
     text: "text-red-400",
-    label: "Process broken",
   },
   WARNING: {
     icon: ShieldAlert,
     ring: "border-amber-500/30 bg-amber-500/[0.07]",
     text: "text-amber-400",
-    label: "Leaks worth closing",
   },
   SOUND: {
     icon: ShieldCheck,
     ring: "border-emerald-500/30 bg-emerald-500/[0.07]",
     text: "text-emerald-400",
-    label: "Sound on these three",
   },
 };
+
+/**
+ * Fills `{risk}` and `{bite}` in a sentence from the dictionary.
+ *
+ * A whole sentence with holes in it, rather than fragments concatenated around
+ * a number: Lithuanian puts the percentage in a different case and a different
+ * place, and copy assembled from "start" + figure + "end" only ever reads
+ * naturally in the language it was written for.
+ */
+function fill(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (whole, key: string) => values[key] ?? whole);
+}
 
 /**
  * The rules.
@@ -68,61 +76,55 @@ const STYLE: Record<
  * own median rather than against a number somebody read in a book, and the note
  * under the result says so.
  */
-function evaluate(risk: number, hadStop: boolean, nearNews: boolean): Verdict {
+function evaluate(
+  risk: number,
+  hadStop: boolean,
+  nearNews: boolean,
+  copy: LandingCopy["tradeTest"],
+): Verdict {
   const findings: string[] = [];
 
-  if (!hadStop) {
-    findings.push(
-      "No stop recorded before entry. There was no defined risk, so the size cannot be justified and the loss had no floor — whatever happened next was the market's decision, not yours.",
-    );
-  }
+  if (!hadStop) findings.push(copy.finding.noStop);
 
   if (risk > 2) {
     findings.push(
-      `${risk.toFixed(1)}% of equity on one trade. At this size a run of five losses — an ordinary week — takes about a ${Math.min(99, Math.round((1 - (1 - risk / 100) ** 5) * 100))}% bite out of the account before anything unusual has happened.`,
+      fill(copy.finding.riskHigh, {
+        risk: risk.toFixed(1),
+        bite: String(
+          Math.min(99, Math.round((1 - (1 - risk / 100) ** 5) * 100)),
+        ),
+      }),
     );
   } else if (risk > 1.5) {
-    findings.push(
-      `${risk.toFixed(1)}% is on the heavy side of normal. Survivable once; a habit worth watching if it is where you always sit.`,
-    );
+    findings.push(fill(copy.finding.riskHeavy, { risk: risk.toFixed(1) }));
   }
 
-  if (nearNews) {
-    findings.push(
-      "Entered inside fifteen minutes of a high-impact release. Spreads widen and stops get filled past where they were placed, so the risk taken was larger than the risk planned.",
-    );
-  }
+  if (nearNews) findings.push(copy.finding.news);
 
   if (!hadStop && risk > 2) {
     return {
       severity: "CRITICAL",
-      headline:
-        "Critical sizing leak. High risk of ruin, and stop placement missing.",
+      headline: copy.headline.critical,
       findings,
-      cta: "See this run against every trade you have taken",
+      cta: copy.cta.critical,
     };
   }
 
   if (findings.length === 0) {
     return {
       severity: "SOUND",
-      headline:
-        "Nothing broken in these three. Whether it was a good trade is a question about the other twenty.",
-      findings: [
-        "Risk inside a defensible band, a stop recorded before entry, and no release sitting on top of the entry. On these three, the decision holds regardless of what the trade made.",
-      ],
-      cta: "Check that against your whole record",
+      headline: copy.headline.sound,
+      findings: [copy.finding.sound],
+      cta: copy.cta.sound,
     };
   }
 
   return {
     severity: "WARNING",
     headline:
-      findings.length > 1
-        ? "Two leaks in one trade. Either alone is survivable; together they compound."
-        : "One leak, and it is the kind that repeats.",
+      findings.length > 1 ? copy.headline.twoLeaks : copy.headline.oneLeak,
     findings,
-    cta: "Find out how often you do this",
+    cta: copy.cta.warning,
   };
 }
 
@@ -131,11 +133,15 @@ function Toggle({
   hint,
   value,
   onChange,
+  yes,
+  no,
 }: {
   label: string;
   hint: string;
   value: boolean;
   onChange: (next: boolean) => void;
+  yes: string;
+  no: string;
 }) {
   return (
     <div>
@@ -162,7 +168,7 @@ function Toggle({
                 : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            {option ? "Yes" : "No"}
+            {option ? yes : no}
           </button>
         ))}
       </div>
@@ -170,7 +176,9 @@ function Toggle({
   );
 }
 
-export default function TradeTest() {
+export default function TradeTest({ locale }: { locale: Locale }) {
+  const copy = landingCopy(locale).tradeTest;
+
   const [risk, setRisk] = useState(3);
   const [hadStop, setHadStop] = useState(false);
   const [nearNews, setNearNews] = useState(false);
@@ -178,6 +186,13 @@ export default function TradeTest() {
 
   const style = verdict ? STYLE[verdict.severity] : null;
   const Icon = style?.icon;
+  const severityLabel = verdict
+    ? {
+        CRITICAL: copy.severity.critical,
+        WARNING: copy.severity.warning,
+        SOUND: copy.severity.sound,
+      }[verdict.severity]
+    : null;
 
   return (
     <div className="lp-glass rounded-2xl p-5 sm:p-7">
@@ -188,10 +203,10 @@ export default function TradeTest() {
               htmlFor="risk"
               className="text-[13px] font-medium text-zinc-200"
             >
-              Risk taken on your last trade
+              {copy.riskLabel}
             </label>
             <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
-              As a share of your account, if the stop had been hit.
+              {copy.riskHint}
             </p>
 
             <div className="mt-3 flex items-center gap-4">
@@ -215,25 +230,29 @@ export default function TradeTest() {
           </div>
 
           <Toggle
-            label="Was the stop recorded before you entered?"
-            hint="Before, not after. A stop decided once the trade is moving is a reaction."
+            label={copy.stopLabel}
+            hint={copy.stopHint}
             value={hadStop}
             onChange={setHadStop}
+            yes={copy.yes}
+            no={copy.no}
           />
 
           <Toggle
-            label="Did you enter within 15 minutes of a high-impact release?"
-            hint="Non-farm payrolls, CPI, a rate decision — anything on the calendar in red."
+            label={copy.newsLabel}
+            hint={copy.newsHint}
             value={nearNews}
             onChange={setNearNews}
+            yes={copy.yes}
+            no={copy.no}
           />
 
           <button
             type="button"
-            onClick={() => setVerdict(evaluate(risk, hadStop, nearNews))}
+            onClick={() => setVerdict(evaluate(risk, hadStop, nearNews, copy))}
             className="lp-shimmer relative w-full overflow-hidden rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition-all duration-300 ease-in-out hover:bg-violet-400 sm:w-auto"
           >
-            Evaluate my decision
+            {copy.evaluate}
           </button>
         </div>
 
@@ -249,7 +268,7 @@ export default function TradeTest() {
                 className={`flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] ${style.text}`}
               >
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-                {style.label}
+                {severityLabel}
               </p>
 
               <p className="mt-3 text-[15px] font-semibold leading-snug tracking-tight text-white">
@@ -279,18 +298,13 @@ export default function TradeTest() {
               </Link>
 
               <p className="mt-4 border-t border-white/[0.06] pt-3 text-[11px] leading-relaxed text-zinc-500">
-                Three questions and a rule of thumb — not the review. The real
-                one reads the trades your terminal already sent, compares the
-                size against your own median rather than a number from a book,
-                and has your notes in front of it.
+                {copy.footnote}
               </p>
             </div>
           ) : (
             <div className="grid h-full place-items-center rounded-xl border border-dashed border-white/[0.08] p-6 text-center">
               <p className="max-w-xs text-[13px] leading-relaxed text-zinc-500">
-                Answer the three on the left and press the button. Nothing is
-                sent anywhere — this runs in your browser, and no account is
-                needed to read the answer.
+                {copy.empty}
               </p>
             </div>
           )}

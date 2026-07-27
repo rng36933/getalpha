@@ -1,5 +1,7 @@
 import { Calendar, Lock, Sparkles, TrendingUp } from "lucide-react";
 import CountUp from "@/components/CountUp";
+import { landingCopy } from "@/lib/i18n/landing";
+import type { Locale } from "@/lib/i18n/locales";
 
 /**
  * The capabilities, as an asymmetric grid.
@@ -114,7 +116,9 @@ function Cell({
   );
 }
 
-export default function Features() {
+export default function Features({ locale }: { locale: Locale }) {
+  const { cards, readouts } = landingCopy(locale).features;
+
   return (
     // Asymmetric on purpose: the journal is what everybody gets, so it takes the
     // wide cell and the two paid modules sit beside it.
@@ -122,7 +126,7 @@ export default function Features() {
       <Cell
         className="lg:col-span-2"
         icon={<TrendingUp className="size-[18px]" aria-hidden="true" />}
-        title="A journal that computes"
+        title={cards.journal.title}
         demo={
           // Counted up rather than printed. The sentence under this card says
           // you never type a number in; a figure that arrives by computing says
@@ -130,94 +134,98 @@ export default function Features() {
           <div className="grid gap-x-8 sm:grid-cols-2">
             <div>
               <Readout
-                label="Risk"
+                label={readouts.risk}
                 value={<CountUp value={0.94} decimals={2} suffix="%" />}
               />
               <Readout
-                label="Planned RR"
+                label={readouts.plannedRR}
                 value={<CountUp value={2.4} decimals={2} />}
               />
             </div>
             <div>
               <Readout
-                label="Result"
+                label={readouts.result}
                 tone="text-emerald-400"
                 value={
                   <CountUp value={340} decimals={2} prefix="+€" />
                 }
               />
-              <Readout label="Exit" value="Target" />
+              <Readout label={readouts.exit} value={readouts.exitTarget} />
             </div>
           </div>
         }
       >
-        Your P&amp;L, the risk you took as a share of the account, and the
-        reward you planned against it — all read straight from the terminal. You
-        never type a number in, so you can never flatter one.
+        {cards.journal.body}
       </Cell>
 
       <Cell
         accent="violet"
         icon={<Sparkles className="size-[18px]" aria-hidden="true" />}
-        title="The session, before it starts"
+        title={cards.brief.title}
         demo={
           <div>
-            <Readout label="Risk tone" value="Cautious" tone="text-amber-400" />
-            <Readout label="Driver" value="US CPI 13:30" />
+            <Readout
+              label={readouts.riskTone}
+              value={readouts.riskToneValue}
+              tone="text-amber-400"
+            />
+            {/* Left untranslated on purpose: a release name and a clock time
+                read identically to a Lithuanian trader, and "JAV VKI" would be
+                a translation of something nobody calls it. */}
+            <Readout label={readouts.driver} value="US CPI 13:30" />
             {/* The one reading on this card that moves while you watch it, so
                 it is the one that gets the pulse. */}
-            <Readout label="Volatility" value="XAUUSD, DXY" live />
+            <Readout label={readouts.volatility} value="XAUUSD, DXY" live />
           </div>
         }
       >
-        One short brief: the tone of the session, the single driver that matters,
-        and where volatility is likely — each claim naming the calendar entry or
-        headline it came from.
+        {cards.brief.body}
       </Cell>
 
       <Cell
         accent="violet"
         icon={<Sparkles className="size-[18px]" aria-hidden="true" />}
-        title="A review of your process"
+        title={cards.review.title}
         demo={
           <div>
-            <Readout label="Primary leak" value="Sizing after a loss" />
-            <Readout label="Seen in" value="7 of 22 trades" />
+            <Readout
+              label={readouts.primaryLeak}
+              value={readouts.primaryLeakValue}
+            />
+            <Readout label={readouts.seenIn} value={readouts.seenInValue} />
             {/* Money, not R. The app stopped showing R-multiples, and a landing
                 page quoting a unit the product no longer prints is a promise it
                 does not keep. */}
             <Readout
-              label="Cost"
+              label={readouts.cost}
               tone="text-red-400"
               value={<CountUp value={-612.4} decimals={2} prefix="€" />}
             />
           </div>
         }
       >
-        Six dimensions, judged against your own history rather than a generic
-        ideal. &ldquo;Twice your median risk&rdquo; is a finding. &ldquo;Risk
-        should be 1%&rdquo; is a platitude.
+        {cards.review.body}
       </Cell>
 
       <Cell
         className="lg:col-span-2"
         icon={<Calendar className="size-[18px]" aria-hidden="true" />}
-        title="The releases that move your pairs"
+        title={cards.calendar.title}
         demo={
           <div className="grid gap-x-8 sm:grid-cols-2">
             <div>
               <Readout label="13:30 USD" value="CPI" tone="text-red-400" />
-              <Readout label="15:00 USD" value="Fed speak" />
+              <Readout label="15:00 USD" value={readouts.fedSpeak} />
             </div>
             <div>
               <Readout label="09:00 EUR" value="PMI" />
               {/* The filter lights up with the card, so the thing being
                   demonstrated is the thing that reacts to the cursor. */}
               <Readout
-                label="Filtered by"
+                label={readouts.filteredBy}
                 value={
                   <span className="rounded border border-white/[0.08] px-1.5 py-0.5 transition-all duration-300 ease-in-out group-hover:border-emerald-400/40 group-hover:bg-emerald-400/10 group-hover:text-emerald-300">
-                    Your watchlist
+                    {readouts.watchlist}
                   </span>
                 }
               />
@@ -225,9 +233,7 @@ export default function Features() {
           </div>
         }
       >
-        Today&rsquo;s calendar in your own timezone, filtered to the currencies
-        you actually hold — both legs of every pair, because a release moves the
-        pair whichever leg it lands on.
+        {cards.calendar.body}
       </Cell>
     </div>
   );

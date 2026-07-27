@@ -2,6 +2,8 @@
 
 import { AlertTriangle, RotateCcw, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { landingCopy } from "@/lib/i18n/landing";
+import type { Locale } from "@/lib/i18n/locales";
 
 /**
  * The example review in the hero, dressed as the terminal it describes — and
@@ -33,52 +35,21 @@ const TARGET_PNL = 340;
 const FILL_MS = 1100;
 const TYPE_MS = 1900;
 
-const VERDICT =
-  "Profitable, and taken at four times your median risk with no stop recorded. The result is not evidence the decision was right.";
-
-/** Where the emphasis falls once the sentence has finished typing. */
-const VERDICT_HEAD = VERDICT.slice(0, VERDICT.indexOf("The result"));
-const VERDICT_TAIL = VERDICT.slice(VERDICT.indexOf("The result"));
-
 /**
  * How full each bar is, and in what colour.
  *
  * Weak is the only rating that gets to be loud. If three of them glow the eye
  * has nowhere to land, and the finding on this card is the sizing.
+ *
+ * Style only. The word beside the bar is in the dictionary, because a rating
+ * label is copy and this table is layout.
  */
-const RATING: Record<
-  Rating,
-  { fill: string; bar: string; text: string; label: string }
-> = {
-  STRONG: {
-    fill: "100%",
-    bar: "bg-emerald-400",
-    text: "text-emerald-400",
-    label: "Strong",
-  },
-  ADEQUATE: {
-    fill: "62%",
-    bar: "bg-zinc-500",
-    text: "text-zinc-400",
-    label: "Adequate",
-  },
-  WEAK: { fill: "24%", bar: "bg-red-500", text: "text-red-400", label: "Weak" },
-  NOT_ASSESSABLE: {
-    fill: "0%",
-    bar: "bg-zinc-700",
-    text: "text-zinc-500",
-    label: "No data",
-  },
+const RATING: Record<Rating, { fill: string; bar: string; text: string }> = {
+  STRONG: { fill: "100%", bar: "bg-emerald-400", text: "text-emerald-400" },
+  ADEQUATE: { fill: "62%", bar: "bg-zinc-500", text: "text-zinc-400" },
+  WEAK: { fill: "24%", bar: "bg-red-500", text: "text-red-400" },
+  NOT_ASSESSABLE: { fill: "0%", bar: "bg-zinc-700", text: "text-zinc-500" },
 };
-
-const SCORECARD: { dimension: string; rating: Rating }[] = [
-  { dimension: "Trade selection", rating: "ADEQUATE" },
-  { dimension: "Position sizing", rating: "WEAK" },
-  { dimension: "Stop placement", rating: "WEAK" },
-  { dimension: "Exit management", rating: "ADEQUATE" },
-  { dimension: "Plan adherence", rating: "WEAK" },
-  { dimension: "Emotional control", rating: "NOT_ASSESSABLE" },
-];
 
 /** The shape of the winning trade, as a fraction of the box. */
 const CURVE = "0,34 14,30 26,33 40,22 54,25 68,14 82,10 100,3";
@@ -93,11 +64,13 @@ function prefersReducedMotion(): boolean {
 function Row({
   dimension,
   rating,
+  label,
   revealed,
   index,
 }: {
   dimension: string;
   rating: Rating;
+  label: string;
   revealed: boolean;
   index: number;
 }) {
@@ -115,7 +88,7 @@ function Row({
       <span
         className={`text-[10px] font-medium uppercase tracking-[0.12em] ${style.text}`}
       >
-        {style.label}
+        {label}
       </span>
       <span className="col-span-2 h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
         {/* Width animates from nothing, so the bars fill rather than appear —
@@ -132,7 +105,29 @@ function Row({
   );
 }
 
-export default function VerdictCard() {
+export default function VerdictCard({ locale }: { locale: Locale }) {
+  const copy = landingCopy(locale).verdict;
+
+  // Head and tail, joined. Stored apart in the dictionary because the emphasis
+  // used to be found with `indexOf("The result")`, which finds nothing in a
+  // translated sentence — the styling would silently fall off and the typing
+  // animation would count against the wrong length.
+  const verdict = copy.verdictHead + copy.verdictTail;
+  const verdictLength = verdict.length;
+
+  const scorecard: { dimension: string; rating: Rating; label: string }[] = [
+    { dimension: copy.dimensions.selection, rating: "ADEQUATE", label: copy.ratings.adequate },
+    { dimension: copy.dimensions.sizing, rating: "WEAK", label: copy.ratings.weak },
+    { dimension: copy.dimensions.stop, rating: "WEAK", label: copy.ratings.weak },
+    { dimension: copy.dimensions.exit, rating: "ADEQUATE", label: copy.ratings.adequate },
+    { dimension: copy.dimensions.adherence, rating: "WEAK", label: copy.ratings.weak },
+    {
+      dimension: copy.dimensions.emotion,
+      rating: "NOT_ASSESSABLE",
+      label: copy.ratings.noData,
+    },
+  ];
+
   const [phase, setPhase] = useState<Phase>("idle");
   const [pnl, setPnl] = useState(0);
   const [typed, setTyped] = useState(0);
@@ -197,7 +192,7 @@ export default function VerdictCard() {
 
     const timer = setInterval(() => {
       const progress = Math.min((performance.now() - startedAt) / TYPE_MS, 1);
-      setTyped(Math.round(VERDICT.length * progress));
+      setTyped(Math.round(verdictLength * progress));
 
       if (progress >= 1) {
         clearInterval(timer);
@@ -206,7 +201,7 @@ export default function VerdictCard() {
     }, 20);
 
     const safety = setTimeout(() => {
-      setTyped(VERDICT.length);
+      setTyped(verdictLength);
       setPhase("done");
     }, TYPE_MS + 400);
 
@@ -214,7 +209,7 @@ export default function VerdictCard() {
       clearInterval(timer);
       clearTimeout(safety);
     };
-  }, [phase]);
+  }, [phase, verdictLength]);
 
   function run() {
     // Reduced motion skips straight to the finished card. Decided here rather
@@ -223,7 +218,7 @@ export default function VerdictCard() {
     // asked for no animation wants the answer, not a faster animation.
     if (prefersReducedMotion()) {
       setPnl(TARGET_PNL);
-      setTyped(VERDICT.length);
+      setTyped(verdictLength);
       setPhase("done");
       return;
     }
@@ -264,7 +259,7 @@ export default function VerdictCard() {
                 started ? "bg-emerald-400" : "bg-zinc-600"
               }`}
             />
-            {started ? "process review" : "demo terminal"}
+            {started ? copy.liveChip : copy.idleChip}
           </span>
           <span className="font-mono text-[10px] tabular-nums text-zinc-600">
             #1184 · 14:32 UTC
@@ -309,7 +304,7 @@ export default function VerdictCard() {
               aria-hidden={phase === "idle" || phase === "filling"}
             >
               <AlertTriangle className="size-3 shrink-0" aria-hidden="true" />
-              process broken
+              {copy.alarm}
             </span>
           </div>
 
@@ -343,10 +338,10 @@ export default function VerdictCard() {
                 onClick={run}
                 className="lp-shimmer relative w-full overflow-hidden rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-[#030712] transition-all duration-300 ease-in-out hover:bg-emerald-400"
               >
-                Take the trade
+                {copy.take}
               </button>
               <p className="mt-2 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-600">
-                press it · it wins · read what happens next
+                {copy.takeHint}
               </p>
             </div>
           ) : (
@@ -358,19 +353,19 @@ export default function VerdictCard() {
               >
                 {phase === "done" ? (
                   <>
-                    {VERDICT_HEAD}
-                    <span className="text-zinc-200">{VERDICT_TAIL}</span>
+                    {copy.verdictHead}
+                    <span className="text-zinc-200">{copy.verdictTail}</span>
                   </>
                 ) : (
                   <>
-                    {VERDICT.slice(0, typed)}
+                    {verdict.slice(0, typed)}
                     <span className="ml-0.5 inline-block h-3.5 w-px translate-y-0.5 bg-zinc-400" />
                   </>
                 )}
               </p>
 
               <div className="mt-5 flex flex-col gap-3">
-                {SCORECARD.map((entry, index) => (
+                {scorecard.map((entry, index) => (
                   <Row
                     key={entry.dimension}
                     {...entry}
@@ -385,11 +380,10 @@ export default function VerdictCard() {
                 style={{ opacity: phase === "done" ? 1 : 0 }}
               >
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">
-                  rule for next time
+                  {copy.ruleLabel}
                 </p>
                 <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-300">
-                  Record the stop before entry, and size so risk stays at or
-                  below 1.2% of equity.
+                  {copy.rule}
                 </p>
               </div>
 
@@ -400,7 +394,7 @@ export default function VerdictCard() {
                   className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500 transition-colors duration-300 hover:text-zinc-300"
                 >
                   <RotateCcw className="size-3 shrink-0" aria-hidden="true" />
-                  run it again
+                  {copy.again}
                 </button>
               ) : null}
             </>
@@ -408,7 +402,7 @@ export default function VerdictCard() {
         </div>
 
         <p className="border-t border-white/[0.05] px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-600">
-          example review · not a real account
+          {copy.footnote}
         </p>
       </div>
     </div>

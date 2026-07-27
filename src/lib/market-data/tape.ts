@@ -1,4 +1,6 @@
 import type { Candle } from "./display";
+import { tapeCopy } from "./tape-copy.ts";
+import type { Locale } from "../i18n/locales.ts";
 
 /**
  * What the day's tape has done, measured — never what it will do next.
@@ -143,12 +145,24 @@ export function computeDayTape({
   label,
   daily,
   intraday,
+  locale = "en",
 }: {
   symbol: string;
   label: string;
   daily: Candle[];
   intraday: Candle[];
+  /**
+   * The language of the labels, not of the arithmetic.
+   *
+   * Defaulted, so the dashboard and the existing tests carry on unchanged —
+   * only the public Lithuanian page passes anything else. The measurements are
+   * identical either way; a reading that differed by language would be a bug
+   * dressed as a feature.
+   */
+  locale?: Locale;
 }): DayTape | null {
+  const copy = tapeCopy(locale);
+
   if (daily.length < 2) return null;
 
   const today = daily[daily.length - 1];
@@ -181,25 +195,22 @@ export function computeDayTape({
 
   readings.push({
     key: "VS_OPEN",
-    label: "Against today's open",
+    label: copy.vsOpen,
     direction: directionOf(changeAbsolute, flatBand),
     value: `${signed(changePercent, 2)}%`,
-    detail: `Opened at ${formatPrice(today.open, lastPrice)}, now ${formatPrice(
-      lastPrice,
-      lastPrice,
-    )}.`,
+    detail: copy.vsOpenDetail(
+      formatPrice(today.open, lastPrice),
+      formatPrice(lastPrice, lastPrice),
+    ),
   });
 
   const vsPriorClose = lastPrice - yesterday.close;
   readings.push({
     key: "VS_PRIOR_CLOSE",
-    label: "Against yesterday's close",
+    label: copy.vsPriorClose,
     direction: directionOf(vsPriorClose, flatBand),
     value: signed(vsPriorClose, decimals),
-    detail: `Previous session closed at ${formatPrice(
-      yesterday.close,
-      lastPrice,
-    )}.`,
+    detail: copy.vsPriorCloseDetail(formatPrice(yesterday.close, lastPrice)),
   });
 
   const dayRange = today.high - today.low;
@@ -209,16 +220,16 @@ export function computeDayTape({
   if (rangePosition !== null) {
     readings.push({
       key: "RANGE_POSITION",
-      label: "Position in today's range",
+      label: copy.rangePosition,
       // Dimensionless, so this one needs no volatility scaling: two thirds of
       // the way up is two thirds of the way up on any instrument.
       direction:
         rangePosition >= 67 ? "UP" : rangePosition <= 33 ? "DOWN" : "FLAT",
       value: `${rangePosition}%`,
-      detail: `Range ${formatPrice(today.low, lastPrice)} to ${formatPrice(
-        today.high,
-        lastPrice,
-      )}.`,
+      detail: copy.rangeDetail(
+        formatPrice(today.low, lastPrice),
+        formatPrice(today.high, lastPrice),
+      ),
     });
   }
 
@@ -233,10 +244,10 @@ export function computeDayTape({
 
     readings.push({
       key: "INTRADAY_BARS",
-      label: `Last ${recent.length} bars`,
+      label: copy.intradayBars(recent.length),
       direction: balance >= 2 ? "UP" : balance <= -2 ? "DOWN" : "FLAT",
-      value: `${up} up / ${down} down`,
-      detail: "Bars that closed above their own open, most recent first.",
+      value: copy.intradayValue(up, down),
+      detail: copy.intradayDetail,
     });
   }
 
@@ -246,13 +257,13 @@ export function computeDayTape({
     const average = mean(closes);
     readings.push({
       key: "VS_AVERAGE",
-      label: `Against its ${closes.length}-bar average`,
+      label: copy.vsAverage(closes.length),
       direction: directionOf(lastPrice - average, flatBand),
       value: signed(lastPrice - average, decimals),
-      detail: `Average of the last ${closes.length} bars is ${formatPrice(
-        average,
-        lastPrice,
-      )}.`,
+      detail: copy.vsAverageDetail(
+        closes.length,
+        formatPrice(average, lastPrice),
+      ),
     });
   }
 
