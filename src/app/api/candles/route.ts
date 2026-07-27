@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { fetchCandles, parseTimeframe } from "@/lib/market-data/candles";
+import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { getWatchlist } from "@/lib/watchlist";
 
 /**
@@ -24,6 +25,13 @@ export async function GET(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
+
+  // The chart asks once a minute; a limit of sixty is a wide margin around
+  // that. Without one, a signed-in caller could hold this open in a loop —
+  // cached bars cost nothing at the provider, but every call still reads the
+  // watchlist and the snapshot out of the database.
+  const limited = enforceRateLimit(`candles:${userId}`, LIMITS.search);
+  if (limited) return limited;
 
   const url = new URL(request.url);
   const symbol = url.searchParams.get("symbol");

@@ -1,11 +1,42 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+/**
+ * Headers every response carries.
+ *
+ * The deployment shipped with `Strict-Transport-Security` and nothing else,
+ * which left the obvious ones missing: the site could be framed by any other
+ * origin, and a response could be re-interpreted as a type it never claimed.
+ * Neither is exotic and both are one line.
+ *
+ * Deliberately no `Content-Security-Policy` here. A real one for this app has
+ * to admit Clerk, Stripe, PostHog and Sentry, and Next's inline bootstrap needs
+ * a nonce — written blind it either breaks sign-in or is loose enough to be
+ * decoration. Worth doing properly and separately rather than guessing at now.
+ */
+const SECURITY_HEADERS = [
+  // Nothing here is meant to be framed, and a journal showing account balances
+  // is exactly what a clickjacking overlay wants underneath it.
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  // The path can carry a trade id; other origins get the bare origin.
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // None of these are used, so nothing embedded here can reach for them.
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=()",
+  },
+];
+
 const nextConfig: NextConfig = {
   devIndicators: {
     // Defaults to bottom-left, where it sits on top of the sidebar's account
     // button. Development only — it is never rendered in production.
     position: "bottom-right",
+  },
+
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
 };
 

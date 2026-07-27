@@ -8,6 +8,7 @@ import {
   stripe,
 } from "@/lib/billing/stripe";
 import { findOrCreateCustomer } from "@/lib/billing/subscription";
+import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { requireJsonRequest } from "@/lib/request-guards";
 
 /**
@@ -38,6 +39,12 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+
+  // Each call creates a Stripe Checkout session, and the first one for an
+  // account creates a Stripe customer. Unbounded, that is somebody able to fill
+  // the billing dashboard with junk objects from a loop.
+  const limited = enforceRateLimit(`checkout:${userId}`, LIMITS.write);
+  if (limited) return limited;
 
   const wrongType = requireJsonRequest(request);
   if (wrongType) return wrongType;
