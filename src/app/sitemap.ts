@@ -18,33 +18,11 @@ const siteUrl = (
  * there is no separate date to remember to update.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  /**
-   * Both languages of the landing page, each naming the other.
-   *
-   * A translated page that a crawler is never told about is a translated page
-   * nobody finds. `alternates.languages` is the sitemap half of the same
-   * statement the pages make with their hreflang tags, and Google wants to see
-   * it from both directions before it will treat the pair as one page in two
-   * languages rather than two pages competing for the same result.
-   */
-  const languages = {
-    en: `${siteUrl}/`,
-    lt: `${siteUrl}/lt`,
-    "x-default": `${siteUrl}/`,
-  };
-
   return [
     {
       url: `${siteUrl}/`,
       changeFrequency: "weekly",
       priority: 1,
-      alternates: { languages },
-    },
-    {
-      url: `${siteUrl}/lt`,
-      changeFrequency: "weekly",
-      priority: 1,
-      alternates: { languages },
     },
     {
       url: `${siteUrl}/register`,

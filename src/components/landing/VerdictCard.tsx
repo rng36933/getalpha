@@ -3,7 +3,6 @@
 import { AlertTriangle, RotateCcw, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { landingCopy } from "@/lib/i18n/landing";
-import type { Locale } from "@/lib/i18n/locales";
 
 /**
  * The example review in the hero, dressed as the terminal it describes — and
@@ -105,8 +104,8 @@ function Row({
   );
 }
 
-export default function VerdictCard({ locale }: { locale: Locale }) {
-  const copy = landingCopy(locale).verdict;
+export default function VerdictCard() {
+  const copy = landingCopy.verdict;
 
   // Head and tail, joined. Stored apart in the dictionary because the emphasis
   // used to be found with `indexOf("The result")`, which finds nothing in a

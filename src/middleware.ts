@@ -1,6 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { LOCALE_COOKIE, suggestLocale } from "@/lib/i18n/locales";
 import { PUBLIC_ROUTES } from "@/lib/public-routes";
 import {
   REFERRAL_CODE_PATTERN,
@@ -24,38 +23,6 @@ const isPublicRoute = createRouteMatcher([...PUBLIC_ROUTES]);
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
-  }
-
-  // A visitor from Lithuania is *offered* the Lithuanian page, once.
-  //
-  // Deliberately narrow: only the bare landing page, only when they have not
-  // already chosen a language, and only ever as a redirect to a real URL. Three
-  // things follow from doing it this way rather than swapping the content at
-  // `/`, and each of them is the reason for one of those conditions:
-  //
-  // - Googlebot crawls from the United States, so it is never redirected and
-  //   `/` stays the English page it indexes. `/lt` it reaches directly.
-  // - The country is a guess about a person. `LOCALE_COOKIE` is that person's
-  //   own answer, so it is checked first and wins from the moment they click
-  //   the switcher.
-  // - The header is absent locally and can be absent at the edge, and
-  //   `suggestLocale` treats absence as "leave them alone" rather than a hint.
-  if (request.nextUrl.pathname === "/") {
-    const locale = suggestLocale({
-      cookie: request.cookies.get(LOCALE_COOKIE)?.value,
-      country: request.headers.get("x-vercel-ip-country"),
-    });
-
-    if (locale === "lt") {
-      const target = request.nextUrl.clone();
-      target.pathname = "/lt";
-
-      // 307, not 308: this is a suggestion about a reader, not a statement that
-      // the page has moved. A permanent redirect would be cached by the browser
-      // and would survive them choosing English, which is the one thing the
-      // switcher must always be able to undo.
-      return NextResponse.redirect(target, 307);
-    }
   }
 
   const response = NextResponse.next();

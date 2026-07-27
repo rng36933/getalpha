@@ -4,7 +4,6 @@ import { ArrowRight, ShieldAlert, ShieldCheck, ShieldX } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { landingCopy, type LandingCopy } from "@/lib/i18n/landing";
-import type { Locale } from "@/lib/i18n/locales";
 
 /**
  * Three questions about the visitor's own last trade, judged on the spot.
@@ -176,8 +175,8 @@ function Toggle({
   );
 }
 
-export default function TradeTest({ locale }: { locale: Locale }) {
-  const copy = landingCopy(locale).tradeTest;
+export default function TradeTest() {
+  const copy = landingCopy.tradeTest;
 
   const [risk, setRisk] = useState(3);
   const [hadStop, setHadStop] = useState(false);

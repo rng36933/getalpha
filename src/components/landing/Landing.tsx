@@ -12,28 +12,18 @@ import Link from "next/link";
 import DayTapeReadout from "@/components/DayTapeReadout";
 import AmbientCandles from "@/components/landing/AmbientCandles";
 import Features from "@/components/landing/Features";
-import LocaleSwitch from "@/components/landing/LocaleSwitch";
 import Ticker from "@/components/landing/Ticker";
 import TradeTest from "@/components/landing/TradeTest";
 import VerdictCard from "@/components/landing/VerdictCard";
 import WaitlistForm from "@/components/WaitlistForm";
 import { landingCopy } from "@/lib/i18n/landing";
-import { DEFAULT_LOCALE, pathForLocale, type Locale } from "@/lib/i18n/locales";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
 import { fetchCandles } from "@/lib/market-data/candles";
 import { computeDayTape } from "@/lib/market-data/tape";
 
 /**
- * The public landing page, in whichever language was asked for.
- *
- * Lifted out of `app/page.tsx` so `/` and `/lt` can be the same page rather
- * than two that drift. Two copies of a landing page is how a product ends up
- * charging one price in one language and another price in the other.
- *
- * Only the words vary. Every link, every widget and every layout decision is
- * shared, which is also why the interactive pieces below — VerdictCard,
- * TradeTest, the tape readout — are untouched by this: they were difficult to
- * get right and none of their behaviour depends on the language around them.
+ * The public landing page. English only — the Lithuanian page (`/lt`) and the
+ * locale switcher were removed 2026-07-28.
  */
 
 function Wordmark() {
@@ -107,19 +97,12 @@ const MOTES = [
 const STEP_ICONS = [PlugZap, LineChart, Sparkles];
 
 export default async function Landing({
-  locale,
   referralCode,
 }: {
-  locale: Locale;
   referralCode: string | null;
 }) {
-  const copy = landingCopy(locale);
-  const other: Locale = locale === "en" ? "lt" : "en";
-  const path = locale === DEFAULT_LOCALE ? "/" : "/lt";
+  const copy = landingCopy;
 
-  // Both series are cached per symbol@timeframe in the database, the same rows
-  // the dashboard reads, so a visitor costs nothing at the price provider —
-  // and a second language does not double that, because the cache is shared.
   const [landingDaily, landingIntraday] = await Promise.all([
     fetchCandles("XAU/USD", "D1"),
     fetchCandles("XAU/USD", "M15"),
@@ -130,25 +113,15 @@ export default async function Landing({
     label: "XAUUSD",
     daily: landingDaily.data,
     intraday: landingIntraday.data,
-    locale,
   });
 
   return (
-    // `lang` on the content root, not on `<html>`.
-    //
-    // The document element is written by the single root layout, which serves
-    // every route and cannot vary per page without splitting the app into two
-    // root layouts. Declaring the language on the element that wraps the whole
-    // visible page is the standard fallback and does the two jobs that matter:
-    // a screen reader switches to Lithuanian pronunciation instead of reading
-    // it as mangled English, and Google reads the subtree as Lithuanian rather
-    // than trusting an `en` it can see is wrong.
-    <div lang={locale} className="min-h-screen bg-[#030712]">
+    <div className="min-h-screen bg-[#030712]">
       <Ticker />
 
       <header className="sticky top-0 z-40 border-b border-white/[0.05] bg-[#030712]/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
-          <Link href={path} aria-label="getALPHA">
+          <Link href="/" aria-label="getALPHA">
             <Wordmark />
           </Link>
 
@@ -159,13 +132,6 @@ export default async function Landing({
             >
               {copy.nav.how}
             </Link>
-
-            <LocaleSwitch
-              current={locale}
-              other={other}
-              label={copy.switchTo}
-              pathname={path}
-            />
 
             <Link
               href="/login"
@@ -291,7 +257,7 @@ export default async function Landing({
               </p>
             </div>
 
-            <VerdictCard locale={locale} />
+            <VerdictCard />
           </div>
         </section>
 
@@ -319,7 +285,6 @@ export default async function Landing({
                   tape={landingTape}
                   fetchedAt={landingDaily.fetchedAt}
                   stale={landingDaily.status === "CACHED"}
-                  locale={locale}
                 />
               </div>
             </div>
@@ -334,7 +299,7 @@ export default async function Landing({
               {copy.features.body}
             </p>
 
-            <Features locale={locale} />
+            <Features />
           </div>
         </section>
 
@@ -418,7 +383,7 @@ export default async function Landing({
             </p>
 
             <div className="mt-10">
-              <TradeTest locale={locale} />
+              <TradeTest />
             </div>
           </div>
         </section>
@@ -587,7 +552,7 @@ export default async function Landing({
               {JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "FAQPage",
-                inLanguage: locale,
+                inLanguage: "en",
                 mainEntity: copy.faq.items.map((item) => ({
                   "@type": "Question",
                   name: item.q,
@@ -650,13 +615,6 @@ export default async function Landing({
                 {page.label}
               </Link>
             ))}
-            <Link
-              href={pathForLocale(path, other)}
-              hrefLang={other}
-              className="transition-all duration-300 ease-in-out hover:text-white sm:hidden"
-            >
-              {copy.switchTo}
-            </Link>
           </nav>
         </div>
       </footer>

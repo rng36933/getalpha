@@ -18,11 +18,6 @@ export const PUBLIC_ROUTES = [
   // The landing page and the waitlist behind it. Everything a visitor can
   // reach before deciding to sign up.
   "/",
-  // The same page in Lithuanian. Left out of this list it answers 404 to every
-  // anonymous request — including Googlebot's, which would make the translated
-  // page invisible to the search results it exists to appear in. This file's
-  // most repeated bug, and it would have been silent.
-  "/lt",
   "/api/waitlist",
   "/login(.*)",
   "/register(.*)",

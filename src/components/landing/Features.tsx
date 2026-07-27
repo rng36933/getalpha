@@ -1,7 +1,6 @@
 import { Calendar, Lock, Sparkles, TrendingUp } from "lucide-react";
 import CountUp from "@/components/CountUp";
 import { landingCopy } from "@/lib/i18n/landing";
-import type { Locale } from "@/lib/i18n/locales";
 
 /**
  * The capabilities, as an asymmetric grid.
@@ -116,8 +115,8 @@ function Cell({
   );
 }
 
-export default function Features({ locale }: { locale: Locale }) {
-  const { cards, readouts } = landingCopy(locale).features;
+export default function Features() {
+  const { cards, readouts } = landingCopy.features;
 
   return (
     // Asymmetric on purpose: the journal is what everybody gets, so it takes the
