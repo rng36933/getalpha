@@ -24,8 +24,6 @@ import {
   fetchCandles,
   parseTimeframe,
 } from "@/lib/market-data/candles";
-import { dashboardCopy } from "@/lib/i18n/app/dashboard";
-import { getLocale } from "@/lib/i18n/server";
 import {
   defaultAudience,
   resolveBriefAudience,
@@ -237,20 +235,16 @@ export default async function DashboardPage({
 
   const timeframe = parseTimeframe(tf);
 
-  const [{ entries, instrument }, summary, mt5, briefAudience, locale] =
-    await Promise.all([
-      loadWatchlist(symbol),
-      loadSummary(userId),
-      loadMt5State(userId),
-      // Resolved here so the card states what it covers on first paint, rather
-      // than claiming a coverage it has to correct once the reader presses a
-      // session. The route resolves it again on its own; this is a label, not a
-      // permission, and the route never trusts what the client was told.
-      userId ? resolveBriefAudience(userId) : Promise.resolve(defaultAudience()),
-      getLocale(),
-    ]);
-
-  const copy = dashboardCopy(locale);
+  const [{ entries, instrument }, summary, mt5, briefAudience] = await Promise.all([
+    loadWatchlist(symbol),
+    loadSummary(userId),
+    loadMt5State(userId),
+    // Resolved here so the card states what it covers on first paint, rather
+    // than claiming a coverage it has to correct once the reader presses a
+    // session. The route resolves it again on its own; this is a label, not a
+    // permission, and the route never trusts what the client was told.
+    userId ? resolveBriefAudience(userId) : Promise.resolve(defaultAudience()),
+  ]);
 
   const choices = tapeChoices(
     entries.map((entry) => ({ symbol: entry.symbol, label: entry.label })),
@@ -280,14 +274,16 @@ export default async function DashboardPage({
 
   return (
     <>
-      <PageHeader title={copy.header.title} subtitle={copy.header.subtitle} />
+      <PageHeader
+        title="Dashboard"
+        subtitle="What is open, what it risks, and how the closed trades have gone."
+      />
 
       <DataQualityNotice
-        locale={locale}
         sources={[
-          { label: copy.sourceLabels.priceHistory(instrument.label), result: candles },
-          { label: copy.sourceLabels.dailyBars(tapeInstrument.label), result: tapeDaily },
-          { label: copy.sourceLabels.newsFeeds, result: news },
+          { label: `${instrument.label} price history`, result: candles },
+          { label: `${tapeInstrument.label} daily bars`, result: tapeDaily },
+          { label: "News feeds", result: news },
         ]}
       />
 
@@ -296,12 +292,12 @@ export default async function DashboardPage({
           numbers. */}
       {summary.performance.closedCount === 0 &&
       summary.openPositions.length === 0 ? (
-        <FirstRun locale={locale} />
+        <FirstRun />
       ) : null}
 
       <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card
-          title={copy.sessionCard.title(tapeInstrument.label)}
+          title={`${tapeInstrument.label} — this session`}
           className="xl:col-span-2"
         >
           {choices.length > 1 ? (
@@ -332,26 +328,24 @@ export default async function DashboardPage({
               tape={dayTape}
               fetchedAt={tapeDaily.fetchedAt}
               stale={tapeDaily.status === "CACHED"}
-              locale={locale}
             />
           ) : (
             <p className="py-8 text-center text-sm text-muted">
               {tapeDaily.status === "UNAVAILABLE"
-                ? copy.sessionCard.priceUnavailable(tapeInstrument.label)
-                : copy.sessionCard.notEnoughBars(tapeInstrument.label)}
+                ? `The price feed has nothing stored for ${tapeInstrument.label} yet, so there is nothing true to draw. It fills in on the next successful fetch.`
+                : `Not enough completed bars for ${tapeInstrument.label} to measure a session against. An arrow drawn from one candle would be a guess wearing a measurement's clothes.`}
             </p>
           )}
         </Card>
 
-        <Card title={copy.newsCard.title(tapeInstrument.label)}>
+        <Card title={`News naming ${tapeInstrument.label}`}>
           <PairNews
             headlines={pairHeadlines}
             label={tapeInstrument.label}
             asOf={news.fetchedAt}
-            locale={locale}
             emptyReason={
               news.status === "UNAVAILABLE"
-                ? copy.newsCard.feedUnavailable
+                ? "The news feeds could not be reached just now. Nothing is stored to fall back on."
                 : undefined
             }
           />
@@ -366,7 +360,6 @@ export default async function DashboardPage({
         connected={mt5.connected}
         receiving={mt5.receiving}
         lastSeenAt={mt5.lastSeenAt}
-        locale={locale}
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -384,21 +377,19 @@ export default async function DashboardPage({
               label: value.label,
             }))}
             candles={candles.data}
-            locale={locale}
           />
         </div>
         {/* The one card on the desk allowed to glow. Violet is the same signal
             the landing page's Pro column uses, and it says "this one costs
             money to run" rather than "get excited". */}
-        <Card title={copy.cardTitles.aiSessionBrief} className="glow-ai">
+        <Card title="AI Session Brief" className="glow-ai">
           <SessionBriefPanel
             instruments={briefAudience.symbols.map((entry) => entry.label)}
             personalised={briefAudience.personalised}
             truncated={briefAudience.truncated}
-            locale={locale}
           />
         </Card>
-        <Card title={copy.cardTitles.watchlist}>
+        <Card title="Watchlist">
           <WatchlistManager
             initialEntries={entries.map((entry) => ({
               symbol: entry.symbol,
@@ -407,7 +398,6 @@ export default async function DashboardPage({
             }))}
             max={MAX_WATCHLIST_SIZE}
             selectedSymbol={instrument.symbol}
-            locale={locale}
           />
         </Card>
         {/* There is no Signal Feed card and there will not be one. The landing
@@ -416,59 +406,45 @@ export default async function DashboardPage({
             Snapshot went too — it belongs on the Macro Desk, next to the data
             it summarises. */}
 
-        <Card title={copy.cardTitles.openPositions}>
-          <OpenPositions positions={summary.openPositions} locale={locale} />
+        <Card title="Open positions">
+          <OpenPositions positions={summary.openPositions} />
         </Card>
 
-        <Card title={copy.cardTitles.riskExposure}>
-          <RiskExposure
-            exposure={summary.exposure}
-            currency={mt5.currency}
-            locale={locale}
-          />
+        <Card title="Risk exposure">
+          <RiskExposure exposure={summary.exposure} currency={mt5.currency} />
         </Card>
 
-        <Card title={copy.cardTitles.recentTrades}>
-          <RecentTrades
-            trades={summary.recentTrades}
-            currency={mt5.currency}
-            locale={locale}
-          />
+        <Card title="Recent trades">
+          <RecentTrades trades={summary.recentTrades} currency={mt5.currency} />
         </Card>
 
         {/* Summary before detail: the shape of the account first, the figures
             that describe it underneath. */}
         {summary.pnlCurve ? (
           <Card
-            title={copy.cardTitles.cumulativePnl}
+            title="Cumulative P&L, trade by trade"
             className="md:col-span-2 xl:col-span-3"
           >
-            <PnlCurve
-              curve={summary.pnlCurve}
-              currency={mt5.currency}
-              locale={locale}
-            />
+            <PnlCurve curve={summary.pnlCurve} currency={mt5.currency} />
           </Card>
         ) : null}
 
         {summary.pnlDistribution ? (
           <Card
-            title={copy.cardTitles.whereResultsLand}
+            title="Where the results land"
             className="md:col-span-2 xl:col-span-3"
           >
             <PnlDistribution
               data={summary.pnlDistribution}
               currency={mt5.currency}
-              locale={locale}
             />
           </Card>
         ) : null}
 
-        <Card title={copy.cardTitles.performance} className="md:col-span-2 xl:col-span-3">
+        <Card title="Performance" className="md:col-span-2 xl:col-span-3">
           <PerformanceStats
             performance={summary.performance}
             currency={mt5.currency}
-            locale={locale}
           />
         </Card>
       </div>

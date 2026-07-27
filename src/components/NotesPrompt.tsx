@@ -1,6 +1,3 @@
-import { journalCopy } from "@/lib/i18n/app/journal";
-import type { Locale } from "@/lib/i18n/locales";
-
 /**
  * The one thing the terminal cannot send, asked for on the page where it is
  * entered.
@@ -22,6 +19,12 @@ import type { Locale } from "@/lib/i18n/locales";
  * and becomes furniture.
  */
 
+const REASONS = [
+  "The review can only judge what it can see. Sizing and exits it reads from the numbers; whether you followed your own plan it can only read from you.",
+  "One sentence is enough. What you saw, and what you meant to do — written while you still remember, not reconstructed later.",
+  "Patterns need a few dozen before they say anything. The trades you note this month are what next month's review has to work with.",
+];
+
 /** Above this many, the habit exists and the prompt has done its job. */
 export const NOTES_HABIT_THRESHOLD = 10;
 
@@ -30,36 +33,38 @@ type NotesPromptProps = {
   total: number;
   /** How many of them carry at least one written note. */
   withNotes: number;
-  locale: Locale;
 };
 
-export default function NotesPrompt({ total, withNotes, locale }: NotesPromptProps) {
+export default function NotesPrompt({ total, withNotes }: NotesPromptProps) {
   // Nothing to ask for yet — the journal is empty, and `Mt5Prompt` is the one
   // with something useful to say at that point.
   if (total === 0) return null;
   if (withNotes >= NOTES_HABIT_THRESHOLD) return null;
 
-  const copy = journalCopy(locale).notesPrompt;
-
   return (
     <section className="surface-lit mb-4 rounded-xl border border-warning/30 p-4 sm:p-5">
       <p className="eyebrow text-warning">
         {withNotes === 0
-          ? copy.noneExplained(total)
-          : copy.someExplained(withNotes, total)}
+          ? `${total} trades, none of them explained`
+          : `${withNotes} of ${total} trades carry a note`}
       </p>
 
       <h2 className="mt-1.5 max-w-[38ch] text-base font-semibold tracking-tight text-balance sm:text-lg">
-        {copy.heading}
+        Your terminal sent what you did. Only you can say why.
       </h2>
 
       <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-        {copy.bodyLead}
-        <span className="text-foreground">{copy.bodyEmphasis}</span>
+        Every number here arrived by itself, and that is most of the work — but
+        it is also the part of a trade that says the least about the decision
+        behind it.{" "}
+        <span className="text-foreground">
+          A review with your reasoning in front of it is a different document
+          from one without.
+        </span>
       </p>
 
       <ul className="mt-3 flex flex-col gap-2">
-        {copy.reasons.map((reason) => (
+        {REASONS.map((reason) => (
           <li
             key={reason}
             className="grid grid-cols-[0.9rem_1fr] gap-2 text-[13px] leading-snug text-muted"
@@ -73,8 +78,8 @@ export default function NotesPrompt({ total, withNotes, locale }: NotesPromptPro
       </ul>
 
       <p className="mt-3.5 text-[13px] text-muted">
-        {copy.footerLead} <span className="text-foreground">{copy.footerButton}</span>{" "}
-        {copy.footerTail}
+        Press <span className="text-foreground">Notes</span> on any row below.
+        Four fields, all optional, and a sync never overwrites them.
       </p>
     </section>
   );

@@ -2,42 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
 import TradeList, { type TradeRow } from "@/components/TradeList";
-import { coachBudgetStatus, type CoachBudgetStatus } from "@/lib/ai/budget";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
 import CountUp from "@/components/CountUp";
 import NotesPrompt from "@/components/NotesPrompt";
-import { checkAccess } from "@/lib/billing/subscription";
-import { journalCopy } from "@/lib/i18n/app/journal";
-import { getLocale } from "@/lib/i18n/server";
 import { getAccountCurrency } from "@/lib/mt5/account";
 import { prisma } from "@/lib/prisma";
-
-/**
- * Today's Coach allowance, for a reader entitled to use it.
- *
- * Null for a Free account, deliberately — the Review button stays visible to
- * them (pressing it is how they discover Pro), but a count of reviews
- * "remaining" for a feature they cannot use at all would only be a confusing
- * way to advertise a paywall.
- *
- * A failure here must not take the journal down over a number in a corner of
- * the page.
- */
-async function loadCoachBudget(
-  userId: string | null,
-): Promise<CoachBudgetStatus | null> {
-  if (!userId) return null;
-
-  try {
-    const access = await checkAccess(userId);
-    if (!access.allowed) return null;
-
-    return await coachBudgetStatus(userId);
-  } catch (error) {
-    console.error("Could not read the Coach budget:", error);
-    return null;
-  }
-}
 
 export const metadata = {
   title: "Journal",
@@ -95,13 +64,7 @@ async function loadTrades(userId: string): Promise<TradeRow[]> {
 export default async function JournalPage() {
   const { userId } = await auth();
 
-  const [currency, coachBudget, locale] = await Promise.all([
-    getAccountCurrency(userId),
-    loadCoachBudget(userId),
-    getLocale(),
-  ]);
-
-  const copy = journalCopy(locale);
+  const currency = await getAccountCurrency(userId);
 
   let trades: TradeRow[] = [];
   let failed = false;
@@ -129,9 +92,12 @@ export default async function JournalPage() {
 
   return (
     <>
-      <PageHeader title={copy.header.title} subtitle={copy.header.subtitle} />
+      <PageHeader
+        title="Journal"
+        subtitle="Every closed trade, straight from your terminal. Nothing here is typed by hand."
+      />
 
-      <NotesPrompt total={closed.length} withNotes={withNotes} locale={locale} />
+      <NotesPrompt total={closed.length} withNotes={withNotes} />
 
       <div className="space-y-4">
         {closed.length > 0 ? (
@@ -141,12 +107,12 @@ export default async function JournalPage() {
                 setting a number in the body font, which made the journal's own
                 totals look less like readings than the ones on the public
                 page. */}
-            <Card title={copy.tiles.closed}>
+            <Card title="Closed trades">
               <p className="figure text-xl sm:text-2xl">
                 <CountUp value={closed.length} />
               </p>
             </Card>
-            <Card title={copy.tiles.totalPnl}>
+            <Card title="Total P&L">
               <p
                 className={`figure text-xl sm:text-2xl ${
                   totalPnl > 0
@@ -159,7 +125,7 @@ export default async function JournalPage() {
                 <CountUp value={totalPnl} currency={currency} />
               </p>
             </Card>
-            <Card title={copy.tiles.winRate}>
+            <Card title="Win rate">
               <p className="figure text-xl sm:text-2xl">
                 <CountUp
                   value={Math.round((wins / closed.length) * 100)}
@@ -167,7 +133,7 @@ export default async function JournalPage() {
                 />
               </p>
             </Card>
-            <Card title={copy.tiles.average}>
+            <Card title="Average">
               <p className="figure text-xl sm:text-2xl">
                 <CountUp
                   value={totalPnl / closed.length}
@@ -178,18 +144,14 @@ export default async function JournalPage() {
           </div>
         ) : null}
 
-        <Card title={copy.tradeLogTitle}>
+        <Card title="Trade log">
           {failed ? (
             <p className="py-8 text-center text-sm text-muted">
-              {copy.loadFailed}
+              Your trades could not be loaded just now. Reload in a moment —
+              nothing has been lost.
             </p>
           ) : (
-            <TradeList
-              trades={trades}
-              currency={currency}
-              coachBudget={coachBudget}
-              locale={locale}
-            />
+            <TradeList trades={trades} currency={currency} />
           )}
         </Card>
       </div>

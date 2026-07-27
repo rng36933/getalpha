@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { pricingCopy } from "@/lib/i18n/app/pricing";
-import type { Locale } from "@/lib/i18n/locales";
 
 export type PlanCard = {
   slug: string;
@@ -30,16 +28,13 @@ type PricingPlansProps = {
    * the route, because a disabled button is a suggestion, not a control.
    */
   sellingClosed?: boolean;
-  locale: Locale;
 };
 
 export default function PricingPlans({
   plans,
   currentPlan,
   sellingClosed = false,
-  locale,
 }: PricingPlansProps) {
-  const copy = pricingCopy(locale);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +52,7 @@ export default function PricingPlans({
       const body = await response.json().catch(() => null);
 
       if (!response.ok || !body?.url) {
-        setError(body?.error ?? copy.checkoutFailed);
+        setError(body?.error ?? "Could not start checkout. Try again.");
         setPending(null);
         return;
       }
@@ -67,7 +62,7 @@ export default function PricingPlans({
       // lint reads as mutating a value defined outside the component.
       window.location.assign(body.url);
     } catch {
-      setError(copy.networkError);
+      setError("Could not reach the server. Check your connection.");
       setPending(null);
     }
   }
@@ -108,7 +103,7 @@ export default function PricingPlans({
                 {plan.interval ? (
                   <span className="text-sm font-normal text-muted">
                     {" "}
-                    {copy.perInterval(plan.interval)}
+                    / {plan.interval}
                   </span>
                 ) : null}
               </p>
@@ -138,14 +133,14 @@ export default function PricingPlans({
                   className="mt-5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
                 >
                   {isCurrent
-                    ? copy.currentPlan
+                    ? "Current plan"
                     : sellingClosed
-                      ? copy.notForSaleYet
+                      ? "Not for sale yet"
                       : !plan.purchasable
-                        ? copy.notAvailableYet
+                        ? "Not available yet"
                         : pending === plan.slug
-                          ? copy.openingCheckout
-                          : copy.subscribe}
+                          ? "Opening checkout…"
+                          : "Subscribe"}
                 </button>
               )}
             </section>

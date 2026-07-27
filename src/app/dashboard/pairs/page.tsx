@@ -8,8 +8,6 @@ import { analyseJournal, type JournalAnalysis } from "@/lib/analysis/per-pair";
 import { fetchEconomicCalendar } from "@/lib/market-data/calendar";
 import { currenciesFromSymbols } from "@/lib/market-data/currencies";
 import { toEconomicEvents } from "@/lib/market-data/display";
-import { pairsCopy } from "@/lib/i18n/app/pairs";
-import { getLocale } from "@/lib/i18n/server";
 import { getAccountCurrency } from "@/lib/mt5/account";
 import { prisma } from "@/lib/prisma";
 
@@ -49,20 +47,20 @@ export default async function PairsPage({
   const { userId } = await auth();
   const { pair: requested } = await searchParams;
 
-  const [analysis, currency, locale] = await Promise.all([
+  const [analysis, currency] = await Promise.all([
     userId ? loadAnalysis(userId) : Promise.resolve(null),
     getAccountCurrency(userId),
-    getLocale(),
   ]);
-
-  const copy = pairsCopy(locale);
 
   if (analysis === null) {
     return (
       <>
-        <PageHeader title={copy.title} />
-        <Card title={copy.cardTitle}>
-          <p className="py-8 text-center text-sm text-muted">{copy.loadFailed}</p>
+        <PageHeader title="Pairs" />
+        <Card title="Per-pair record">
+          <p className="py-8 text-center text-sm text-muted">
+            Your journal could not be read just now. Reload in a moment —
+            nothing has been lost.
+          </p>
         </Card>
       </>
     );
@@ -71,16 +69,25 @@ export default async function PairsPage({
   if (analysis.pairs.length === 0) {
     return (
       <>
-        <PageHeader title={copy.title} subtitle={copy.subtitleEmpty} />
-        <Card title={copy.cardTitle}>
+        <PageHeader
+          title="Pairs"
+          subtitle="What your own record says about each instrument you trade."
+        />
+        <Card title="Per-pair record">
           <div className="py-8 text-center">
-            <p className="text-sm text-muted">{copy.emptyLine1}</p>
-            <p className="mt-2 text-sm text-muted">{copy.emptyLine2}</p>
+            <p className="text-sm text-muted">
+              Nothing to break down yet. This page is built entirely from your
+              journal — it has no opinion of its own about any pair.
+            </p>
+            <p className="mt-2 text-sm text-muted">
+              Connect MetaTrader and ninety days of history arrives on the first
+              sync, broken down per instrument.
+            </p>
             <Link
               href="/dashboard"
               className="mt-4 inline-block text-sm text-accent hover:underline"
             >
-              {copy.connectMetaTrader}
+              Connect MetaTrader
             </Link>
           </div>
         </Card>
@@ -103,7 +110,10 @@ export default async function PairsPage({
 
   return (
     <>
-      <PageHeader title={copy.title} subtitle={copy.subtitleWithData} />
+      <PageHeader
+        title="Pairs"
+        subtitle="Counted from your own trades. Nothing here predicts anything."
+      />
 
       <nav className="mb-4 flex flex-wrap gap-2">
         {analysis.pairs.map((p) => {
@@ -128,23 +138,24 @@ export default async function PairsPage({
       </nav>
 
       <div className="space-y-4">
-        <Card title={copy.yourRecord(selected.asset)}>
-          <PairAnalysis pair={selected} currency={currency} locale={locale} />
+        <Card title={`${selected.asset} — your record`}>
+          <PairAnalysis pair={selected} currency={currency} />
         </Card>
 
         <Card
           title={
             currencies.length > 0
-              ? copy.calendarTitleFor(currencies.join(", "))
-              : copy.calendarTitle
+              ? `Today's calendar for ${currencies.join(", ")}`
+              : "Today's calendar"
           }
         >
           {currencies.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted">
-              {copy.noOwnCalendar(selected.asset)}
+              {selected.asset} has no economic calendar of its own, and its
+              quote currency is not one the feed publishes releases for.
             </p>
           ) : (
-            <EconomicCalendar events={events} locale={locale} />
+            <EconomicCalendar events={events} />
           )}
         </Card>
       </div>

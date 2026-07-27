@@ -1,5 +1,3 @@
-import { dashboardCopy } from "@/lib/i18n/app/dashboard";
-import type { Locale } from "@/lib/i18n/locales";
 import type { PnlDistribution as Data } from "@/lib/dashboard/pnl-distribution";
 import { formatCompactMoney, formatMoney } from "@/lib/format/money";
 
@@ -20,13 +18,10 @@ import { formatCompactMoney, formatMoney } from "@/lib/format/money";
 export default function PnlDistribution({
   data,
   currency,
-  locale,
 }: {
   data: Data;
   currency: string | null;
-  locale: Locale;
 }) {
-  const copy = dashboardCopy(locale).pnlDistribution;
   const { bins, scored, peak, step, worstLoss, medianLoss } = data;
 
   // How far outside the usual a bad day went. This is the money answer to the
@@ -43,7 +38,7 @@ export default function PnlDistribution({
       <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
         <span className="flex items-baseline gap-2">
           <span className="figure text-[1.5rem]">{scored}</span>
-          <span className="text-xs text-muted">{copy.closedTrades}</span>
+          <span className="text-xs text-muted">closed trades</span>
         </span>
 
         <span className="flex items-baseline gap-2">
@@ -56,14 +51,14 @@ export default function PnlDistribution({
           >
             {worstLoss === null ? "—" : formatMoney(worstLoss, currency)}
           </span>
-          <span className="text-xs text-muted">{copy.worstSingleLoss}</span>
+          <span className="text-xs text-muted">worst single loss</span>
         </span>
 
         <span className="flex items-baseline gap-2">
           <span className="figure text-[1.5rem] text-muted">
             {medianLoss === null ? "—" : formatMoney(medianLoss, currency)}
           </span>
-          <span className="text-xs text-muted">{copy.typicalLoss}</span>
+          <span className="text-xs text-muted">typical loss</span>
         </span>
       </div>
 
@@ -82,7 +77,7 @@ export default function PnlDistribution({
               className={`relative flex h-full flex-1 flex-col justify-end ${
                 isFirstWin ? "border-l border-line pl-1 sm:pl-1.5" : ""
               }`}
-              title={copy.barTitle(bin.count, bin.percent)}
+              title={`${bin.count} trade${bin.count === 1 ? "" : "s"} · ${bin.percent}%`}
             >
               {bin.count > 0 ? (
                 <span className="mb-1 text-center font-mono text-[10px] tabular-nums text-muted">
@@ -124,8 +119,8 @@ export default function PnlDistribution({
 
       <p className="mt-4 border-t border-line pt-3 text-xs leading-relaxed text-muted">
         {outlierFactor !== null && outlierFactor >= 3
-          ? copy.outlierNote(outlierFactor.toFixed(1))
-          : copy.normalNote(formatMoney(step, currency))}
+          ? `Your worst loss is ${outlierFactor.toFixed(1)}× your typical one. A single loss that far outside the usual is a stop that was moved, widened, or never really there.`
+          : `Each column is ${formatMoney(step, currency)} wide, sized from your own typical result rather than a fixed amount.`}
       </p>
     </div>
   );

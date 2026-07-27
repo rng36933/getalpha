@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { dashboardCopy } from "@/lib/i18n/app/dashboard";
-import type { Locale } from "@/lib/i18n/locales";
 import { formatMoney, formatSignedMoney } from "@/lib/format/money";
 import type {
   ClosedTrade,
@@ -47,19 +45,12 @@ function pnl(value: number | null, currency: string | null): string {
 
 /* ------------------------------------------------------------------ open */
 
-export function OpenPositions({
-  positions,
-  locale,
-}: {
-  positions: OpenPosition[];
-  locale: Locale;
-}) {
-  const copy = dashboardCopy(locale).deskCards.openPositions;
-
+export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
   if (positions.length === 0) {
     return (
       <Empty>
-        {copy.empty} <JournalLink label={copy.logOne} />.
+        Nothing open. A trade counts as open until you record its exit —{" "}
+        <JournalLink label="log one" />.
       </Empty>
     );
   }
@@ -82,9 +73,9 @@ export function OpenPositions({
 
           <span className="shrink-0 font-mono text-xs tabular-nums text-muted">
             {position.riskPercent === null ? (
-              <span className="text-warning">{copy.noStop}</span>
+              <span className="text-warning">no stop</span>
             ) : (
-              copy.riskPercent(position.riskPercent.toFixed(2))
+              `${position.riskPercent.toFixed(2)}% risk`
             )}
           </span>
         </li>
@@ -98,16 +89,17 @@ export function OpenPositions({
 export function RiskExposure({
   exposure,
   currency,
-  locale,
 }: {
   exposure: Exposure[];
   currency: string | null;
-  locale: Locale;
 }) {
-  const copy = dashboardCopy(locale).deskCards.riskExposure;
-
   if (exposure.length === 0) {
-    return <Empty>{copy.empty}</Empty>;
+    return (
+      <Empty>
+        No defined risk open. Exposure needs a stop on the trade — without one
+        there is no number to show.
+      </Empty>
+    );
   }
 
   return (
@@ -124,7 +116,7 @@ export function RiskExposure({
           <div
             className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-raised"
             role="img"
-            aria-label={copy.shareAria(row.share)}
+            aria-label={`${row.share}% of open risk`}
           >
             <div
               className="h-full rounded-full bg-accent"
@@ -142,19 +134,15 @@ export function RiskExposure({
 export function RecentTrades({
   trades,
   currency,
-  locale,
 }: {
   trades: ClosedTrade[];
   currency: string | null;
-  locale: Locale;
 }) {
-  const copy = dashboardCopy(locale).deskCards.recentTrades;
-
   if (trades.length === 0) {
     return (
       <Empty>
-        {copy.empty} <JournalLink label={copy.connectMetaTrader} />{" "}
-        {copy.andTheyArrive}
+        No closed trades yet. <JournalLink label="Connect MetaTrader" /> and they
+        arrive by themselves.
       </Empty>
     );
   }
@@ -211,13 +199,7 @@ function Stat({
  * this one gets compared against, and a rate with no reference is a number
  * floating on its own.
  */
-function WinRateMeter({
-  percent,
-  copy,
-}: {
-  percent: number;
-  copy: ReturnType<typeof dashboardCopy>["deskCards"]["performance"];
-}) {
+function WinRateMeter({ percent }: { percent: number }) {
   return (
     <div className="mt-2">
       <div className="relative h-1.5 overflow-hidden rounded-full bg-surface-raised">
@@ -230,7 +212,7 @@ function WinRateMeter({
         <span className="absolute inset-y-0 left-1/2 w-px bg-line" />
       </div>
       <p className="mt-1 text-[11px] text-muted">
-        {percent >= 50 ? copy.aboveEvenSplit : copy.belowEvenSplit}
+        {percent >= 50 ? "above" : "below"} an even split
       </p>
     </div>
   );
@@ -243,13 +225,7 @@ function WinRateMeter({
  * show. Two segments of one bar can: how much of the total R moved was won and
  * how much was lost.
  */
-function ProfitFactorBar({
-  factor,
-  copy,
-}: {
-  factor: number;
-  copy: ReturnType<typeof dashboardCopy>["deskCards"]["performance"];
-}) {
+function ProfitFactorBar({ factor }: { factor: number }) {
   // factor = win / loss, so the won share of the whole is factor / (factor + 1).
   const wonShare = (factor / (factor + 1)) * 100;
 
@@ -264,8 +240,8 @@ function ProfitFactorBar({
       </div>
       <p className="mt-1 text-[11px] text-muted">
         {factor >= 1
-          ? copy.wonPerLost(factor.toFixed(2))
-          : copy.onlyWonPerLost(factor.toFixed(2))}
+          ? `${factor.toFixed(2)}R won per 1R lost`
+          : `only ${factor.toFixed(2)}R won per 1R lost`}
       </p>
     </div>
   );
@@ -274,18 +250,15 @@ function ProfitFactorBar({
 export function PerformanceStats({
   performance,
   currency,
-  locale,
 }: {
   performance: Performance;
   currency: string | null;
-  locale: Locale;
 }) {
-  const copy = dashboardCopy(locale).deskCards.performance;
-
   if (performance.closedCount === 0) {
     return (
       <Empty>
-        {copy.empty} <JournalLink label={copy.openTheJournal} />.
+        Statistics start once a trade is closed.{" "}
+        <JournalLink label="Open the journal" />.
       </Empty>
     );
   }
@@ -294,12 +267,12 @@ export function PerformanceStats({
     <div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Stat
-          label={copy.closed}
+          label="Closed"
           value={String(performance.closedCount)}
         />
         <div>
           <Stat
-            label={copy.winRate}
+            label="Win rate"
             value={
               performance.winRatePercent === null
                 ? "—"
@@ -307,17 +280,17 @@ export function PerformanceStats({
             }
           />
           {performance.winRatePercent !== null ? (
-            <WinRateMeter percent={performance.winRatePercent} copy={copy} />
+            <WinRateMeter percent={performance.winRatePercent} />
           ) : null}
         </div>
         <Stat
-          label={copy.totalPnl}
+          label="Total P&L"
           value={pnl(performance.totalPnl, currency)}
           tone={tone(performance.totalPnl)}
         />
         <div>
           <Stat
-            label={copy.profitFactor}
+            label="Profit factor"
             value={
               performance.profitFactor === null
                 ? "—"
@@ -334,27 +307,28 @@ export function PerformanceStats({
           {performance.profitFactor === null ? (
             // Deliberately not infinity: no losses yet is a fact about the
             // sample, not about an edge.
-            <p className="mt-1 text-[11px] text-muted">{copy.noLosingTradeYet}</p>
+            <p className="mt-1 text-[11px] text-muted">no losing trade yet</p>
           ) : (
-            <ProfitFactorBar factor={performance.profitFactor} copy={copy} />
+            <ProfitFactorBar factor={performance.profitFactor} />
           )}
         </div>
       </div>
 
       <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-line pt-3 text-xs text-muted">
         <span>
-          {copy.expectancy}{" "}
+          Expectancy{" "}
           <span
             className={`font-mono tabular-nums ${tone(performance.expectancyPnl)}`}
           >
             {pnl(performance.expectancyPnl, currency)}
           </span>{" "}
-          {copy.perTrade}
+          per trade
         </span>
 
         {performance.withoutStop > 0 ? (
           <span className="text-warning">
-            {copy.withoutStop(performance.withoutStop)}
+            {performance.withoutStop} trade
+            {performance.withoutStop === 1 ? "" : "s"} logged without a stop
           </span>
         ) : null}
       </div>

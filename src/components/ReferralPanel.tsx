@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { referralCopy } from "@/lib/i18n/app/referral";
-import type { Locale } from "@/lib/i18n/locales";
 
 type ReferralPanelProps = {
   inviteUrl: string;
@@ -16,7 +14,6 @@ type ReferralPanelProps = {
   /** Every bonus the programme offers has been earned. */
   maxRewardsReached: boolean;
   maxRewards: number;
-  locale: Locale;
 };
 
 export default function ReferralPanel({
@@ -30,12 +27,10 @@ export default function ReferralPanel({
   rewards,
   maxRewardsReached,
   maxRewards,
-  locale,
 }: ReferralPanelProps) {
-  const copy = referralCopy(locale);
   const [copied, setCopied] = useState(false);
 
-  async function copyToClipboard() {
+  async function copy() {
     try {
       await navigator.clipboard.writeText(inviteUrl);
       setCopied(true);
@@ -52,35 +47,35 @@ export default function ReferralPanel({
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-wider text-muted">{copy.yourLink}</p>
+        <p className="text-xs uppercase tracking-wider text-muted">Your link</p>
 
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <input
             readOnly
             value={inviteUrl}
             onFocus={(event) => event.currentTarget.select()}
-            aria-label={copy.linkAriaLabel}
+            aria-label="Your referral link"
             className="min-w-0 flex-1 rounded-lg border border-line bg-surface-raised px-3 py-2 font-mono text-xs text-muted outline-none"
           />
           <button
             type="button"
-            onClick={copyToClipboard}
+            onClick={copy}
             className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent/90"
           >
-            {copied ? copy.copiedLabel : copy.copyLabel}
+            {copied ? "Copied" : "Copy"}
           </button>
         </div>
 
         <p className="mt-2 text-xs text-muted">
-          {copy.codeLabel} <span className="font-mono text-foreground">{code}</span>
+          Code <span className="font-mono text-foreground">{code}</span>
         </p>
       </div>
 
       <div>
         <div className="flex items-baseline justify-between gap-3">
-          <p className="text-xs uppercase tracking-wider text-muted">{copy.progress}</p>
+          <p className="text-xs uppercase tracking-wider text-muted">Progress</p>
           <p className="text-xs text-muted">
-            {copy.progressCount(progress, invitesPerReward)}
+            {progress} of {invitesPerReward}
           </p>
         </div>
 
@@ -103,22 +98,24 @@ export default function ReferralPanel({
 
         <p className="mt-3 text-sm text-muted">
           {maxRewardsReached
-            ? copy.maxRewardsReachedNote(maxRewards, maxRewards * rewardDays)
+            ? `You have earned all ${maxRewards} bonuses the programme offers — ${maxRewards * rewardDays} days in total. Further invites are still welcome; they no longer add days.`
             : invitesUntilNextReward === invitesPerReward && qualifiedInvites > 0
-              ? copy.bonusEarnedNote(invitesPerReward, rewardDays)
-              : copy.inviteMoreNote(invitesUntilNextReward, rewardDays)}
+              ? `Bonus earned. Invite ${invitesPerReward} more for another ${rewardDays} days.`
+              : `Invite ${invitesUntilNextReward} more ${
+                  invitesUntilNextReward === 1 ? "person" : "people"
+                } to earn ${rewardDays} days of Pro.`}
         </p>
       </div>
 
       <dl className="grid grid-cols-2 gap-4">
         <div className="rounded-lg border border-line bg-surface-raised p-4">
-          <dt className="text-xs text-muted">{copy.counted}</dt>
+          <dt className="text-xs text-muted">Counted</dt>
           <dd className="figure mt-1 text-2xl">
             {qualifiedInvites}
           </dd>
         </div>
         <div className="rounded-lg border border-line bg-surface-raised p-4">
-          <dt className="text-xs text-muted">{copy.notCountingYet}</dt>
+          <dt className="text-xs text-muted">Not counting yet</dt>
           <dd className="figure mt-1 text-2xl text-muted">
             {pendingInvites}
           </dd>
@@ -126,25 +123,28 @@ export default function ReferralPanel({
       </dl>
 
       <p className="text-xs leading-relaxed text-muted">
-        {copy.explanationLead} <em>{copy.explanationEmphasis}</em>{" "}
-        {copy.explanationTail}
+        An invite counts once that person has confirmed their email address{" "}
+        <em>and</em> logged their first trade. The programme pays for people who
+        turn up, not for registrations — and one mailbox counts once, however
+        many addresses it can be spelled with.
       </p>
 
       {activeReward ? (
         <p className="rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive">
-          {copy.activeRewardNote(
-            new Date(activeReward.expiresAt).toLocaleDateString(
-              locale === "lt" ? "lt-LT" : "en-IE",
-              { day: "numeric", month: "long", year: "numeric" },
-            ),
-          )}
+          Pro is active from a referral bonus until{" "}
+          {new Date(activeReward.expiresAt).toLocaleDateString(undefined, {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+          .
         </p>
       ) : null}
 
       {rewards.length > 0 ? (
         <div>
           <p className="text-xs uppercase tracking-wider text-muted">
-            {copy.bonusesEarned}
+            Bonuses earned
           </p>
           <ul className="mt-2 divide-y divide-line text-sm">
             {rewards.map((reward) => (
@@ -153,12 +153,10 @@ export default function ReferralPanel({
                 className="flex items-center justify-between gap-3 py-2"
               >
                 <span className="text-muted">
-                  {new Date(reward.grantedAt).toLocaleDateString(
-                    locale === "lt" ? "lt-LT" : "en-IE",
-                  )}
+                  {new Date(reward.grantedAt).toLocaleDateString()}
                 </span>
                 <span className={reward.active ? "text-positive" : "text-muted"}>
-                  {reward.active ? copy.active : copy.expired}
+                  {reward.active ? "Active" : "Expired"}
                 </span>
               </li>
             ))}

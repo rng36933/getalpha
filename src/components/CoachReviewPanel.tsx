@@ -1,78 +1,59 @@
 "use client";
 
-import { journalCopy } from "@/lib/i18n/app/journal";
-import type { Locale } from "@/lib/i18n/locales";
 import type { CoachRating, CoachReview } from "@/lib/ai/types";
 
-const VERDICT_CLASS: Record<CoachReview["verdict"], string> = {
-  PROCESS_SOUND: "bg-positive/15 text-positive",
-  PROCESS_MIXED: "bg-warning/15 text-warning",
-  PROCESS_BROKEN: "bg-negative/15 text-negative",
+const VERDICT: Record<
+  CoachReview["verdict"],
+  { label: string; className: string }
+> = {
+  PROCESS_SOUND: { label: "Process sound", className: "bg-positive/15 text-positive" },
+  PROCESS_MIXED: { label: "Process mixed", className: "bg-warning/15 text-warning" },
+  PROCESS_BROKEN: { label: "Process broken", className: "bg-negative/15 text-negative" },
 };
 
-const RATING_CLASS: Record<CoachRating, string> = {
-  STRONG: "text-positive",
-  ADEQUATE: "text-foreground",
-  WEAK: "text-negative",
-  NOT_ASSESSABLE: "text-muted",
+const RATING: Record<CoachRating, { label: string; className: string }> = {
+  STRONG: { label: "Strong", className: "text-positive" },
+  ADEQUATE: { label: "Adequate", className: "text-foreground" },
+  WEAK: { label: "Weak", className: "text-negative" },
+  NOT_ASSESSABLE: { label: "Not assessable", className: "text-muted" },
 };
 
-export default function CoachReviewPanel({
-  review,
-  locale,
-}: {
-  review: CoachReview;
-  locale: Locale;
-}) {
-  const copy = journalCopy(locale).coachPanel;
+const DIMENSIONS: { key: keyof CoachReview["scorecard"]; label: string }[] = [
+  { key: "tradeSelection", label: "Trade selection" },
+  { key: "positionSizing", label: "Position sizing" },
+  { key: "stopPlacement", label: "Stop placement" },
+  { key: "exitManagement", label: "Exit management" },
+  { key: "planAdherence", label: "Plan adherence" },
+  { key: "emotionalControl", label: "Emotional control" },
+];
 
-  const VERDICT: Record<CoachReview["verdict"], string> = {
-    PROCESS_SOUND: copy.verdict.sound,
-    PROCESS_MIXED: copy.verdict.mixed,
-    PROCESS_BROKEN: copy.verdict.broken,
-  };
-
-  const RATING: Record<CoachRating, string> = {
-    STRONG: copy.rating.strong,
-    ADEQUATE: copy.rating.adequate,
-    WEAK: copy.rating.weak,
-    NOT_ASSESSABLE: copy.rating.notAssessable,
-  };
-
-  const DIMENSIONS: { key: keyof CoachReview["scorecard"]; label: string }[] = [
-    { key: "tradeSelection", label: copy.dimensions.tradeSelection },
-    { key: "positionSizing", label: copy.dimensions.positionSizing },
-    { key: "stopPlacement", label: copy.dimensions.stopPlacement },
-    { key: "exitManagement", label: copy.dimensions.exitManagement },
-    { key: "planAdherence", label: copy.dimensions.planAdherence },
-    { key: "emotionalControl", label: copy.dimensions.emotionalControl },
-  ];
-
-  const verdictClass = VERDICT_CLASS[review.verdict];
+export default function CoachReviewPanel({ review }: { review: CoachReview }) {
+  const verdict = VERDICT[review.verdict];
 
   return (
     <div className="space-y-5">
       <div>
         <span
-          className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-medium ${verdictClass}`}
+          className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-medium ${verdict.className}`}
         >
-          {VERDICT[review.verdict]}
+          {verdict.label}
         </span>
         <p className="mt-2 text-sm leading-relaxed">{review.headline}</p>
       </div>
 
       <div>
-        <p className="text-[11px] uppercase tracking-wider text-muted">{copy.scorecard}</p>
+        <p className="text-[11px] uppercase tracking-wider text-muted">Scorecard</p>
         <dl className="mt-2 divide-y divide-line">
           {DIMENSIONS.map(({ key, label }) => {
             const dimension = review.scorecard[key];
+            const rating = RATING[dimension.rating];
 
             return (
               <div key={key} className="py-2.5">
                 <div className="flex items-baseline justify-between gap-3">
                   <dt className="text-sm">{label}</dt>
-                  <dd className={`shrink-0 text-xs font-medium ${RATING_CLASS[dimension.rating]}`}>
-                    {RATING[dimension.rating]}
+                  <dd className={`shrink-0 text-xs font-medium ${rating.className}`}>
+                    {rating.label}
                   </dd>
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -87,7 +68,7 @@ export default function CoachReviewPanel({
       {review.primaryLeak ? (
         <div className="rounded-lg border border-negative/30 bg-negative/10 p-3">
           <p className="text-[11px] uppercase tracking-wider text-negative">
-            {copy.primaryLeak}
+            Primary leak
           </p>
           <p className="mt-1 text-sm font-medium">{review.primaryLeak.name}</p>
           <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -101,7 +82,7 @@ export default function CoachReviewPanel({
 
       {review.strengths.length > 0 ? (
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted">{copy.strengths}</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted">Strengths</p>
           <ul className="mt-2 space-y-1.5 text-sm text-muted">
             {review.strengths.map((strength) => (
               <li key={strength} className="flex gap-2">
@@ -117,7 +98,7 @@ export default function CoachReviewPanel({
 
       <div className="rounded-lg border border-accent/30 bg-accent-soft p-3">
         <p className="text-[11px] uppercase tracking-wider text-accent">
-          {copy.ruleForNextTime}
+          Rule for next time
         </p>
         <p className="mt-1 text-sm leading-relaxed">{review.ruleForNextTime}</p>
       </div>
@@ -125,7 +106,7 @@ export default function CoachReviewPanel({
       {review.missingData.length > 0 ? (
         <div>
           <p className="text-[11px] uppercase tracking-wider text-muted">
-            {copy.limitedByMissingData}
+            Limited by missing data
           </p>
           {/* Named rather than hidden: a reader should be able to tell the
               difference between "your sizing was fine" and "nobody could

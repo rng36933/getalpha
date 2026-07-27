@@ -3,8 +3,6 @@ import Card from "@/components/Card";
 import DataQualityNotice from "@/components/DataQualityNotice";
 import { CotList, ReadingList } from "@/components/MacroReadings";
 import PageHeader from "@/components/PageHeader";
-import { macroDeskCopy } from "@/lib/i18n/app/macroDesk";
-import { getLocale } from "@/lib/i18n/server";
 import { COT_SYMBOLS, fetchCotPositioning } from "@/lib/market-data/cot";
 import {
   INFLATION_SERIES,
@@ -47,14 +45,11 @@ export const dynamic = "force-dynamic";
 export default async function MacroDeskPage() {
   const { userId } = await auth();
 
-  const [macro, cot, watchlist, locale] = await Promise.all([
+  const [macro, cot, watchlist] = await Promise.all([
     fetchMacroSeries(),
     fetchCotPositioning(),
     userId ? getWatchlist(userId) : Promise.resolve([]),
-    getLocale(),
   ]);
-
-  const copy = macroDeskCopy(locale);
 
   // Positioning is shown only for what this person actually watches. The report
   // covers six markets and most traders care about one or two of them; the
@@ -67,31 +62,33 @@ export default async function MacroDeskPage() {
 
   return (
     <>
-      <PageHeader title={copy.title} subtitle={copy.subtitle} />
+      <PageHeader
+        title="Macro Desk"
+        subtitle="Rates, the dollar, inflation and positioning — the context a session sits in."
+      />
 
       <DataQualityNotice
         sources={[
-          { label: copy.macroSourceLabel, result: macro },
-          { label: copy.positioningSourceLabel, result: cot },
+          { label: "Macro series", result: macro },
+          { label: "Positioning", result: cot },
         ]}
-        locale={locale}
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card title={copy.yieldsCardTitle}>
-          <ReadingList readings={readingsFor(macro.data, YIELD_SERIES)} locale={locale} />
+        <Card title="Yields and the dollar">
+          <ReadingList readings={readingsFor(macro.data, YIELD_SERIES)} />
         </Card>
 
-        <Card title={copy.inflationCardTitle}>
-          <ReadingList readings={readingsFor(macro.data, INFLATION_SERIES)} locale={locale} />
+        <Card title="Inflation">
+          <ReadingList readings={readingsFor(macro.data, INFLATION_SERIES)} />
         </Card>
 
-        <Card title={copy.policyRatesCardTitle}>
-          <ReadingList readings={readingsFor(macro.data, POLICY_SERIES)} locale={locale} />
+        <Card title="Policy rates">
+          <ReadingList readings={readingsFor(macro.data, POLICY_SERIES)} />
         </Card>
 
-        <Card title={copy.positioningCardTitle} className="md:col-span-2 xl:col-span-3">
-          <CotList rows={cotRows} locale={locale} />
+        <Card title="Positioning" className="md:col-span-2 xl:col-span-3">
+          <CotList rows={cotRows} />
         </Card>
       </div>
     </>

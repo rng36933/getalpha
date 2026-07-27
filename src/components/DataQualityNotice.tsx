@@ -1,5 +1,3 @@
-import { sharedCopy } from "@/lib/i18n/app/shared";
-import type { Locale } from "@/lib/i18n/locales";
 import type { SourceResult } from "@/lib/market-data/types";
 
 type Source = {
@@ -10,22 +8,17 @@ type Source = {
 
 type DataQualityNoticeProps = {
   sources: Source[];
-  /** Defaulted so Calendar and Macro Desk, not yet localised, keep compiling. */
-  locale?: Locale;
 };
 
-function formatAge(
-  fetchedAt: string | null,
-  copy: ReturnType<typeof sharedCopy>["dataQuality"],
-): string {
-  if (!fetchedAt) return copy.unknownAge;
+function formatAge(fetchedAt: string | null): string {
+  if (!fetchedAt) return "unknown age";
 
   const minutes = Math.round((Date.now() - new Date(fetchedAt).getTime()) / 60_000);
-  if (!Number.isFinite(minutes) || minutes < 1) return copy.momentsAgo;
-  if (minutes < 60) return copy.minutesAgo(minutes);
+  if (!Number.isFinite(minutes) || minutes < 1) return "moments ago";
+  if (minutes < 60) return `${minutes} min ago`;
 
   const hours = Math.round(minutes / 60);
-  return hours === 1 ? copy.hourAgo : copy.hoursAgo(hours);
+  return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
 }
 
 /**
@@ -38,38 +31,36 @@ function formatAge(
  * Renders nothing when every source is live, so it can be dropped into any page
  * unconditionally.
  */
-export default function DataQualityNotice({
-  sources,
-  locale = "en",
-}: DataQualityNoticeProps) {
+export default function DataQualityNotice({ sources }: DataQualityNoticeProps) {
   const degraded = sources.filter((s) => s.result.status !== "LIVE");
   if (degraded.length === 0) return null;
 
   const missing = degraded.filter((s) => s.result.status === "UNAVAILABLE");
-  const copy = sharedCopy(locale).dataQuality;
 
   return (
     <div
       role="status"
       className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
     >
-      <p className="font-medium">{copy.heading}</p>
+      <p className="font-medium">
+        Data may be temporarily incomplete or out of date
+      </p>
 
       <ul className="mt-1 space-y-0.5 text-xs text-warning/80">
         {degraded.map((source) => (
           <li key={source.label}>
             {source.result.status === "CACHED"
-              ? copy.cachedLine(
-                  source.label,
-                  formatAge(source.result.fetchedAt, copy),
-                )
-              : copy.unavailableLine(source.label)}
+              ? `${source.label}: provider unreachable, showing the last stored data (${formatAge(source.result.fetchedAt)}).`
+              : `${source.label}: provider unreachable and nothing stored for today, so nothing is shown.`}
           </li>
         ))}
       </ul>
 
       {missing.length > 0 ? (
-        <p className="mt-1 text-xs text-warning/80">{copy.nothingGuessed}</p>
+        <p className="mt-1 text-xs text-warning/80">
+          Nothing is being guessed — a missing source is left blank rather than
+          filled in.
+        </p>
       ) : null}
     </div>
   );

@@ -2,8 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { dashboardCopy } from "@/lib/i18n/app/dashboard";
-import type { Locale } from "@/lib/i18n/locales";
 
 export type WatchlistEntry = {
   symbol: string;
@@ -18,7 +16,6 @@ type WatchlistManagerProps = {
   max: number;
   /** The instrument the chart is currently showing. */
   selectedSymbol: string;
-  locale: Locale;
 };
 
 /** Long enough to stop firing per keystroke, short enough to feel immediate. */
@@ -28,10 +25,8 @@ export default function WatchlistManager({
   initialEntries,
   max,
   selectedSymbol,
-  locale,
 }: WatchlistManagerProps) {
   const router = useRouter();
-  const copy = dashboardCopy(locale).watchlist;
 
   const [entries, setEntries] = useState(initialEntries);
   const [query, setQuery] = useState("");
@@ -85,14 +80,14 @@ export default function WatchlistManager({
       const body = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setError(body?.error ?? copy.couldNotAdd);
+        setError(body?.error ?? "Could not add that instrument.");
       } else {
         setEntries(body.entries ?? entries);
         setQuery("");
         setResults([]);
       }
     } catch {
-      setError(copy.couldNotReach);
+      setError("Could not reach the server.");
     } finally {
       setBusy(false);
     }
@@ -111,7 +106,7 @@ export default function WatchlistManager({
       const body = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setError(body?.error ?? copy.couldNotRemove);
+        setError(body?.error ?? "Could not remove that instrument.");
       } else {
         setEntries(body.entries ?? entries);
 
@@ -121,7 +116,7 @@ export default function WatchlistManager({
         else router.refresh();
       }
     } catch {
-      setError(copy.couldNotReach);
+      setError("Could not reach the server.");
     } finally {
       setBusy(false);
     }
@@ -162,10 +157,10 @@ export default function WatchlistManager({
                 type="button"
                 onClick={() => remove(entry.symbol)}
                 disabled={busy}
-                aria-label={copy.removeAria(entry.label)}
+                aria-label={`Remove ${entry.label}`}
                 className="shrink-0 rounded-md px-2 py-1 text-xs text-muted transition-colors hover:text-negative disabled:opacity-50"
               >
-                {copy.remove}
+                Remove
               </button>
             </li>
           );
@@ -173,7 +168,9 @@ export default function WatchlistManager({
       </ul>
 
       {entries.length === 0 ? (
-        <p className="py-4 text-center text-sm text-muted">{copy.empty}</p>
+        <p className="py-4 text-center text-sm text-muted">
+          Nothing on the list. Search below to add an instrument.
+        </p>
       ) : null}
 
       <div className="mt-3">
@@ -184,8 +181,8 @@ export default function WatchlistManager({
             if (event.target.value.trim() === "") setResults([]);
           }}
           disabled={busy || full}
-          placeholder={full ? copy.fullPlaceholder(max) : copy.addPlaceholder}
-          aria-label={copy.searchAria}
+          placeholder={full ? `The list holds ${max} instruments` : "Add an instrument…"}
+          aria-label="Search instruments"
           className="w-full rounded-lg border border-line bg-surface-raised px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-accent disabled:cursor-not-allowed"
         />
 

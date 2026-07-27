@@ -4,8 +4,6 @@ import EmailPreferences from "@/components/EmailPreferences";
 import Mt5Connect from "@/components/Mt5Connect";
 import PageHeader from "@/components/PageHeader";
 import { checkAccess } from "@/lib/billing/subscription";
-import { settingsCopy } from "@/lib/i18n/app/settings";
-import { getLocale } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -65,29 +63,28 @@ async function loadMt5(userId: string): Promise<Mt5State> {
 export default async function SettingsPage() {
   const { userId } = await auth();
 
-  const [dailyBrief, access, mt5, locale] = await Promise.all([
+  const [dailyBrief, access, mt5] = await Promise.all([
     userId ? loadPreference(userId) : Promise.resolve(false),
     userId ? checkAccess(userId) : Promise.resolve({ allowed: false } as const),
     userId ? loadMt5(userId) : Promise.resolve(NO_MT5),
-    getLocale(),
   ]);
-
-  const copy = settingsCopy(locale);
 
   return (
     <>
-      <PageHeader title={copy.title} subtitle={copy.subtitle} />
+      <PageHeader
+        title="Settings"
+        subtitle="Connect your terminal, and choose what reaches your inbox."
+      />
 
       <div className="grid max-w-2xl grid-cols-1 gap-4">
-        <Card title={copy.mt5CardTitle}>
-          <Mt5Connect {...mt5} locale={locale} />
+        <Card title="MetaTrader 5">
+          <Mt5Connect {...mt5} />
         </Card>
 
-        <Card title={copy.emailCardTitle}>
+        <Card title="Email">
           <EmailPreferences
             initialDailyBrief={dailyBrief}
             entitled={access.allowed}
-            locale={locale}
           />
         </Card>
       </div>

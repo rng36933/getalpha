@@ -2,8 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { supportCopy } from "@/lib/i18n/app/support";
-import type { Locale } from "@/lib/i18n/locales";
 
 export type Ticket = {
   id: string;
@@ -14,25 +12,13 @@ export type Ticket = {
   createdAt: string;
 };
 
-const KIND_CLASSNAME: Record<Ticket["kind"], string> = {
-  BUG: "bg-negative/15 text-negative",
-  FEEDBACK: "bg-accent-soft text-accent",
-  QUESTION: "bg-muted/15 text-muted",
+const KIND_LABEL: Record<Ticket["kind"], { label: string; className: string }> = {
+  BUG: { label: "Bug", className: "bg-negative/15 text-negative" },
+  FEEDBACK: { label: "Feedback", className: "bg-accent-soft text-accent" },
+  QUESTION: { label: "Question", className: "bg-muted/15 text-muted" },
 };
 
-export default function SupportInbox({
-  tickets,
-  locale,
-}: {
-  tickets: Ticket[];
-  locale: Locale;
-}) {
-  const copy = supportCopy(locale);
-  const kindLabel: Record<Ticket["kind"], string> = {
-    BUG: copy.inbox.kinds.bug,
-    FEEDBACK: copy.inbox.kinds.feedback,
-    QUESTION: copy.inbox.kinds.question,
-  };
+export default function SupportInbox({ tickets }: { tickets: Ticket[] }) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,21 +36,19 @@ export default function SupportInbox({
 
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        setError(body?.error ?? copy.inbox.updateFailed);
+        setError(body?.error ?? "Could not update that ticket.");
       } else {
         router.refresh();
       }
     } catch {
-      setError(copy.inbox.networkError);
+      setError("Could not reach the server.");
     } finally {
       setBusyId(null);
     }
   }
 
   if (tickets.length === 0) {
-    return (
-      <p className="py-8 text-center text-sm text-muted">{copy.inbox.nothingHere}</p>
-    );
+    return <p className="py-8 text-center text-sm text-muted">Nothing here.</p>;
   }
 
   return (
@@ -81,10 +65,10 @@ export default function SupportInbox({
             <div className="flex flex-wrap items-center gap-2">
               <span
                 className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
-                  KIND_CLASSNAME[ticket.kind]
+                  KIND_LABEL[ticket.kind].className
                 }`}
               >
-                {kindLabel[ticket.kind]}
+                {KIND_LABEL[ticket.kind].label}
               </span>
 
               <span className="font-mono text-xs text-muted">
@@ -98,7 +82,7 @@ export default function SupportInbox({
               ) : null}
 
               {ticket.status === "CLOSED" ? (
-                <span className="text-xs text-muted">{copy.inbox.closed}</span>
+                <span className="text-xs text-muted">closed</span>
               ) : null}
             </div>
 
@@ -117,10 +101,10 @@ export default function SupportInbox({
               className="mt-3 rounded-lg border border-line px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
             >
               {busyId === ticket.id
-                ? copy.inbox.saving
+                ? "Saving…"
                 : ticket.status === "OPEN"
-                  ? copy.inbox.markDone
-                  : copy.inbox.reopen}
+                  ? "Mark done"
+                  : "Reopen"}
             </button>
           </li>
         ))}

@@ -2,8 +2,6 @@ import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
 import ReferralPanel from "@/components/ReferralPanel";
-import { referralCopy } from "@/lib/i18n/app/referral";
-import { getLocale } from "@/lib/i18n/server";
 import {
   INVITES_PER_REWARD,
   MAX_REWARDS,
@@ -24,15 +22,13 @@ function appOrigin(): string {
 
 export default async function ReferralPage() {
   const { userId } = await auth();
-  const locale = await getLocale();
-  const copy = referralCopy(locale);
 
   if (!userId) {
     return (
       <>
-        <PageHeader title={copy.title} subtitle={copy.subtitle} />
-        <Card title={copy.cardTitle}>
-          <p className="text-sm text-muted">{copy.signInPrompt}</p>
+        <PageHeader title="Referrals" subtitle="Invite people, earn Pro." />
+        <Card title="Referrals">
+          <p className="text-sm text-muted">Sign in to see your invite link.</p>
         </Card>
       </>
     );
@@ -50,9 +46,12 @@ export default async function ReferralPage() {
 
     return (
       <>
-        <PageHeader title={copy.title} subtitle={copy.subtitle} />
-        <Card title={copy.cardTitle}>
-          <p className="text-sm text-muted">{copy.loadFailed}</p>
+        <PageHeader title="Referrals" subtitle="Invite people, earn Pro." />
+        <Card title="Referrals">
+          <p className="text-sm text-muted">
+            Your referral details could not be loaded just now. Reload in a
+            moment — nothing has been lost.
+          </p>
         </Card>
       </>
     );
@@ -61,12 +60,12 @@ export default async function ReferralPage() {
   return (
     <>
       <PageHeader
-        title={copy.title}
-        subtitle={copy.subtitleWithCounts(INVITES_PER_REWARD, REWARD_DAYS, MAX_REWARDS)}
+        title="Referrals"
+        subtitle={`Invite ${INVITES_PER_REWARD} people who confirm their email and log a trade, and get ${REWARD_DAYS} days of Pro — up to ${MAX_REWARDS} times.`}
       />
 
       <div className="max-w-2xl">
-        <Card title={copy.inviteLinkCardTitle}>
+        <Card title="Your invite link">
           <ReferralPanel
             inviteUrl={`${appOrigin()}/?ref=${status.code}`}
             code={status.code}
@@ -82,7 +81,6 @@ export default async function ReferralPage() {
               expiresAt: reward.expiresAt.toISOString(),
               active: reward.active,
             }))}
-            locale={locale}
           />
         </Card>
       </div>

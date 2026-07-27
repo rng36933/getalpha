@@ -5,8 +5,6 @@ import {
   type PairBreakdown,
 } from "@/lib/analysis/per-pair";
 import { formatSignedMoney } from "@/lib/format/money";
-import { pairsCopy, type PairsCopy } from "@/lib/i18n/app/pairs";
-import type { Locale } from "@/lib/i18n/locales";
 
 /** Always signed, because a sign reads faster than a colour alone. */
 function money(value: number | null, currency: string | null): string {
@@ -138,13 +136,11 @@ function BucketTable({
   buckets,
   hints,
   currency,
-  copy,
 }: {
   caption: string;
   buckets: Bucket[];
   hints?: Record<string, string>;
   currency: string | null;
-  copy: PairsCopy;
 }) {
   if (buckets.length === 0) return null;
 
@@ -159,15 +155,9 @@ function BucketTable({
         <thead>
           <tr className="text-[11px] uppercase tracking-wider text-muted">
             <th className="py-1 pr-3 text-left font-normal">{caption}</th>
-            <th className="py-1 pr-3 text-right font-normal">
-              {copy.buckets.trades}
-            </th>
-            <th className="py-1 pr-3 text-right font-normal">
-              {copy.buckets.winRate}
-            </th>
-            <th className="py-1 pl-2 text-right font-normal">
-              {copy.buckets.totalPnl}
-            </th>
+            <th className="py-1 pr-3 text-right font-normal">Trades</th>
+            <th className="py-1 pr-3 text-right font-normal">Win rate</th>
+            <th className="py-1 pl-2 text-right font-normal">Total P&L</th>
           </tr>
         </thead>
         <tbody>
@@ -186,60 +176,57 @@ function BucketTable({
   );
 }
 
-function riskNote(pair: PairBreakdown, copy: PairsCopy): string | undefined {
+function riskNote(pair: PairBreakdown): string | undefined {
   if (pair.riskVsOwnMedian === null) return undefined;
   if (pair.riskVsOwnMedian >= 1.25) {
-    return copy.riskNote.times(pair.riskVsOwnMedian);
+    return `${pair.riskVsOwnMedian}× your usual stake`;
   }
   if (pair.riskVsOwnMedian <= 0.8) {
-    return copy.riskNote.times(pair.riskVsOwnMedian);
+    return `${pair.riskVsOwnMedian}× your usual stake`;
   }
-  return copy.riskNote.inLine;
+  return "in line with the rest of your book";
 }
 
 export default function PairAnalysis({
   pair,
   currency,
-  locale,
 }: {
   pair: PairBreakdown;
   currency: string | null;
-  locale: Locale;
 }) {
-  const copy = pairsCopy(locale);
   const thin = pair.scored < MIN_SAMPLE_FOR_RATE;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat
-          label={copy.stats.trades}
+          label="Trades"
           value={String(pair.trades)}
           note={
             pair.scored === pair.trades
               ? undefined
-              : copy.stats.closedNote(pair.scored)
+              : `${pair.scored} closed`
           }
         />
         <Stat
-          label={copy.stats.winRate}
+          label="Win rate"
           value={thin ? "—" : `${pair.winRatePercent}%`}
           note={
             thin
-              ? copy.stats.needsScored(MIN_SAMPLE_FOR_RATE)
-              : copy.stats.scoredNote(pair.scored)
+              ? `needs ${MIN_SAMPLE_FOR_RATE} scored trades`
+              : `${pair.scored} scored`
           }
         />
         <Stat
-          label={copy.stats.totalPnl}
+          label="Total P&L"
           value={money(pair.totalPnl, currency)}
           tone={toneFor(pair.totalPnl)}
         />
         <Stat
-          label={copy.stats.expectancy}
+          label="Expectancy"
           value={money(pair.expectancyPnl, currency)}
           tone={toneFor(pair.expectancyPnl)}
-          note={copy.stats.perTrade}
+          note="per trade"
         />
       </div>
 
@@ -250,31 +237,31 @@ export default function PairAnalysis({
             instrument actually puts you through. A worst day three times the
             best is a different instrument from one where they match. */}
         <Stat
-          label={copy.stats.bestDay}
+          label="Best day"
           value={
             pair.bestDay === null ? "—" : money(pair.bestDay.total, currency)
           }
           tone={toneFor(pair.bestDay?.total ?? null)}
           note={
             pair.bestDay === null
-              ? copy.stats.noDayUp
-              : copy.stats.dayNote(pair.bestDay.date, pair.bestDay.trades)
+              ? "no day finished up"
+              : `${pair.bestDay.date} · ${pair.bestDay.trades} trade${
+                  pair.bestDay.trades === 1 ? "" : "s"
+                }`
           }
         />
         <Stat
-          label={copy.stats.worstDay}
+          label="Worst day"
           value={
             pair.worstDay === null ? "—" : money(pair.worstDay.total, currency)
           }
           tone={toneFor(pair.worstDay?.total ?? null)}
           note={
             pair.worstDay === null
-              ? copy.stats.noDayDown
-              : copy.stats.worstDayNote(
-                  pair.worstDay.date,
-                  pair.worstDay.trades,
-                  money(pair.worstLoss, currency),
-                )
+              ? "no day finished down"
+              : `${pair.worstDay.date} · ${pair.worstDay.trades} trade${
+                  pair.worstDay.trades === 1 ? "" : "s"
+                } · worst single ${money(pair.worstLoss, currency)}`
           }
         />
         {/* Paired into one tile so the two days can sit beside each other
@@ -283,64 +270,72 @@ export default function PairAnalysis({
             finding, not either number on its own. */}
         <Stat
           compact
-          label={copy.stats.averageWinLoss}
+          label="Average win / loss"
           value={`${money(pair.averageWin, currency)} / ${money(
             pair.averageLoss,
             currency,
           )}`}
         />
         <Stat
-          label={copy.stats.medianRisk}
+          label="Median risk"
           value={
             pair.medianRiskPercent === null
               ? "—"
               : `${pair.medianRiskPercent}%`
           }
-          note={riskNote(pair, copy)}
+          note={riskNote(pair)}
         />
       </div>
 
       {pair.withoutStop > 0 || pair.withoutNotes > 0 || pair.openTrades > 0 ? (
         <ul className="space-y-1 text-xs text-muted">
           {pair.openTrades > 0 ? (
-            <li>{copy.summary.stillOpen(pair.openTrades)}</li>
+            <li>
+              {pair.openTrades} still open, so not counted in any result above.
+            </li>
           ) : null}
           {pair.withoutStop > 0 ? (
             <li className="text-warning">
-              {copy.summary.withoutStop(pair.withoutStop)}
+              {pair.withoutStop} taken without a stop. They count towards every
+              figure above, but nothing here can say whether the size was
+              sensible — there was no risk defined to compare it against.
             </li>
           ) : null}
           {pair.withoutNotes > 0 ? (
-            <li>{copy.summary.withoutNotes(pair.withoutNotes)}</li>
+            <li>
+              {pair.withoutNotes} carry no written note. The numbers can say
+              when it went wrong, never why.
+            </li>
           ) : null}
         </ul>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <BucketTable
-          caption={copy.buckets.bySession}
+          caption="By session"
           buckets={pair.sessions}
           hints={SESSION_HOURS}
           currency={currency}
-          copy={copy}
         />
         <BucketTable
-          caption={copy.buckets.byWeekday}
+          caption="By weekday"
           buckets={pair.weekdays}
           currency={currency}
-          copy={copy}
         />
       </div>
 
       {pair.afterResult.length > 0 ? (
         <div>
           <BucketTable
-            caption={copy.buckets.byPrior}
+            caption="By what came before"
             buckets={pair.afterResult}
             currency={currency}
-            copy={copy}
           />
-          <p className="mt-2 text-xs text-muted">{copy.buckets.priorNote}</p>
+          <p className="mt-2 text-xs text-muted">
+            &ldquo;Before&rdquo; means the previous trade anywhere in your
+            journal, not only on this instrument — a loss on one pair is what
+            you carry into the next one.
+          </p>
         </div>
       ) : null}
     </div>

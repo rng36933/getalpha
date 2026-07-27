@@ -2,19 +2,15 @@
 
 import { useState } from "react";
 import EconomicCalendar from "@/components/EconomicCalendar";
-import { calendarCopy } from "@/lib/i18n/app/calendar";
-import type { Locale } from "@/lib/i18n/locales";
 import type { EconomicEvent } from "@/lib/market-data/display";
 
 type CalendarViewProps = {
   events: EconomicEvent[];
   /** Currencies derived from the user's watchlist. Empty when they have none. */
   currencies: string[];
-  locale: Locale;
 };
 
-export default function CalendarView({ events, currencies, locale }: CalendarViewProps) {
-  const copy = calendarCopy(locale);
+export default function CalendarView({ events, currencies }: CalendarViewProps) {
   // Defaults to the watchlist. Somebody trading three pairs does not need
   // every release from eight economies, and the whole point of having a
   // watchlist is that the app knows which ones matter to them.
@@ -40,7 +36,7 @@ export default function CalendarView({ events, currencies, locale }: CalendarVie
                 : "border-line text-muted hover:text-foreground"
             }`}
           >
-            {copy.view.myWatchlist}
+            My watchlist
           </button>
 
           <button
@@ -53,7 +49,7 @@ export default function CalendarView({ events, currencies, locale }: CalendarVie
                 : "border-accent bg-accent-soft text-accent"
             }`}
           >
-            {copy.view.allCurrencies}
+            All currencies
           </button>
 
           <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
@@ -64,22 +60,25 @@ export default function CalendarView({ events, currencies, locale }: CalendarVie
 
       {mineOnly && filtered.length === 0 && events.length > 0 ? (
         <p className="py-8 text-center text-sm text-muted">
-          {copy.view.nothingForFollowed}{" "}
+          Nothing today for the currencies you follow.{" "}
           <button
             type="button"
             onClick={() => setMineOnly(false)}
             className="text-accent hover:underline"
           >
-            {copy.view.showAll(events.length)}
+            Show all {events.length}
           </button>
           .
         </p>
       ) : (
-        <EconomicCalendar events={filtered} locale={locale} />
+        <EconomicCalendar events={filtered} />
       )}
 
       {mineOnly && hidden > 0 && filtered.length > 0 ? (
-        <p className="mt-3 text-xs text-muted">{copy.view.hiddenNote(hidden)}</p>
+        <p className="mt-3 text-xs text-muted">
+          {hidden} release{hidden === 1 ? "" : "s"} hidden for currencies you do
+          not follow.
+        </p>
       ) : null}
     </div>
   );
