@@ -3,7 +3,7 @@ import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
 import TradeList, { type TradeRow } from "@/components/TradeList";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
-import { formatSignedMoney } from "@/lib/format/money";
+import CountUp from "@/components/CountUp";
 import { getAccountCurrency } from "@/lib/mt5/account";
 import { prisma } from "@/lib/prisma";
 
@@ -93,14 +93,19 @@ export default async function JournalPage() {
       <div className="space-y-4">
         {closed.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {/* `figure` is the site's measurement face — mono, tabular,
+                tight. These four tiles were the last place in the app still
+                setting a number in the body font, which made the journal's own
+                totals look less like readings than the ones on the public
+                page. */}
             <Card title="Closed trades">
-              <p className="text-2xl font-semibold tracking-tight">
-                {closed.length}
+              <p className="figure text-xl sm:text-2xl">
+                <CountUp value={closed.length} />
               </p>
             </Card>
             <Card title="Total P&L">
               <p
-                className={`text-2xl font-semibold tracking-tight ${
+                className={`figure text-xl sm:text-2xl ${
                   totalPnl > 0
                     ? "text-positive"
                     : totalPnl < 0
@@ -108,17 +113,23 @@ export default async function JournalPage() {
                       : ""
                 }`}
               >
-                {formatSignedMoney(totalPnl, currency)}
+                <CountUp value={totalPnl} currency={currency} />
               </p>
             </Card>
             <Card title="Win rate">
-              <p className="text-2xl font-semibold tracking-tight">
-                {Math.round((wins / closed.length) * 100)}%
+              <p className="figure text-xl sm:text-2xl">
+                <CountUp
+                  value={Math.round((wins / closed.length) * 100)}
+                  suffix="%"
+                />
               </p>
             </Card>
             <Card title="Average">
-              <p className="text-2xl font-semibold tracking-tight">
-                {formatSignedMoney(totalPnl / closed.length, currency)}
+              <p className="figure text-xl sm:text-2xl">
+                <CountUp
+                  value={totalPnl / closed.length}
+                  currency={currency}
+                />
               </p>
             </Card>
           </div>

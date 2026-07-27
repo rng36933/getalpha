@@ -110,13 +110,13 @@ export default function ReferralPanel({
       <dl className="grid grid-cols-2 gap-4">
         <div className="rounded-lg border border-line bg-surface-raised p-4">
           <dt className="text-xs text-muted">Counted</dt>
-          <dd className="mt-1 text-2xl font-semibold tracking-tight">
+          <dd className="figure mt-1 text-2xl">
             {qualifiedInvites}
           </dd>
         </div>
         <div className="rounded-lg border border-line bg-surface-raised p-4">
           <dt className="text-xs text-muted">Not counting yet</dt>
-          <dd className="mt-1 text-2xl font-semibold tracking-tight text-muted">
+          <dd className="figure mt-1 text-2xl text-muted">
             {pendingInvites}
           </dd>
         </div>

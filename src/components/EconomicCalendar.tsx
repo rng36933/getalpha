@@ -35,7 +35,7 @@ export default function EconomicCalendar({ events }: EconomicCalendarProps) {
   return (
     <div>
       <div className="hidden items-center gap-3 border-b border-line pb-2 text-[11px] uppercase tracking-wider text-muted sm:flex">
-        <span className="w-24 shrink-0">
+        <span className="w-20 shrink-0 sm:w-24">
           When <LocalZoneLabel />
         </span>
         <span className="w-10 shrink-0">Ccy</span>
@@ -62,7 +62,7 @@ export default function EconomicCalendar({ events }: EconomicCalendarProps) {
                   east of London a late release falls on the reader's next day,
                   and a bare time is then a time on a date they have to work
                   out for themselves. */}
-              <span className="w-24 shrink-0 font-mono text-xs tabular-nums text-muted">
+              <span className="w-20 shrink-0 font-mono text-[11px] leading-tight tabular-nums text-muted sm:w-24 sm:text-xs">
                 <LocalTime at={event.at} utc={event.time} withDate />
               </span>
 

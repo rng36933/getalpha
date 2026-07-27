@@ -98,7 +98,7 @@ export default function PricingPlans({
                 ) : null}
               </header>
 
-              <p className="mt-4 text-2xl font-semibold tracking-tight">
+              <p className="figure mt-4 text-2xl">
                 {plan.price ?? "—"}
                 {plan.interval ? (
                   <span className="text-sm font-normal text-muted">

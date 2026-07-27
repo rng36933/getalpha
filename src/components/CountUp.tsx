@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { formatMoney, formatSignedMoney } from "@/lib/format/money";
 
 /**
  * A figure that counts up the first time it is scrolled into view.
  *
- * Only on the landing page, and only on the readouts that are meant to read as
- * computed. The argument of the card underneath is "you never type a number in"
- * — a figure that arrives by counting says that before the sentence does.
+ * On the readouts that are meant to read as computed rather than typed — the
+ * landing page's demo cards, and the headline totals inside the app. A figure
+ * that arrives by counting says "this was worked out" before any sentence does,
+ * which happens to be the whole claim this product makes about its numbers.
  *
  * Once, never on a loop. A number that keeps re-counting as the page scrolls is
  * a number nobody can read, and this one is meant to be read.
@@ -19,9 +21,27 @@ type CountUpProps = {
   prefix?: string;
   suffix?: string;
   className?: string;
+  /**
+   * Format as money in this currency.
+   *
+   * A string rather than a formatter function, because most callers are server
+   * components and a function cannot cross that boundary. Null formats the
+   * figure bare — the same rule as everywhere else, since no symbol beats the
+   * wrong symbol.
+   */
+  currency?: string | null;
+  /** With `currency`, drops the leading sign for figures that are not a P&L. */
+  unsigned?: boolean;
 };
 
-const DURATION_MS = 900;
+/**
+ * How long the figure takes to arrive.
+ *
+ * Short. The landing page can afford a second of theatre; a journal somebody
+ * opens ten times a day cannot, and a total that spins up on every visit stops
+ * being information and becomes a small tax on reading it.
+ */
+const DURATION_MS = 650;
 
 export default function CountUp({
   value,
@@ -29,6 +49,8 @@ export default function CountUp({
   prefix = "",
   suffix = "",
   className = "",
+  currency,
+  unsigned = false,
 }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const [shown, setShown] = useState(0);
@@ -115,11 +137,16 @@ export default function CountUp({
     };
   }, [visible, value]);
 
+  const body =
+    currency === undefined
+      ? `${prefix}${shown.toFixed(decimals)}${suffix}`
+      : unsigned
+        ? formatMoney(shown, currency)
+        : formatSignedMoney(shown, currency);
+
   return (
     <span ref={ref} className={className}>
-      {prefix}
-      {shown.toFixed(decimals)}
-      {suffix}
+      {body}
     </span>
   );
 }

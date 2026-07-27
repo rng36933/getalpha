@@ -1,5 +1,5 @@
 import { Calendar, Lock, Sparkles, TrendingUp } from "lucide-react";
-import CountUp from "@/components/landing/CountUp";
+import CountUp from "@/components/CountUp";
 
 /**
  * The capabilities, as an asymmetric grid.
