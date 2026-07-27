@@ -24,16 +24,31 @@ function Stat({
   value,
   tone = "",
   note,
+  compact = false,
 }: {
   label: string;
   value: string;
   tone?: string;
   note?: string;
+  /**
+   * For a tile holding two figures rather than one.
+   *
+   * At the headline size a pair like "+€340.00 / −€120.50" runs past the edge
+   * of a half-width tile on a phone, and a measurement that has to be scrolled
+   * to is not a measurement anybody reads.
+   */
+  compact?: boolean;
 }) {
   return (
     <div className="rounded-lg border border-line bg-surface-raised px-3 py-2.5">
       <p className="eyebrow">{label}</p>
-      <p className={`figure mt-1.5 text-[1.4rem] ${tone}`}>{value}</p>
+      <p
+        className={`figure mt-1.5 break-words ${
+          compact ? "text-[0.95rem] sm:text-[1.1rem]" : "text-[1.2rem] sm:text-[1.4rem]"
+        } ${tone}`}
+      >
+        {value}
+      </p>
       {note ? (
         <p className="mt-1 text-[11px] leading-snug text-muted">{note}</p>
       ) : null}
@@ -254,6 +269,7 @@ export default function PairAnalysis({
             anyway — an average win smaller than the average loss is the
             finding, not either number on its own. */}
         <Stat
+          compact
           label="Average win / loss"
           value={`${money(pair.averageWin, currency)} / ${money(
             pair.averageLoss,

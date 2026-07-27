@@ -153,7 +153,10 @@ function Toggle({
             type="button"
             onClick={() => onChange(option)}
             aria-pressed={value === option}
-            className={`rounded-md px-4 py-1.5 text-xs font-medium transition-all duration-300 ease-in-out ${
+            // Tall enough to hit with a thumb. At the size these started they
+            // were 28 pixels of target on a phone, which is a control that
+            // works on a mouse and fights a finger.
+            className={`min-h-[2.5rem] rounded-md px-5 py-2 text-sm font-medium transition-all duration-300 ease-in-out ${
               value === option
                 ? "bg-white/[0.08] text-white"
                 : "text-zinc-500 hover:text-zinc-300"
@@ -200,7 +203,10 @@ export default function TradeTest() {
                 step={0.1}
                 value={risk}
                 onChange={(event) => setRisk(Number(event.target.value))}
-                className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-white/[0.08] accent-violet-500"
+                // `h-2` and `touch-manipulation`: a six-pixel track is a hard
+                // thing to grab on a phone, and without the touch hint a drag
+                // near the slider can be read as a double-tap zoom instead.
+                className="h-2 min-w-0 flex-1 cursor-pointer touch-manipulation appearance-none rounded-full bg-white/[0.08] accent-violet-500"
               />
               <span className="w-16 shrink-0 text-right font-mono text-lg font-semibold tabular-nums text-white">
                 {risk.toFixed(1)}%
