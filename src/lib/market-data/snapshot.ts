@@ -2,24 +2,33 @@ import type { SessionBriefInput, TradingSession } from "@/lib/ai/types";
 import { fetchEconomicCalendar } from "./calendar";
 import { fetchTechnicalLevels } from "./levels";
 import { fetchNewsHeadlines } from "./news";
-import type { MarketSnapshot } from "./types";
+import type { BriefSymbol, MarketSnapshot } from "./types";
 
 /**
  * Collects every input the brief needs, on the server.
  *
  * The client used to send this data, which quietly broke once briefs became
  * shared: a cached brief built from one user's payload was served to the next.
- * Collecting it here means there is only ever one version of the truth.
+ * Collecting it here means there is only ever one version of the truth — and
+ * that argument still holds now that briefs are shared per *instrument set*
+ * rather than globally. The symbols come from the caller, who resolved them
+ * from the reader's plan; nothing here trusts a request body.
+ *
+ * The calendar and the news are not filtered to `symbols` on the way in. Both
+ * are whole-market documents, the brief prompt is what relates them to the
+ * instruments in front of it, and dropping a dollar release from a gold brief
+ * would remove the very thing that explains the day.
  */
 export async function collectMarketSnapshot(
   session: TradingSession,
+  symbols: readonly BriefSymbol[],
   now: Date = new Date(),
 ): Promise<MarketSnapshot> {
   // Sequential fetching would triple the latency for no benefit — the three
   // providers are unrelated, and each already has its own deadline.
   const [economicEvents, technicalLevels, newsHeadlines] = await Promise.all([
     fetchEconomicCalendar(now),
-    fetchTechnicalLevels(now),
+    fetchTechnicalLevels(symbols, now),
     fetchNewsHeadlines(now),
   ]);
 

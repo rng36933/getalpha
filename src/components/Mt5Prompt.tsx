@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { hasGoneQuiet } from "@/lib/mt5/liveness";
 
 /**
  * The suggestion to connect MetaTrader, on the page somebody actually opens.
@@ -7,8 +8,16 @@ import Link from "next/link";
  * visits — so the one feature that fills the journal without typing was
  * effectively hidden behind a page you had to already know about.
  *
- * Renders nothing once the terminal is sending. A prompt that stays up after
+ * Renders nothing while the terminal is sending. A prompt that stays up after
  * it has been acted on stops being a prompt and becomes furniture.
+ *
+ * It does render again when a terminal that used to send goes quiet, and that
+ * case is worth stating plainly because it cost hours once: a terminal had been
+ * silent for three and a half hours, two positions opened in that time were
+ * missing from the desk, and this component hid itself because `receiving` was
+ * true — it had sent, once, that morning. The only trace was a grey timestamp
+ * on a Settings page nobody had open. Silence after success is a fault, and a
+ * fault belongs on the page being looked at.
  */
 
 type Mt5PromptProps = {
@@ -16,6 +25,8 @@ type Mt5PromptProps = {
   connected: boolean;
   /** The terminal has actually sent something at least once. */
   receiving: boolean;
+  /** ISO timestamp of the last sync, or null if the terminal never sent. */
+  lastSeenAt: string | null;
 };
 
 const REASONS = [
@@ -24,8 +35,45 @@ const REASONS = [
   "The per-pair breakdown needs a body of trades before it can say anything. Ninety days of history arrives on the first sync; typing it by hand does not happen.",
 ];
 
-export default function Mt5Prompt({ connected, receiving }: Mt5PromptProps) {
-  if (receiving) return null;
+export default function Mt5Prompt({
+  connected,
+  receiving,
+  lastSeenAt,
+}: Mt5PromptProps) {
+  // Sending, and recently. Nothing to say.
+  if (receiving && !hasGoneQuiet(lastSeenAt)) return null;
+
+  // It worked and then stopped. Everything opened since is missing from this
+  // page, so the warning sits above the cards that would otherwise look simply
+  // empty — which is indistinguishable from a quiet trading day.
+  if (receiving) {
+    return (
+      <section className="surface-lit mb-4 rounded-xl border border-warning/30 p-4 sm:p-5">
+        <h2 className="text-[0.9375rem] font-semibold tracking-tight text-warning">
+          Your terminal has stopped sending
+        </h2>
+
+        <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
+          Nothing has arrived for a while, so any position opened since then is
+          missing from this desk and the cards below are incomplete. Usually
+          MetaTrader is simply closed — it has to be running. If it is open,
+          press <span className="text-foreground">Ctrl+T</span> and look at the
+          Experts tab: no line beginning{" "}
+          <span className="text-foreground">getALPHA:</span> in the last two
+          minutes means the program is not running, and the usual reason is that
+          another Expert Advisor was attached to the same chart. MetaTrader
+          allows one per chart and replaces the old one without saying so.
+        </p>
+
+        <Link
+          href="/dashboard/settings"
+          className="mt-3.5 inline-block rounded-lg border border-line px-4 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+        >
+          See when it last sent
+        </Link>
+      </section>
+    );
+  }
 
   // A key was generated and nothing ever arrived. Telling this person to
   // "connect MetaTrader" would be answering a question they already answered —

@@ -53,6 +53,78 @@ export async function recallSnapshot<T>(
 }
 
 /**
+ * The newest stored row for each of several keys, in one round trip.
+ *
+ * `recallSnapshot` answers for one key, and asking it eight times while
+ * building a brief would put eight queries on the request path. `DISTINCT ON`
+ * is Postgres doing the "newest per group" reduction where the index already
+ * is — `@@index([kind, key, fetchedAt])` serves the whole statement.
+ *
+ * Keys absent from the result have nothing recent enough; the caller decides
+ * whether that means fetch or give up.
+ */
+export async function recallNewestByKey<T>(
+  kind: MarketDataKind,
+  keys: string[],
+  maxAgeMs: number = MAX_FALLBACK_AGE_MS,
+): Promise<Map<string, { data: T; fetchedAt: Date }>> {
+  const out = new Map<string, { data: T; fetchedAt: Date }>();
+  if (keys.length === 0) return out;
+
+  try {
+    const rows = await prisma.$queryRaw<
+      { key: string; payload: T; fetchedAt: Date }[]
+    >`
+      SELECT DISTINCT ON (key) key, payload, "fetchedAt"
+      FROM "MarketDataSnapshot"
+      WHERE kind = ${kind}::"MarketDataKind"
+        AND key = ANY(${keys})
+        AND "fetchedAt" > ${new Date(Date.now() - maxAgeMs)}
+      ORDER BY key, "fetchedAt" DESC
+    `;
+
+    for (const row of rows) {
+      out.set(row.key, { data: row.payload, fetchedAt: row.fetchedAt });
+    }
+  } catch (error) {
+    // A cache that cannot be read is a slow path, not a broken one.
+    console.error(`Failed to read stored ${kind} snapshots:`, error);
+  }
+
+  return out;
+}
+
+/**
+ * Drops old rows for a kind, keeping the newest few of every key.
+ *
+ * `pruneSnapshots` prunes one key at a time, which is the wrong shape once a
+ * kind holds a row per symbol: pruning eight symbols would be eight statements
+ * on a path already paying for a provider call and a model call.
+ */
+export async function pruneSnapshotsByKind(
+  kind: MarketDataKind,
+  keepPerKey = 3,
+): Promise<void> {
+  try {
+    await prisma.$executeRaw`
+      DELETE FROM "MarketDataSnapshot"
+      WHERE id IN (
+        SELECT id FROM (
+          SELECT id, row_number() OVER (
+            PARTITION BY key ORDER BY "fetchedAt" DESC
+          ) AS position
+          FROM "MarketDataSnapshot"
+          WHERE kind = ${kind}::"MarketDataKind"
+        ) ranked
+        WHERE ranked.position > ${keepPerKey}
+      )
+    `;
+  } catch (error) {
+    console.error(`Failed to prune ${kind} snapshots:`, error);
+  }
+}
+
+/**
  * Drops old fallback rows. Only the newest is ever read, so the rest are just
  * storage; a handful are kept for debugging a bad snapshot.
  */

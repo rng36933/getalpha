@@ -323,13 +323,29 @@ model MarketDataSnapshot {
   @@index([kind, key, fetchedAt])
 }
 
-/// One brief per trading session per UTC day, shared by every user.
+/// One brief per instrument set, per trading session, per UTC day.
 ///
 /// The unique key is what makes concurrent generation safe: the first request
 /// of the morning claims the row, and everyone arriving behind it reads the
 /// result instead of paying for a second identical call.
+///
+/// It used to be (session, briefDate) alone — one document for the whole app,
+/// written from a hardcoded desk list. Adding the instrument set is what lets a
+/// reader see their own pairs while keeping that sharing: readers watching the
+/// same instruments still collapse onto one row, and every Free account
+/// resolves to the same gold-only set, so their brief costs the same whether
+/// there are ten of them or ten thousand.
 model SessionBriefCache {
   id String @id @default(uuid())
+
+  /// Hash of the sorted instrument set this brief covers. See
+  /// `market-data/brief-symbols.ts`; sorted before hashing so reordering a
+  /// watchlist in the UI does not orphan the brief written for it.
+  ///
+  /// Defaulted only so the column could be added to a live table. Rows written
+  /// before this existed keep "" and are simply never matched again — a brief
+  /// is scoped to one UTC day, so they age out on their own.
+  watchlistKey String @default("")
 
   session TradingSession
   /// YYYY-MM-DD in UTC. A string, so the key cannot drift with timezones.
@@ -357,7 +373,7 @@ model SessionBriefCache {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([session, briefDate])
+  @@unique([watchlistKey, session, briefDate])
   @@index([session, generatedAt])
 }
 

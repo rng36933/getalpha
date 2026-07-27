@@ -6,6 +6,7 @@ import {
 } from "@/lib/ai/brief-cache";
 import { generateSessionBrief } from "@/lib/ai/session-brief";
 import type { SessionBrief } from "@/lib/ai/types";
+import { defaultAudience } from "@/lib/market-data/brief-audience";
 import {
   collectMarketSnapshot,
   isSnapshotEmpty,
@@ -66,12 +67,19 @@ export type SendResult = {
 async function briefForToday(
   now: Date,
 ): Promise<{ brief: SessionBrief; degraded: boolean } | null> {
-  const cached = await readBrief("LONDON", now);
+  // One email body goes to every recipient, so it can only be written from an
+  // instrument set they all share — the same gold-only default a Free reader
+  // sees on the desk. Personalising it would mean one model call and one
+  // rendered email per subscriber, which is a different feature with a
+  // different cost, not a variation on this one.
+  const { key, symbols } = defaultAudience();
+
+  const cached = await readBrief(key, "LONDON", now);
   if (cached && !cached.stale) {
     return { brief: cached.brief, degraded: cached.degraded };
   }
 
-  const { won } = await claimBriefGeneration("LONDON", now);
+  const { won } = await claimBriefGeneration(key, "LONDON", now);
 
   if (!won) {
     // Somebody else is generating. A slightly stale brief is still worth
@@ -80,20 +88,20 @@ async function briefForToday(
   }
 
   try {
-    const snapshot = await collectMarketSnapshot("LONDON", now);
+    const snapshot = await collectMarketSnapshot("LONDON", symbols, now);
 
     if (isSnapshotEmpty(snapshot)) {
-      await releaseFailedClaim("LONDON", now);
+      await releaseFailedClaim(key, "LONDON", now);
       return null;
     }
 
     const input = toBriefInput(snapshot);
     const { data, usage } = await generateSessionBrief(input, null);
 
-    await storeBrief("LONDON", data, input, snapshot.degraded, usage, new Date());
+    await storeBrief(key, "LONDON", data, input, snapshot.degraded, usage, new Date());
     return { brief: data, degraded: snapshot.degraded };
   } catch (error) {
-    await releaseFailedClaim("LONDON", now);
+    await releaseFailedClaim(key, "LONDON", now);
     throw error;
   }
 }

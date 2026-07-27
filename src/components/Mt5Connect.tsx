@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { hasGoneQuiet } from "@/lib/mt5/liveness";
 
 type Mt5ConnectProps = {
   connected: boolean;
@@ -37,12 +38,22 @@ const STEPS = [
     body: "Double-click getALPHA-Sync.mq5 to open it in MetaEditor and press F7. It should report 0 errors. Until you do this the Navigator will not list it: MetaTrader only shows compiled programs, and what you downloaded is the readable source.",
   },
   {
-    title: "Refresh and attach it",
-    body: "Back in MT5, right-click Expert Advisors in the Navigator → Refresh. Drag getALPHA-Sync onto any chart, paste the key into ConnectionToken, and press OK.",
+    // A chart holds exactly one Expert Advisor. Attaching a second one removes
+    // the first with no warning, no dialog and no line in the log — the only
+    // symptom is that trades quietly stop arriving, which reads as a fault here
+    // rather than a change made in MetaTrader. Anyone running a second EA will
+    // hit this eventually, so the fix is in the instructions rather than in a
+    // support reply.
+    title: "Give it a chart of its own",
+    body: "Back in MT5, right-click Expert Advisors in the Navigator → Refresh. Open a fresh chart — File → New Chart, any symbol, it does not have to be one you trade — and drag getALPHA-Sync onto that. Paste the key into ConnectionToken and press OK. Keep this chart for getALPHA alone: MetaTrader runs one Expert Advisor per chart, so attaching another to the same chart removes this one without saying so.",
   },
   {
     title: "Allow it to reach us",
     body: "Tools → Options → Expert Advisors → tick “Allow WebRequest for listed URL” and add https://www.getalpha.org — MetaTrader blocks every outbound request until you do.",
+  },
+  {
+    title: "Check that it is alive",
+    body: "A smiling face appears in the top-right corner of that chart, and within two minutes the Experts tab (Ctrl+T) shows a line beginning “getALPHA:”. If AutoTrading in the toolbar is grey rather than green, press Ctrl+E. No getALPHA line after two minutes means it is not running, whatever the chart looks like.",
   },
 ];
 
@@ -146,12 +157,31 @@ export default function Mt5Connect({
         </ul>
       </div>
 
+      {/* A silent terminal used to be reported as a timestamp in grey, which is
+          a fact rather than a warning: the desk knew it had heard nothing for
+          hours and said so in the same tone as everything else, while the
+          journal simply looked like it had no new trades. Past the window it
+          now states the problem and names its most common cause. */}
       {connected ? (
-        <div className="rounded-lg border border-positive/30 bg-positive/10 px-4 py-3">
-          <p className="text-sm font-medium text-positive">
-            {lastSeenAt ? "Terminal connected" : "Key created, waiting for the terminal"}
+        <div
+          className={`rounded-lg border px-4 py-3 ${
+            lastSeenAt && hasGoneQuiet(lastSeenAt)
+              ? "border-warning/30 bg-warning/10"
+              : "border-positive/30 bg-positive/10"
+          }`}
+        >
+          <p
+            className={`text-sm font-medium ${
+              lastSeenAt && hasGoneQuiet(lastSeenAt) ? "text-warning" : "text-positive"
+            }`}
+          >
+            {!lastSeenAt
+              ? "Key created, waiting for the terminal"
+              : hasGoneQuiet(lastSeenAt)
+                ? `Nothing received for ${ago(lastSeenAt).replace(" ago", "")}`
+                : "Terminal connected"}
           </p>
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-xs leading-relaxed text-muted">
             {lastSeenAt
               ? `Last sent ${ago(lastSeenAt)}${
                   accountLogin ? ` · account ${accountLogin}` : ""
@@ -160,6 +190,16 @@ export default function Mt5Connect({
                 }`
               : "Nothing has arrived yet. Finish the steps below, then check the Experts tab in MetaTrader for a message from getALPHA."}
           </p>
+          {lastSeenAt && hasGoneQuiet(lastSeenAt) ? (
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Anything opened since then is missing from this desk. Usually
+              MetaTrader is closed — it has to be running for trades to arrive.
+              If it is open, check the Experts tab (Ctrl+T): no line beginning
+              “getALPHA:” in the last two minutes means the program is not
+              running, and the common reason is that a second Expert Advisor was
+              attached to the same chart, which removes the first one silently.
+            </p>
+          ) : null}
         </div>
       ) : null}
 

@@ -5,8 +5,22 @@ import { hashToken, tokenFromHeader } from "@/lib/mt5/token";
 import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { requireJsonRequest } from "@/lib/request-guards";
 
-/** A terminal sending more than this in one call is not a person trading. */
-const MAX_TRADES = 500;
+/**
+ * A terminal sending more than this in one call is not a person trading.
+ *
+ * Raised from 500, which was too low for the one send that legitimately is
+ * large: the first run ships ninety days of history in a single request, and an
+ * active trader clears five hundred trades in that window without being at all
+ * unusual. The failure mode was also worse than it looks — the request is
+ * rejected whole, and the open positions travelling in the same payload go with
+ * it, so the symptom is a desk showing nothing open rather than a truncated
+ * history.
+ *
+ * Two thousand trades at roughly 250 bytes each is about half a megabyte, well
+ * inside the platform's body limit. Past that the sender really is something
+ * other than one person's terminal.
+ */
+const MAX_TRADES = 2000;
 
 /**
  * POST /api/mt5/sync

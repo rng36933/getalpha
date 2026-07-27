@@ -7,9 +7,14 @@ import type {
 
 /** Where a piece of the snapshot actually came from. */
 export type SourceStatus =
-  /** Fetched from the provider just now. */
+  /**
+   * Current data. Fetched from the provider on this request, or read from a
+   * store inside the freshness window the source deliberately caches for —
+   * both are the number the provider would give right now, and `fetchedAt`
+   * carries the age either way.
+   */
   | "LIVE"
-  /** The provider failed; this is the last set we stored. */
+  /** The provider failed; this is an older set, past its freshness window. */
   | "CACHED"
   /** The provider failed and we have nothing stored. */
   | "UNAVAILABLE";
@@ -33,32 +38,46 @@ export type MarketSnapshot = {
   degraded: boolean;
 };
 
+/** An instrument the brief can report levels for: provider symbol plus label. */
+export type BriefSymbol = { symbol: string; label: string };
+
 /**
- * Instruments the brief reports levels for.
+ * How many instruments one brief may cover.
  *
  * Capped at eight, and that is a hard provider limit rather than a preference:
  * Twelve Data's free plan allows eight API credits per minute and charges one
  * credit per symbol, batched or not. A ninth instrument makes the whole request
  * fail with 429, taking the other eight down with it.
  *
- * Lifting the cap means either a paid plan, or moving collection out of the
- * request path into a scheduled job that can spread symbols across minutes.
+ * A user's watchlist may hold more than this (`MAX_WATCHLIST_SIZE` is 20), so
+ * the set handed to a brief is truncated rather than assumed to fit.
+ *
+ * The cap is now per *request*, not per app-minute: levels are cached per
+ * symbol, so a symbol already fetched inside the freshness window costs no
+ * credit at all and is shared by every user watching it.
  */
 export const WATCHLIST_LIMIT = 8;
 
-export const WATCHLIST = [
-  // Metals
+/**
+ * What a brief covers when the reader has no watchlist of their own.
+ *
+ * Gold alone, deliberately. Every Free account resolves to this one set, which
+ * means they all share a single cached document whose cost is fixed no matter
+ * how many of them there are — the same argument that made the brief shared in
+ * the first place. It is also the instrument this desk is actually about.
+ */
+export const DEFAULT_BRIEF_SYMBOLS: readonly BriefSymbol[] = [
   { symbol: "XAU/USD", label: "XAUUSD" },
-  // Forex majors
-  { symbol: "EUR/USD", label: "EURUSD" },
-  { symbol: "GBP/USD", label: "GBPUSD" },
-  { symbol: "USD/JPY", label: "USDJPY" },
-  { symbol: "AUD/USD", label: "AUDUSD" },
-  { symbol: "USD/CHF", label: "USDCHF" },
-  // Crypto
-  { symbol: "BTC/USD", label: "BTCUSD" },
-  { symbol: "ETH/USD", label: "ETHUSD" },
 ] as const;
+
+/*
+ * The hardcoded eight-instrument desk list used to live here, and nothing reads
+ * it any more: a brief is written from the reader's own instruments, or from
+ * `DEFAULT_BRIEF_SYMBOLS` when they have none. It is deleted rather than left
+ * exported and unused, because a plausible-looking list of majors sitting in
+ * this file is precisely the thing somebody wires back in by accident, and
+ * doing so would silently put USDJPY back in a gold trader's brief.
+ */
 
 /**
  * How long a provider gets before we fall back.

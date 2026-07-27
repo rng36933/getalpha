@@ -9,10 +9,10 @@ import {
 import { aiErrorResponse, badRequest, isRecord } from "@/lib/ai/http";
 import { generateSessionBrief } from "@/lib/ai/session-brief";
 import { track } from "@/lib/analytics";
-import { requirePaidAccess } from "@/lib/billing/guard";
 import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import type { TradingSession } from "@/lib/ai/types";
 import { requireJsonRequest } from "@/lib/request-guards";
+import { resolveBriefAudience } from "@/lib/market-data/brief-audience";
 import {
   collectMarketSnapshot,
   isSnapshotEmpty,
@@ -35,20 +35,25 @@ export const maxDuration = 60;
  * Body: { session }
  *
  * The market data is collected server-side, not supplied by the caller. Briefs
- * are shared between users, so a payload from whichever user happened to ask
- * first would end up in everybody else's brief.
+ * are shared between readers watching the same instruments, so a payload from
+ * whichever user happened to ask first would end up in the others' brief.
+ *
+ * Not gated on the paid plan. The plan decides *what the brief covers*, not
+ * whether it exists: a Free reader gets gold, a Pro reader gets their own
+ * watchlist. That check lives in `resolveBriefAudience`, and it protects the
+ * paid content structurally rather than by a guard that could be forgotten —
+ * a Free reader's key is derived from the gold set, so the multi-instrument
+ * row is not something they can look up, mistake or otherwise.
+ *
+ * Giving the free tier one shared gold brief costs a fixed amount per day no
+ * matter how many free accounts read it, which is the same argument that made
+ * this document shared in the first place.
  */
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
-
-  // Checked before the cache is read, not after: the brief is a shared document
-  // and serving a cached copy to someone who has not paid gives the module away
-  // for free to everyone who arrives second.
-  const denied = await requirePaidAccess(userId);
-  if (denied) return denied;
 
   const limited = enforceRateLimit(`ai:${userId}`, LIMITS.ai);
   if (limited) return limited;
@@ -82,8 +87,23 @@ export async function POST(request: Request) {
   const tradingSession = session as TradingSession;
   const now = new Date();
 
-  // 1. Someone already generated this session's brief recently.
-  const cached = await readBrief(tradingSession, now);
+  // Which instruments this reader's brief covers, and the row it lives in.
+  // Derived from their plan and their own watchlist — never from the request.
+  const audience = await resolveBriefAudience(userId);
+  const { key, symbols, personalised, truncated } = audience;
+
+  // Named on every response, including the cached ones. A reader looking at a
+  // brief needs to know what it is about; the panel used to state the covered
+  // instruments from a hardcoded list, which is exactly the kind of copy that
+  // goes quietly wrong the moment the data behind it becomes per-user.
+  const coverage = {
+    instruments: symbols.map((entry) => entry.label),
+    personalised,
+    truncated,
+  };
+
+  // 1. Someone watching the same instruments generated this recently.
+  const cached = await readBrief(key, tradingSession, now);
   if (cached && !cached.stale) {
     track("ai_brief_requested", userId, {
       session: tradingSession,
@@ -97,11 +117,12 @@ export async function POST(request: Request) {
       degraded: cached.degraded,
       generatedAt: cached.generatedAt.toISOString(),
       ageSeconds: Math.round(cached.ageMs / 1000),
+      ...coverage,
     });
   }
 
   // 2. Take ownership, or discover that another request already has it.
-  const { won } = await claimBriefGeneration(tradingSession, now);
+  const { won } = await claimBriefGeneration(key, tradingSession, now);
 
   if (!won) {
     // Serving a slightly stale brief beats making the user wait for a call
@@ -120,26 +141,28 @@ export async function POST(request: Request) {
         degraded: cached.degraded,
         generatedAt: cached.generatedAt.toISOString(),
         ageSeconds: Math.round(cached.ageMs / 1000),
+        ...coverage,
       });
     }
 
     return NextResponse.json(
-      { status: "generating", retryAfterSeconds: 15 },
+      { status: "generating", retryAfterSeconds: 15, ...coverage },
       { status: 202, headers: { "retry-after": "15" } },
     );
   }
 
   try {
-    const snapshot = await collectMarketSnapshot(tradingSession, now);
+    const snapshot = await collectMarketSnapshot(tradingSession, symbols, now);
 
     // Nothing was collected from any provider. A brief written from nothing
     // could only be invention, so refuse rather than pay for one.
     if (isSnapshotEmpty(snapshot)) {
-      await releaseFailedClaim(tradingSession, now);
+      await releaseFailedClaim(key, tradingSession, now);
       return NextResponse.json(
         {
           error: "No market data available",
           ...toSourceReport(snapshot),
+          ...coverage,
         },
         { status: 503 },
       );
@@ -148,7 +171,15 @@ export async function POST(request: Request) {
     const input = toBriefInput(snapshot);
     const { data, usage } = await generateSessionBrief(input, userId);
 
-    await storeBrief(tradingSession, data, input, snapshot.degraded, usage, new Date());
+    await storeBrief(
+      key,
+      tradingSession,
+      data,
+      input,
+      snapshot.degraded,
+      usage,
+      new Date(),
+    );
 
     // Only the paths that actually return a brief are counted. A 202 while
     // somebody else generates is not a brief the user received; they retry,
@@ -164,11 +195,12 @@ export async function POST(request: Request) {
       cached: false,
       usage,
       ...toSourceReport(snapshot),
+      ...coverage,
     });
   } catch (error) {
     // Release the claim so the next request retries rather than waiting out
     // the claim timeout.
-    await releaseFailedClaim(tradingSession, now);
+    await releaseFailedClaim(key, tradingSession, now);
     return aiErrorResponse(error, "POST /api/ai/session-brief");
   }
 }

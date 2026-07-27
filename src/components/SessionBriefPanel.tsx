@@ -33,14 +33,50 @@ type State =
   | { status: "generating"; retryAfterSeconds: number }
   | { status: "error"; message: string; upgrade?: boolean };
 
+/** What the brief covers. Server-rendered, then confirmed by each response. */
+type Coverage = {
+  instruments: string[];
+  personalised: boolean;
+  truncated: boolean;
+};
+
 export default function SessionBriefPanel({
-  deskInstruments,
+  instruments,
+  personalised,
+  truncated,
 }: {
-  /** The desk-wide list the brief is written from — not the reader's own. */
-  deskInstruments: string[];
+  /** The instruments this reader's brief is written from. */
+  instruments: string[];
+  /** True when that is their own watchlist rather than the free default. */
+  personalised: boolean;
+  /** True when their watchlist is longer than one brief may cover. */
+  truncated: boolean;
 }) {
   const [session, setSession] = useState<TradingSession>("LONDON");
   const [state, setState] = useState<State>({ status: "idle" });
+
+  // Seeded from the server so the panel states its coverage before anyone
+  // presses anything, then re-read from every response: the route resolves this
+  // from the plan and the watchlist, and a subscription that lapsed or a pair
+  // added in another tab should not leave the label describing the old set.
+  const [coverage, setCoverage] = useState<Coverage>({
+    instruments,
+    personalised,
+    truncated,
+  });
+
+  function absorbCoverage(body: unknown) {
+    if (typeof body !== "object" || body === null) return;
+    const next = body as Partial<Coverage>;
+
+    if (Array.isArray(next.instruments) && typeof next.personalised === "boolean") {
+      setCoverage({
+        instruments: next.instruments,
+        personalised: next.personalised,
+        truncated: next.truncated === true,
+      });
+    }
+  }
 
   async function load(next: TradingSession) {
     setSession(next);
@@ -54,6 +90,7 @@ export default function SessionBriefPanel({
       });
 
       const body = await response.json().catch(() => null);
+      absorbCoverage(body);
 
       if (response.status === 202) {
         setState({
@@ -110,19 +147,37 @@ export default function SessionBriefPanel({
       <div className="mt-4">
         {state.status === "idle" ? (
           <p className="text-sm text-muted">
-            Pick a session. The brief is written once a day and shared by the
-            whole desk, so asking twice costs nothing.
+            Pick a session. Readers watching the same instruments share one
+            brief, so asking twice costs nothing.
           </p>
         ) : null}
 
-        {/* Named explicitly. The brief says "the supplied watchlist", which
-            reads as the reader's own — it is not, and somebody seeing a pair
-            discussed that they do not trade deserves to know why. */}
-        {deskInstruments.length > 0 ? (
+        {/* Always names the instruments. The brief text says "the supplied
+            watchlist", which reads as the reader's own — for a Free reader it
+            is not, and somebody seeing a pair discussed that they do not trade
+            deserves to know why before they read a word of it. */}
+        {coverage.instruments.length > 0 ? (
           <p className="mt-3 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-            Covers the desk list — {deskInstruments.join(", ")} — not your own
-            watchlist. One brief is written per session and shared by everyone,
-            which is what keeps it affordable.
+            {coverage.personalised ? (
+              <>
+                Covers {coverage.truncated ? "the top of your watchlist" : "your watchlist"}{" "}
+                — {coverage.instruments.join(", ")}.{" "}
+                {coverage.truncated
+                  ? `One brief reports on at most ${coverage.instruments.length} instruments; reorder the watchlist to change which. `
+                  : ""}
+                Readers watching the same instruments share one brief per
+                session, which is what keeps it affordable.
+              </>
+            ) : (
+              <>
+                Covers {coverage.instruments.join(", ")} — the same brief every
+                free account reads.{" "}
+                <Link href="/dashboard/pricing" className="text-accent hover:underline">
+                  Pro writes it from your own watchlist
+                </Link>
+                .
+              </>
+            )}
           </p>
         ) : null}
 
@@ -195,7 +250,7 @@ export default function SessionBriefPanel({
 
             <p className="text-[11px] text-muted">
               {state.cached
-                ? "Served from today's brief — the desk shares one."
+                ? "Served from today's brief for these instruments."
                 : "Written just now."}
             </p>
           </div>

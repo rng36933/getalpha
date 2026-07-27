@@ -44,13 +44,28 @@ function toCached(row: SessionBriefCache, now: Date): CachedBrief | null {
   };
 }
 
-/** The stored brief for today's session, fresh or not. Null if there is none. */
+/**
+ * The stored brief for this instrument set and session today, fresh or not.
+ *
+ * `watchlistKey` identifies the instruments the brief covers. Two readers
+ * watching the same things share a row; a reader watching something else can
+ * never be handed a document about instruments they do not hold, because the
+ * key they look under is derived from their own set rather than checked
+ * afterwards.
+ */
 export async function readBrief(
+  watchlistKey: string,
   session: TradingSession,
   now: Date = new Date(),
 ): Promise<CachedBrief | null> {
   const row = await prisma.sessionBriefCache.findUnique({
-    where: { session_briefDate: { session, briefDate: utcDateKey(now) } },
+    where: {
+      watchlistKey_session_briefDate: {
+        watchlistKey,
+        session,
+        briefDate: utcDateKey(now),
+      },
+    },
   });
 
   return row === null ? null : toCached(row, now);
@@ -71,6 +86,7 @@ export async function readBrief(
  *   look abandoned whenever the two drift apart.
  */
 export async function claimBriefGeneration(
+  watchlistKey: string,
   session: TradingSession,
   now: Date = new Date(),
 ): Promise<{ won: boolean }> {
@@ -80,11 +96,13 @@ export async function claimBriefGeneration(
 
   const affected = await prisma.$executeRaw`
     INSERT INTO "SessionBriefCache"
-      (id, session, "briefDate", status, "claimedAt", "createdAt", "updatedAt")
+      (id, "watchlistKey", session, "briefDate", status,
+       "claimedAt", "createdAt", "updatedAt")
     VALUES
-      (gen_random_uuid()::text, ${session}::"TradingSession", ${briefDate},
+      (gen_random_uuid()::text, ${watchlistKey},
+       ${session}::"TradingSession", ${briefDate},
        'PENDING', now(), now(), now())
-    ON CONFLICT (session, "briefDate") DO UPDATE
+    ON CONFLICT ("watchlistKey", session, "briefDate") DO UPDATE
       SET status = 'PENDING', "claimedAt" = now(), "updatedAt" = now()
       WHERE
         -- the stored brief has aged out
@@ -104,6 +122,7 @@ export async function claimBriefGeneration(
 
 /** Stores a completed brief and releases the claim. */
 export async function storeBrief(
+  watchlistKey: string,
   session: TradingSession,
   brief: SessionBrief,
   inputs: unknown,
@@ -112,7 +131,13 @@ export async function storeBrief(
   now: Date = new Date(),
 ): Promise<void> {
   await prisma.sessionBriefCache.update({
-    where: { session_briefDate: { session, briefDate: utcDateKey(now) } },
+    where: {
+      watchlistKey_session_briefDate: {
+        watchlistKey,
+        session,
+        briefDate: utcDateKey(now),
+      },
+    },
     data: {
       status: "READY",
       brief: brief as unknown as Prisma.InputJsonValue,
@@ -132,12 +157,18 @@ export async function storeBrief(
  * waiting out the claim timeout.
  */
 export async function releaseFailedClaim(
+  watchlistKey: string,
   session: TradingSession,
   now: Date = new Date(),
 ): Promise<void> {
   try {
     await prisma.sessionBriefCache.updateMany({
-      where: { session, briefDate: utcDateKey(now), status: "PENDING" },
+      where: {
+        watchlistKey,
+        session,
+        briefDate: utcDateKey(now),
+        status: "PENDING",
+      },
       data: { status: "FAILED" },
     });
   } catch (error) {

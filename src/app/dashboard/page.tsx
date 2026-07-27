@@ -24,15 +24,35 @@ import {
   fetchCandles,
   parseTimeframe,
 } from "@/lib/market-data/candles";
+import {
+  defaultAudience,
+  resolveBriefAudience,
+} from "@/lib/market-data/brief-audience";
 import { fetchNewsHeadlines } from "@/lib/market-data/news";
 import { headlinesFor } from "@/lib/market-data/relevance";
 import { computeDayTape } from "@/lib/market-data/tape";
-import { WATCHLIST } from "@/lib/market-data/types";
 import { prisma } from "@/lib/prisma";
 import { MAX_WATCHLIST_SIZE, getWatchlist } from "@/lib/watchlist";
 
 /** Nothing older matters to a dashboard; the journal holds the full record. */
 const SUMMARY_WINDOW = 200;
+
+/**
+ * Open positions are read separately, and without that window.
+ *
+ * "The newest 200 trades" is a sound rule for the statistics — a curve does not
+ * change shape for the two hundred and first — but it is the wrong rule for
+ * open positions, because *open* has nothing to do with *recent*. A position
+ * opened months ago and still running drops out of the window the moment two
+ * hundred newer trades exist, and then vanishes from the card whose entire job
+ * is to show it. Nothing on the page would look broken; it would simply say
+ * nothing is open, which is the most expensive kind of wrong.
+ *
+ * Capped anyway, since an unbounded query on a request path is how a page
+ * eventually dies. Nobody holds a hundred positions at once, and if they do,
+ * the card was unreadable long before this mattered.
+ */
+const OPEN_POSITION_CAP = 100;
 
 const EMPTY_SUMMARY: DashboardSummary = {
   openPositions: [],
@@ -60,13 +80,33 @@ async function loadSummary(userId: string | null): Promise<DashboardSummary> {
   if (!userId) return EMPTY_SUMMARY;
 
   try {
-    const trades = await prisma.trade.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: SUMMARY_WINDOW,
-    });
+    const [recent, open] = await Promise.all([
+      prisma.trade.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: SUMMARY_WINDOW,
+      }),
+      // No exit recorded is what `summariseTrades` and the trade metrics both
+      // mean by open, so the filter has to be the same one or the card and the
+      // classification could disagree.
+      prisma.trade.findMany({
+        where: { userId, exitPrice: null },
+        orderBy: { createdAt: "desc" },
+        take: OPEN_POSITION_CAP,
+      }),
+    ]);
 
-    return summariseTrades(trades);
+    // Merged by id, because an open position recent enough to be in the window
+    // is in both lists — and counted twice it would double this account's
+    // apparent risk exposure, which is the one number on the page nobody should
+    // ever see inflated.
+    const byId = new Map(recent.map((trade) => [trade.id, trade]));
+    const older = open.filter((trade) => !byId.has(trade.id));
+
+    // Appended rather than merged in date order. Open trades never reach the
+    // closed set, so their position cannot move the curve or the recent list;
+    // sorting the union would be work with no visible effect.
+    return summariseTrades([...recent, ...older]);
   } catch (error) {
     console.error("Dashboard could not summarise the journal:", error);
     return EMPTY_SUMMARY;
@@ -92,8 +132,15 @@ async function loadMt5State(userId: string | null): Promise<{
    * wrong currency reads as a fact, while a bare number reads as what it is.
    */
   currency: string | null;
+  /** When it last sent, so the prompt can tell working from stopped. */
+  lastSeenAt: string | null;
 }> {
-  if (!userId) return { connected: false, receiving: true, currency: null };
+  // `receiving: true` on both failure paths so the prompt stays hidden: a
+  // signed-out render or a database hiccup is not evidence that somebody needs
+  // to be told to connect their terminal.
+  if (!userId) {
+    return { connected: false, receiving: true, currency: null, lastSeenAt: null };
+  }
 
   try {
     const connection = await prisma.mtConnection.findUnique({
@@ -105,10 +152,11 @@ async function loadMt5State(userId: string | null): Promise<{
       connected: connection !== null,
       receiving: connection?.lastSeenAt != null,
       currency: connection?.currency ?? null,
+      lastSeenAt: connection?.lastSeenAt?.toISOString() ?? null,
     };
   } catch (error) {
     console.error("Dashboard could not read the MetaTrader connection:", error);
-    return { connected: false, receiving: true, currency: null };
+    return { connected: false, receiving: true, currency: null, lastSeenAt: null };
   }
 }
 
@@ -117,9 +165,10 @@ async function loadMt5State(userId: string | null): Promise<{
  * the watchlist cannot be read.
  *
  * Deliberately the focus: the desk is built around it, and every other
- * instrument has to be put on a watchlist before it appears anywhere. The
- * hardcoded `WATCHLIST` in `market-data/types.ts` keeps being *tracked* for the
- * shared Session Brief — tracked and displayed are different things.
+ * instrument has to be put on a watchlist before it appears anywhere. It is
+ * also what the Session Brief falls back to, so a reader who has chosen
+ * nothing sees one instrument consistently rather than a different default per
+ * card.
  */
 const DEFAULT_INSTRUMENT = { symbol: "XAU/USD", label: "XAUUSD" };
 
@@ -186,10 +235,15 @@ export default async function DashboardPage({
 
   const timeframe = parseTimeframe(tf);
 
-  const [{ entries, instrument }, summary, mt5] = await Promise.all([
+  const [{ entries, instrument }, summary, mt5, briefAudience] = await Promise.all([
     loadWatchlist(symbol),
     loadSummary(userId),
     loadMt5State(userId),
+    // Resolved here so the card states what it covers on first paint, rather
+    // than claiming a coverage it has to correct once the reader presses a
+    // session. The route resolves it again on its own; this is a label, not a
+    // permission, and the route never trusts what the client was told.
+    userId ? resolveBriefAudience(userId) : Promise.resolve(defaultAudience()),
   ]);
 
   const choices = tapeChoices(
@@ -302,7 +356,11 @@ export default async function DashboardPage({
           page is for, and a prompt that pushes it below the fold to advertise a
           setting has its priorities backwards. It disappears once the terminal
           is sending. */}
-      <Mt5Prompt connected={mt5.connected} receiving={mt5.receiving} />
+      <Mt5Prompt
+        connected={mt5.connected}
+        receiving={mt5.receiving}
+        lastSeenAt={mt5.lastSeenAt}
+      />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="md:col-span-2">
@@ -326,7 +384,9 @@ export default async function DashboardPage({
             money to run" rather than "get excited". */}
         <Card title="AI Session Brief" className="glow-ai">
           <SessionBriefPanel
-            deskInstruments={WATCHLIST.map((entry) => entry.label)}
+            instruments={briefAudience.symbols.map((entry) => entry.label)}
+            personalised={briefAudience.personalised}
+            truncated={briefAudience.truncated}
           />
         </Card>
         <Card title="Watchlist">
