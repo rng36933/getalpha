@@ -103,7 +103,17 @@ export type PairBreakdown = {
   expectancyPnl: number | null;
   averageWin: number | null;
   averageLoss: number | null;
+  /** The single worst trade. Kept, but it is not the headline — see below. */
   worstLoss: number | null;
+  /**
+   * The worst day this instrument had, summed across every trade on it.
+   *
+   * Null when no day finished down. This is the headline rather than
+   * `worstLoss` because a day is what a person lives through and what a
+   * drawdown is made of; the single trade beside it says whether that day was
+   * one decision or a run of them.
+   */
+  worstDay: { total: number; date: string; trades: number } | null;
 
   medianRiskPercent: number | null;
   /**
@@ -156,6 +166,51 @@ function median(values: number[]): number {
   return sorted.length % 2 === 0
     ? (sorted[mid - 1] + sorted[mid]) / 2
     : sorted[mid];
+}
+
+/**
+ * The worst single day, summed.
+ *
+ * The worst *trade* is the number a journal usually shows, and on its own it
+ * understates the risk being run: three losses of 70 on one morning is a worse
+ * day than one loss of 202, and a page that only reports the biggest single
+ * trade never shows it happened. This is the number a drawdown is actually made
+ * of.
+ *
+ * Grouped by UTC day, like the weekday buckets above, and by the day a trade
+ * was opened — which is what the record carries. A position opened before
+ * midnight and closed after it counts to the day it was entered, which is also
+ * the day the decision was made.
+ *
+ * Null when no day finished down. That is a fact worth not dressing up as a
+ * zero.
+ */
+function worstDayOf(
+  rows: Scored[],
+): { total: number; date: string; trades: number } | null {
+  const byDay = new Map<string, { total: number; trades: number }>();
+
+  for (const row of rows) {
+    if (row.pnl === null) continue;
+
+    const date = row.openedAt.toISOString().slice(0, 10);
+    const day = byDay.get(date) ?? { total: 0, trades: 0 };
+
+    day.total += row.pnl;
+    day.trades += 1;
+    byDay.set(date, day);
+  }
+
+  let worst: { total: number; date: string; trades: number } | null = null;
+
+  for (const [date, day] of byDay) {
+    if (day.total >= 0) continue;
+    if (worst === null || day.total < worst.total) {
+      worst = { total: round(day.total, 2), date, trades: day.trades };
+    }
+  }
+
+  return worst;
 }
 
 function summarise(key: string, label: string, rows: Scored[]): Bucket {
@@ -258,6 +313,8 @@ function breakdownFor(
     .filter((value): value is number => value !== null);
   const medianRisk = risks.length > 0 ? round(median(risks), 3) : null;
 
+  const worstDay = worstDayOf(rows);
+
   const sessions = SESSIONS.map((session) =>
     summarise(
       session,
@@ -304,6 +361,7 @@ function breakdownFor(
     averageWin: wins.length > 0 ? round(mean(wins), 2) : null,
     averageLoss: losses.length > 0 ? round(mean(losses), 2) : null,
     worstLoss: rs.length > 0 ? round(Math.min(...rs), 2) : null,
+    worstDay,
 
     medianRiskPercent: medianRisk,
     riskVsOwnMedian:

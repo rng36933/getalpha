@@ -216,3 +216,37 @@ test("an empty journal produces no pairs and no median", () => {
   assert.equal(analysis.medianRiskPercent, null);
   assert.equal(analysis.totalTrades, 0);
 });
+
+test("the worst day sums the trades on it, and can beat a bigger single loss", () => {
+  // The point of the figure. Three losses of 10 on one morning is a worse day
+  // than one loss of 20 on another, and reporting only the biggest single
+  // trade never shows that day happened at all.
+  const [pair] = analyseJournal([
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-01T10:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-01T14:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-02T08:00:00Z", r: -2 }),
+  ]).pairs;
+
+  assert.equal(pair.worstDay?.total, -30);
+  assert.equal(pair.worstDay?.date, "2026-07-01");
+  assert.equal(pair.worstDay?.trades, 3);
+
+  // The single worst trade is still available, and is a different number.
+  assert.equal(pair.worstLoss, -20);
+});
+
+test("a day that finished up is not a worst day", () => {
+  // Two losses and a bigger win on the same date nets positive, so there is no
+  // losing day to report. Null rather than zero: no day finished down is a
+  // fact, and dressing it up as a break-even day would be a different claim.
+  const [pair] = analyseJournal([
+    trade({ openedAt: "2026-07-01T08:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-01T10:00:00Z", r: -1 }),
+    trade({ openedAt: "2026-07-01T14:00:00Z", r: 3 }),
+  ]).pairs;
+
+  assert.equal(pair.worstDay, null);
+  // The worst trade still exists — it just did not make the day a losing one.
+  assert.equal(pair.worstLoss, -10);
+});

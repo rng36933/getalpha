@@ -218,10 +218,23 @@ export default function PairAnalysis({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Average win" value={money(pair.averageWin, currency)} />
         <Stat label="Average loss" value={money(pair.averageLoss, currency)} />
+        {/* The day, not the trade. Three losses in a morning is a worse day
+            than one large one, and the old figure could not show that at all.
+            The single worst trade is the note underneath, because the useful
+            question is whether the bad day was one decision or a run of them. */}
         <Stat
-          label="Worst"
-          value={money(pair.worstLoss, currency)}
-          tone={toneFor(pair.worstLoss)}
+          label="Worst day"
+          value={
+            pair.worstDay === null ? "—" : money(pair.worstDay.total, currency)
+          }
+          tone={toneFor(pair.worstDay?.total ?? null)}
+          note={
+            pair.worstDay === null
+              ? "no day finished down"
+              : `${pair.worstDay.date} · ${pair.worstDay.trades} trade${
+                  pair.worstDay.trades === 1 ? "" : "s"
+                } · worst single ${money(pair.worstLoss, currency)}`
+          }
         />
         <Stat
           label="Median risk"
