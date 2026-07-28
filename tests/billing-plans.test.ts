@@ -32,7 +32,8 @@ test("findPlan returns undefined for unknown slugs", () => {
 test("free is not in PAID_PLANS", () => {
   // The free tier has features listed for the pricing page, but it has no
   // Stripe price id and must never appear where a charge would be created.
-  assert.equal(PAID_PLANS.find((p) => p.slug === "free"), undefined);
+  // Cast to string to avoid TS narrowing the union to never.
+  assert.equal(PAID_PLANS.find((p) => (p.slug as string) === "free"), undefined);
 });
 
 test("at most one plan carries the highlight badge", () => {

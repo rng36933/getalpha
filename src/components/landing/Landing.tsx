@@ -72,7 +72,11 @@ const MOTES = [
 
 const STEP_ICONS = [PlugZap, LineChart, Sparkles];
 
-export default function Landing() {
+export default function Landing({
+  referralCode = null,
+}: {
+  referralCode?: string | null;
+}) {
   const copy = landingCopy;
 
   return (
@@ -311,7 +315,7 @@ export default function Landing() {
               </div>
 
               <div className="lp-glass max-w-md rounded-2xl p-5">
-                <WaitlistForm referralCode={null} />
+                <WaitlistForm referralCode={referralCode} />
               </div>
             </div>
           </div>
