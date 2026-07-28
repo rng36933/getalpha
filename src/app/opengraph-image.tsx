@@ -13,6 +13,9 @@ export const alt =
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// Force the OG renderer to run on the Edge runtime where ImageResponse is supported.
+export const runtime = "edge";
+
 export default async function OpengraphImage() {
   return new ImageResponse(
     (
