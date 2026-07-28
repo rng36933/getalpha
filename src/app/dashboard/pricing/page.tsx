@@ -28,6 +28,11 @@ function formatAmount(amount: number | null, currency: string): string | null {
   }).format(value);
 }
 
+/** Bare euro value behind `formatAmount`, for the yearly-saving calculation. */
+function toAmount(amount: number | null): number | null {
+  return amount === null ? null : amount / 100;
+}
+
 /**
  * Reads the live price for each plan from Stripe.
  *
@@ -49,7 +54,7 @@ async function loadPlanCards(): Promise<PlanCard[]> {
 
       const priceId = priceIdFor(plan);
       if (!priceId) {
-        return { ...base, price: null, interval: null, purchasable: false };
+        return { ...base, price: null, amount: null, interval: null, purchasable: false };
       }
 
       try {
@@ -58,6 +63,7 @@ async function loadPlanCards(): Promise<PlanCard[]> {
         return {
           ...base,
           price: formatAmount(price.unit_amount, price.currency),
+          amount: toAmount(price.unit_amount),
           interval: price.recurring?.interval ?? null,
           purchasable: price.active,
         };
@@ -65,7 +71,7 @@ async function loadPlanCards(): Promise<PlanCard[]> {
         // A price that cannot be read is not a page that should fail: show the
         // plan without a number rather than a stack trace.
         console.error(`Could not read the Stripe price ${priceId}:`, error);
-        return { ...base, price: null, interval: null, purchasable: false };
+        return { ...base, price: null, amount: null, interval: null, purchasable: false };
       }
     }),
   );
@@ -75,6 +81,7 @@ async function loadPlanCards(): Promise<PlanCard[]> {
     name: "Free",
     tagline: "Everything except the AI modules.",
     price: "€0",
+    amount: 0,
     interval: "month",
     features: FREE_FEATURES,
     purchasable: false,
@@ -102,19 +109,14 @@ export default async function PricingPage({
 
   return (
     <>
-      <PageHeader
-        title="Plans"
-        subtitle="The AI Session Brief and AI Coach are the paid modules. Everything else is free."
-      />
+      <PageHeader title="Plans" subtitle="AI Session Brief and AI Coach are Pro. Everything else is free." />
 
       {complimentary ? (
         <p
           role="status"
           className="mb-4 rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
         >
-          The AI Session Brief and AI Coach are already unlocked on this account.
-          There is nothing to pay and nothing to subscribe to — ignore the plans
-          below.
+          AI modules already unlocked on this account — nothing to pay.
         </p>
       ) : null}
 
@@ -123,8 +125,7 @@ export default async function PricingPage({
           role="status"
           className="mb-4 rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
         >
-          Payment received. Access is granted as soon as Stripe confirms it —
-          usually a second or two. Reload if the AI modules are still locked.
+          Payment received. Access unlocks within seconds — reload if still locked.
         </p>
       ) : null}
 
@@ -133,7 +134,7 @@ export default async function PricingPage({
           role="status"
           className="mb-4 rounded-lg border border-line bg-surface px-4 py-3 text-sm text-muted"
         >
-          Checkout was cancelled. Nothing was charged.
+          Checkout cancelled. Nothing was charged.
         </p>
       ) : null}
 
@@ -144,14 +145,11 @@ export default async function PricingPage({
           appears only where it is useful and harmless: locally and on previews. */}
       {!sellingIsAllowed() ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-          Payments are not open yet. Pro is not for sale on this site until
-          billing goes live — nothing here can be bought, and nothing will be
-          charged.
+          Not for sale yet — billing is not live. Nothing can be bought or charged.
         </p>
       ) : isTestMode() ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-          Stripe is in test mode. Use card 4242 4242 4242 4242 with any future
-          expiry and any CVC — no real money moves.
+          Test mode: card 4242 4242 4242 4242, any expiry, any CVC.
         </p>
       ) : null}
 

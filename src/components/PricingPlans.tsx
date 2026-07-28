@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Check, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export type PlanCard = {
   slug: string;
@@ -9,6 +10,8 @@ export type PlanCard = {
   highlight?: string;
   /** Formatted by the server from the live Stripe price, e.g. "€19". */
   price: string | null;
+  /** Bare euro amount behind `price`, for computing the yearly saving. */
+  amount: number | null;
   /** "month" | "year", or null when the price could not be read. */
   interval: string | null;
   features: readonly string[];
@@ -30,6 +33,24 @@ type PricingPlansProps = {
   sellingClosed?: boolean;
 };
 
+type Cycle = "month" | "year";
+
+function Feature({ children, tone }: { children: React.ReactNode; tone: "muted" | "accent" }) {
+  return (
+    <li className="flex gap-2.5 text-sm">
+      <Check
+        className={`mt-0.5 size-4 shrink-0 ${
+          tone === "accent" ? "text-accent" : "text-muted"
+        }`}
+        aria-hidden="true"
+      />
+      <span className={tone === "accent" ? "text-foreground" : "text-muted"}>
+        {children}
+      </span>
+    </li>
+  );
+}
+
 export default function PricingPlans({
   plans,
   currentPlan,
@@ -37,6 +58,21 @@ export default function PricingPlans({
 }: PricingPlansProps) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cycle, setCycle] = useState<Cycle>("month");
+
+  const free = plans.find((plan) => plan.slug === "free") ?? null;
+  const monthly = plans.find((plan) => plan.interval === "month" && plan.slug !== "free") ?? null;
+  const yearly = plans.find((plan) => plan.interval === "year") ?? null;
+
+  // Falls back to whichever variant actually has a price, so a deployment with
+  // only one Stripe plan configured still renders instead of showing nothing.
+  const pro = (cycle === "year" ? yearly : monthly) ?? monthly ?? yearly ?? null;
+
+  const savingsPercent = useMemo(() => {
+    if (!monthly?.amount || !yearly?.amount) return null;
+    const percent = Math.round((1 - yearly.amount / (monthly.amount * 12)) * 100);
+    return percent > 0 ? percent : null;
+  }, [monthly, yearly]);
 
   async function subscribe(slug: string) {
     setPending(slug);
@@ -58,14 +94,14 @@ export default function PricingPlans({
       }
 
       // Stripe hosts the payment page; card details never touch this app.
-      // `assign` rather than setting `location.href`, which the React Compiler
-      // lint reads as mutating a value defined outside the component.
       window.location.assign(body.url);
     } catch {
       setError("Could not reach the server. Check your connection.");
       setPending(null);
     }
   }
+
+  const proIsCurrent = pro !== null && pro.slug === currentPlan;
 
   return (
     <div>
@@ -78,74 +114,120 @@ export default function PricingPlans({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {plans.map((plan) => {
-          const isCurrent = plan.slug === currentPlan;
-
-          return (
-            <section
-              key={plan.slug}
-              className={`surface-lit flex flex-col rounded-xl border p-5 ${
-                plan.highlight ? "glow-ai border-accent/40" : "border-line"
-              }`}
-            >
-              <header className="flex items-start justify-between gap-3">
-                <h2 className="text-sm font-medium">{plan.name}</h2>
-                {plan.highlight ? (
-                  <span className="rounded-md bg-accent-soft px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent">
-                    {plan.highlight}
+      {yearly && monthly ? (
+        <div className="mb-6 flex justify-center">
+          <div
+            role="tablist"
+            aria-label="Billing cycle"
+            className="inline-flex rounded-full border border-line bg-surface-raised p-1"
+          >
+            {(["month", "year"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                role="tab"
+                aria-selected={cycle === option}
+                onClick={() => setCycle(option)}
+                className={`relative flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  cycle === option
+                    ? "bg-accent text-white shadow-sm"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                {option === "month" ? "Monthly" : "Yearly"}
+                {option === "year" && savingsPercent ? (
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                      cycle === "year"
+                        ? "bg-white/20 text-white"
+                        : "bg-positive/15 text-positive"
+                    }`}
+                  >
+                    Save {savingsPercent}%
                   </span>
                 ) : null}
-              </header>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
-              <p className="figure mt-4 text-2xl">
-                {plan.price ?? "—"}
-                {plan.interval ? (
-                  <span className="text-sm font-normal text-muted">
-                    {" "}
-                    / {plan.interval}
-                  </span>
-                ) : null}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_1.15fr]">
+        {free ? (
+          <section className="flex flex-col rounded-2xl border border-line bg-surface p-6">
+            <p className="text-sm font-medium text-muted">{free.name}</p>
+            <p className="mt-3 text-3xl font-semibold tabular-nums text-foreground">
+              {free.price ?? "€0"}
+            </p>
+            <p className="mt-1.5 text-[13px] text-muted">{free.tagline}</p>
+
+            <ul className="mt-6 flex-1 space-y-2.5">
+              {free.features.map((feature) => (
+                <Feature key={feature} tone="muted">
+                  {feature}
+                </Feature>
+              ))}
+            </ul>
+
+            {currentPlan === "free" || currentPlan === null ? (
+              <p className="mt-6 text-center text-xs text-muted">
+                {currentPlan === "free" ? "Your current plan" : "Included automatically"}
               </p>
-              <p className="mt-1 text-xs text-muted">{plan.tagline}</p>
+            ) : null}
+          </section>
+        ) : null}
 
-              <ul className="mt-4 flex-1 space-y-2 text-sm text-muted">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex gap-2">
-                    <span aria-hidden="true" className="text-accent">
-                      ✓
-                    </span>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+        {pro ? (
+          <section className="glow-ai relative flex flex-col overflow-hidden rounded-2xl border border-accent/40 bg-gradient-to-b from-accent-soft to-transparent p-6">
+            {pro.highlight ? (
+              <span className="absolute right-6 top-0 inline-flex -translate-y-1/2 items-center gap-1 rounded-full bg-accent px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white shadow-lg">
+                <Sparkles className="size-3" aria-hidden="true" />
+                {pro.highlight}
+              </span>
+            ) : null}
 
-              {plan.slug === "free" ? null : (
-                <button
-                  type="button"
-                  onClick={() => subscribe(plan.slug)}
-                  disabled={
-                    sellingClosed ||
-                    !plan.purchasable ||
-                    isCurrent ||
-                    pending !== null
-                  }
-                  className="mt-5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
-                >
-                  {isCurrent
-                    ? "Current plan"
-                    : sellingClosed
-                      ? "Not for sale yet"
-                      : !plan.purchasable
-                        ? "Not available yet"
-                        : pending === plan.slug
-                          ? "Opening checkout…"
-                          : "Subscribe"}
-                </button>
-              )}
-            </section>
-          );
-        })}
+            <p className="text-sm font-medium text-accent">{pro.name}</p>
+
+            <p className="mt-3 flex items-baseline gap-1.5">
+              <span className="text-3xl font-semibold tabular-nums text-foreground">
+                {pro.price ?? "—"}
+              </span>
+              {pro.interval ? (
+                <span className="text-sm font-normal text-muted">
+                  / {pro.interval}
+                </span>
+              ) : null}
+            </p>
+            <p className="mt-1.5 text-[13px] text-muted">{pro.tagline}</p>
+
+            <ul className="mt-6 flex-1 space-y-2.5">
+              {pro.features.map((feature) => (
+                <Feature key={feature} tone="accent">
+                  {feature}
+                </Feature>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => subscribe(pro.slug)}
+              disabled={
+                sellingClosed || !pro.purchasable || proIsCurrent || pending !== null
+              }
+              className="mt-6 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
+            >
+              {proIsCurrent
+                ? "Current plan"
+                : sellingClosed
+                  ? "Not for sale yet"
+                  : !pro.purchasable
+                    ? "Not available yet"
+                    : pending === pro.slug
+                      ? "Opening checkout…"
+                      : "Upgrade to Pro"}
+            </button>
+          </section>
+        ) : null}
       </div>
     </div>
   );
