@@ -92,7 +92,7 @@ export default function Landing() {
             <Link href="/login" className="text-zinc-400 transition-all duration-300 ease-in-out hover:text-white">
               {copy.nav.signIn}
             </Link>
-            <Link href="/register" className="rounded-lg bg-white px-4 py-2 font-medium text-[#030712] transition-all duration-300 ease-in-out hover:bg-zinc-200">
+            <Link href="/register" className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground transition-all duration-300 ease-in-out hover:opacity-90">
               {copy.nav.getStarted}
             </Link>
           </div>
