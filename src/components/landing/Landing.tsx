@@ -194,12 +194,15 @@ export default function Landing({
             <Heading>{copy.steps.heading}</Heading>
 
             {/* Animated divider between the heading and the step cards */}
-            <div aria-hidden="true" className="relative mt-8 hidden h-px overflow-visible sm:block">
+            <div
+              aria-hidden="true"
+              className="relative mx-auto mt-6 mb-8 hidden h-px w-[68%] overflow-visible sm:block"
+            >
               <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
               <span className="lp-flow absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(242,201,76,0.5)]" />
             </div>
 
-            <div className="mt-6">
+            <div className="mt-0">
               <ol className="grid gap-4 sm:grid-cols-3">
                 {copy.steps.items.map((step, index) => {
                   const Icon = STEP_ICONS[index] ?? PlugZap;
