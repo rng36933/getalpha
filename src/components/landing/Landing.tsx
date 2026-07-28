@@ -267,7 +267,7 @@ export default async function Landing({
             worse than no section: this is the shop window, and every weekend
             visitor would meet a product that looks asleep. */}
         {landingTape && !landingTape.barelyTraded ? (
-          <section className="border-t border-white/[0.05] py-14 sm:py-20">
+          <section className="border-t border-white/[0.05] py-12 sm:py-16">
             <div className="mx-auto max-w-6xl px-5 sm:px-8">
               <Eyebrow className="text-emerald-400">
                 <span className="inline-flex items-center gap-2">
@@ -291,7 +291,7 @@ export default async function Landing({
           </section>
         ) : null}
 
-        <section id="how" className="border-t border-white/[0.05] py-14 sm:py-20">
+        <section id="how" className="border-t border-white/[0.05] py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>{copy.features.eyebrow}</Eyebrow>
             <Heading>{copy.features.heading}</Heading>
@@ -306,7 +306,7 @@ export default async function Landing({
         {/* What actually happens after signing up. The middle step is
             deliberately "carry on as you were" — the strongest thing about the
             sync is that it asks nothing of the trading itself. */}
-        <section className="border-t border-white/[0.05] py-14 sm:py-20">
+        <section className="border-t border-white/[0.05] py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>{copy.steps.eyebrow}</Eyebrow>
             <Heading>{copy.steps.heading}</Heading>
@@ -374,7 +374,7 @@ export default async function Landing({
             Placed immediately before the price, because the moment somebody has
             just seen their own last trade described back to them is the moment
             the paid module stops being an abstraction. */}
-        <section className="border-t border-white/[0.05] py-14 sm:py-20">
+        <section className="border-t border-white/[0.05] py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>{copy.tradeTest.eyebrow}</Eyebrow>
             <Heading>{copy.tradeTest.heading}</Heading>
@@ -388,7 +388,7 @@ export default async function Landing({
           </div>
         </section>
 
-        <section className="relative overflow-hidden border-t border-white/[0.05] py-14 sm:py-20">
+        <section className="relative overflow-hidden border-t border-white/[0.05] py-12 sm:py-16">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute left-1/2 top-0 h-80 w-[min(48rem,120vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.12),transparent_65%)]"
@@ -497,7 +497,7 @@ export default async function Landing({
             only door on the page. */}
         <section
           id="keep-in-touch"
-          className="border-t border-white/[0.05] py-14 sm:py-20"
+          className="border-t border-white/[0.05] py-12 sm:py-16"
         >
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
@@ -522,7 +522,7 @@ export default async function Landing({
             Rendered as plain markup rather than a JS accordion: a crawler reads
             what is in the document, and an answer hidden behind a click is an
             answer some readers never find. */}
-        <section id="faq" className="border-t border-white/[0.05] py-14 sm:py-20">
+        <section id="faq" className="border-t border-white/[0.05] py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>{copy.faq.eyebrow}</Eyebrow>
             <Heading>{copy.faq.heading}</Heading>
@@ -563,40 +563,33 @@ export default async function Landing({
           </div>
         </section>
 
-        {/* The disclaimer, given weight.
-            Amber, not the violet used everywhere else — violet means "this is
-            the paid AI module" on every other surface, and spending it here
-            would cost that colour its meaning. */}
-        <section className="relative overflow-hidden border-t border-white/[0.05] py-14 sm:py-20">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-[min(52rem,120vw)] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.10),transparent_65%)]"
-          />
-
-          <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
-            <div className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.04] p-5 shadow-[0_0_40px_-12px_rgba(245,158,11,0.25)] sm:p-7">
-              <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-amber-400">
-                <AlertTriangle className="size-3.5 shrink-0" aria-hidden="true" />
-                {copy.disclaimer.label}
-              </p>
-
-              <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-zinc-300">
-                {copy.disclaimer.bodyStart}{" "}
-                <span className="text-white">{copy.disclaimer.bodyEmphasis}</span>{" "}
-                {copy.disclaimer.bodyEnd}
-              </p>
-
-              <Link
-                href="/disclaimer"
-                className="mt-4 inline-flex items-center gap-1.5 text-sm text-amber-400 transition-all duration-300 ease-in-out hover:text-amber-300"
-              >
-                {copy.disclaimer.link}
-                <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
+
+      {/* The disclaimer, compacted into a strip above the footer rather than
+          its own full section — the claim still has to be checkable and
+          visible, it just does not need a glowing card and a page's worth of
+          vertical rhythm to say two sentences. Amber, not the violet used
+          everywhere else — violet means "this is the paid AI module" on every
+          other surface, and spending it here would cost that colour its
+          meaning. */}
+      <div className="border-t border-amber-500/15 bg-amber-500/[0.03]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:gap-3 sm:px-8">
+          <p className="flex shrink-0 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-amber-400">
+            <AlertTriangle className="size-3.5 shrink-0" aria-hidden="true" />
+            {copy.disclaimer.label}
+          </p>
+          <p className="text-[13px] leading-relaxed text-zinc-400">
+            {copy.disclaimer.bodyStart} {copy.disclaimer.bodyEmphasis}{" "}
+            {copy.disclaimer.bodyEnd}{" "}
+            <Link
+              href="/disclaimer"
+              className="text-amber-400 underline-offset-2 transition-all duration-300 ease-in-out hover:text-amber-300 hover:underline"
+            >
+              {copy.disclaimer.link}
+            </Link>
+          </p>
+        </div>
+      </div>
 
       <footer className="border-t border-white/[0.05]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-7 text-[13px] text-zinc-500 sm:px-8">
