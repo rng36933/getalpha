@@ -220,7 +220,7 @@ export default function TradeTest() {
                 // `h-2` and `touch-manipulation`: a six-pixel track is a hard
                 // thing to grab on a phone, and without the touch hint a drag
                 // near the slider can be read as a double-tap zoom instead.
-                className="h-2 min-w-0 flex-1 cursor-pointer touch-manipulation appearance-none rounded-full bg-white/[0.08] accent-violet-500"
+                className="h-2 min-w-0 flex-1 cursor-pointer touch-manipulation appearance-none rounded-full bg-white/[0.08] accent-[#f2c94c]"
               />
               <span className="w-16 shrink-0 text-right font-mono text-lg font-semibold tabular-nums text-white">
                 {risk.toFixed(1)}%
@@ -249,7 +249,7 @@ export default function TradeTest() {
           <button
             type="button"
             onClick={() => setVerdict(evaluate(risk, hadStop, nearNews, copy))}
-            className="lp-shimmer relative w-full overflow-hidden rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition-all duration-300 ease-in-out hover:bg-violet-400 sm:w-auto"
+            className="lp-shimmer relative w-full overflow-hidden rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-lg shadow-accent/20 transition-all duration-300 ease-in-out hover:opacity-90 sm:w-auto"
           >
             {copy.evaluate}
           </button>

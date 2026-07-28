@@ -239,7 +239,7 @@ export default function Landing({
         </section>
 
         <section className="relative overflow-hidden border-t border-white/[0.05] py-12 sm:py-16">
-          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-80 w-[min(48rem,120vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.12),transparent_65%)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-80 w-[min(48rem,120vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(242,201,76,0.08),transparent_65%)]" />
 
           <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>{copy.pricing.eyebrow}</Eyebrow>
@@ -266,11 +266,11 @@ export default function Landing({
                 </Link>
               </div>
 
-              <div className="relative rounded-[1.05rem] bg-gradient-to-b from-violet-500/60 via-violet-500/20 to-transparent p-px shadow-2xl shadow-violet-500/10 lg:-mt-4">
-                <div className="relative h-full rounded-2xl bg-[#0a0a12] p-6 sm:p-7">
+              <div className="relative rounded-[1.05rem] bg-gradient-to-b from-accent/60 via-accent/20 to-transparent p-px shadow-2xl shadow-accent/10 lg:-mt-4">
+                <div className="relative h-full rounded-2xl bg-[#0a0b10] p-6 sm:p-7">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <Eyebrow className="text-violet-300">{copy.pricing.pro.label}</Eyebrow>
+                      <Eyebrow className="text-accent">{copy.pricing.pro.label}</Eyebrow>
                       <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">
                         €19.99
                         <span className="ml-1.5 text-sm font-normal text-zinc-500">{copy.pricing.pro.per}</span>
@@ -287,13 +287,13 @@ export default function Landing({
                   <ul className="mt-7 grid gap-3 text-[14px] text-zinc-300">
                     {copy.pricing.pro.items.map((item) => (
                       <li key={item} className="flex gap-3">
-                        <Check className="mt-0.5 size-4 shrink-0 text-violet-400" aria-hidden="true" />
+                        <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <Link href="/register" className="lp-shimmer group relative mt-8 flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 px-5 py-3 text-sm font-semibold text-white">
+                  <Link href="/register" className="lp-shimmer group relative mt-8 flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90">
                     {copy.pricing.pro.cta}
                     <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
                   </Link>
