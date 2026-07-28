@@ -40,7 +40,7 @@ export default async function OpengraphImage() {
               width: "56px",
               height: "56px",
               borderRadius: "14px",
-              background: "#5b8cff",
+              background: "#f2c94c",
               color: "#0a0b0f",
               fontSize: "34px",
               fontWeight: 700,
@@ -50,7 +50,7 @@ export default async function OpengraphImage() {
           </div>
           <div style={{ display: "flex", fontSize: "32px", fontWeight: 600 }}>
             <span style={{ color: "#e9ebf0" }}>get</span>
-            <span style={{ color: "#5b8cff" }}>ALPHA</span>
+            <span style={{ color: "#f2c94c" }}>ALPHA</span>
           </div>
         </div>
 
@@ -77,7 +77,7 @@ export default async function OpengraphImage() {
               letterSpacing: "-0.02em",
             }}
           >
-            <span style={{ color: "#5b8cff" }}>your process,</span>
+            <span style={{ color: "#f2c94c" }}>your process,</span>
             <span style={{ color: "#e9ebf0" }}>not your luck.</span>
           </div>
         </div>
