@@ -1,55 +1,190 @@
-/* small typography and container improvements for the redesign branch */
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   All colour, type and surface decisions live here. Components reference these
+   names rather than raw values, so changing the palette means changing one
+   place, not grepping through every file.
+   --------------------------------------------------------------------------- */
+
 :root {
-  /* Accent color changed to warm gold (matches provided screenshots) */
+  color-scheme: dark;
+
+  /* Surfaces — dark-to-darker, never the other way. */
+  --background: #0a0b0f;
+  --surface: #13151c;
+  --surface-raised: #191c25;
+
+  /* Structure */
+  --line: #252935;
+
+  /* Text */
+  --foreground: #e9ebf0;
+  --muted: #8a90a0;
+
+  /* Brand accent — warm gold. */
   --accent: #f2c94c;
   --accent-soft: rgba(242, 201, 76, 0.12);
   --accent-foreground: #0a0b0f;
 
-  /* existing tokens kept, additions for spacing */
+  /* Semantic colours used for values and states, not for brand. */
+  --positive: #34d399;
+  --negative: #f87171;
+  --warning: #fbbf24;
 }
 
-/* keep original content (unchanged above in main branch) */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Base adjustments for improved readability */
-html {
-  font-size: 16px; /* ensures rem math predictable */
+/* Expose every token as a Tailwind utility (bg-background, text-foreground, …).
+   `inline` means the values are inlined at build time rather than emitted as
+   variables in the output — required for opacity modifiers to work. */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-line: var(--line);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
 
 body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* A centered container helper used across pages */
-.container {
-  max-width: 72rem; /* 1152px */
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
+/* ---------------------------------------------------------------------------
+   Landing page components.
+
+   Custom classes rather than Tailwind utilities, because these combine
+   properties in ways that would need a dozen classes each. They are defined
+   here alongside the animations they depend on so the off-switch for reduced
+   motion is always in the same file as the switch.
+   --------------------------------------------------------------------------- */
+
+/* Glass card — used on every card-style surface on the landing page. */
+.lp-glass {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-/* Slightly larger, more readable base text */
-p, li, dd, dt {
-  font-size: 1rem;
+/* Background grid — faint ruled lines that read as a chart grid. */
+.lp-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-/* Improve contrast on small text */
-.text-zinc-400 {
-  color: rgba(148, 163, 184, 1);
+/* Shimmer overlay on buttons. The shimmer only runs on hover via ::after so
+   a visitor who prefers reduced motion never sees any animation at all. */
+.lp-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
 }
 
-/* Keep reduced-motion respects (copied from main) */
+.lp-shimmer:hover::after {
+  animation: lp-shimmer-slide 0.55s ease forwards;
+}
+
+@keyframes lp-shimmer-slide {
+  to { transform: translateX(100%); }
+}
+
+/* Floating mote particles in the hero. Uses --dur and --delay CSS vars set
+   inline on each element so the same class can drive many different orbits. */
+@keyframes lp-drift-anim {
+  0%, 100% { transform: translateY(0) scale(1);    opacity: 0.65; }
+  50%       { transform: translateY(-14px) scale(1.2); opacity: 1; }
+}
+
+.lp-drift {
+  animation: lp-drift-anim var(--dur, 14s) ease-in-out var(--delay, 0s) infinite;
+}
+
+/* Moving dot along the connector line in the "How it works" steps. */
+@keyframes lp-flow-anim {
+  0%   { transform: translateX(-200%) translateY(-50%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(18rem) translateY(-50%);  opacity: 0; }
+}
+
+.lp-flow {
+  animation: lp-flow-anim 4s ease-in-out infinite;
+}
+
+/* Pulsing alarm badge that appears on the verdict card. */
+@keyframes lp-alarm-anim {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+.lp-alarm {
+  animation: lp-alarm-anim 2.2s ease-in-out infinite;
+}
+
+/* Pulsing live-indicator dot, used wherever something is "live now". */
+@keyframes live-pulse-anim {
+  0%, 100% { opacity: 1;   transform: scale(1);    box-shadow: 0 0 0 0 rgba(242, 201, 76, 0.5); }
+  50%       { opacity: 0.8; transform: scale(0.85); box-shadow: 0 0 0 4px rgba(242, 201, 76, 0); }
+}
+
+.live-dot {
+  animation: live-pulse-anim 2s ease-in-out infinite;
+}
+
+/* Ticker strip across the top of the landing page. */
+@keyframes ticker-slide {
+  from { transform: translateX(0); }
+  /* The strip is duplicated, so -50% is a seamless wrap. */
+  to   { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker-slide 44s linear infinite;
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion.
+
+   Every animation above is disabled when the user has asked for it. The off
+   switch lives next to the switch — an animation disabled in a different file
+   is an animation that ships re-enabled the moment anyone restructures CSS.
+   --------------------------------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-ticker, .card-enter, .fade-in, .lp-drift, .lp-flow, .lp-alarm, .lp-shimmer:hover::after {
+  .animate-ticker,
+  .lp-drift,
+  .lp-flow,
+  .lp-alarm,
+  .live-dot,
+  .lp-shimmer:hover::after {
     animation: none !important;
   }
 }
