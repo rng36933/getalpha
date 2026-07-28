@@ -36,7 +36,6 @@ export default function DataQualityNotice({ sources }: DataQualityNoticeProps) {
 
   const cached = degraded.filter((s) => s.result.status === "CACHED");
   const missing = degraded.filter((s) => s.result.status === "UNAVAILABLE");
-  const hasMissing = missing.length > 0;
 
   return (
     <div
@@ -53,7 +52,7 @@ export default function DataQualityNotice({ sources }: DataQualityNoticeProps) {
           </h3>
 
           <p className="mt-2 text-sm text-muted leading-relaxed">
-            Some data sources are not live. Here's what you're looking at:
+            Some data sources aren&apos;t live. Here&apos;s what you&apos;re looking at:
           </p>
 
           {/* Cached sources */}
@@ -100,7 +99,7 @@ export default function DataQualityNotice({ sources }: DataQualityNoticeProps) {
           <div className="mt-3 flex items-start gap-2 rounded-lg border border-warning/20 bg-warning/5 p-2.5">
             <AlertCircle size={14} className="text-warning flex-shrink-0 mt-0.5" />
             <p className="text-xs text-muted">
-              No data is guessed or filled in. Missing sources stay blank so you see exactly what's real.
+              No data is guessed or filled in. Missing sources stay blank so you see exactly what&apos;s real.
             </p>
           </div>
         </div>
