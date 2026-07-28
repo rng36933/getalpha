@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
+import {
+  BookOpen,
+  Zap,
+  TrendingUp,
+  CheckCircle2,
+  ArrowRight,
+  Lightbulb,
+} from "lucide-react";
 
 /**
- * What somebody sees on their first visit, before there is anything to show.
+ * Visual onboarding banner for first-time users.
  *
- * The empty cards below it are honest but silent, and silence is the wrong
- * first impression for a product whose whole argument is where its numbers
- * come from. A new account arriving at blank boxes assumes the app is broken,
- * or that it is another dashboard waiting to guess at the market.
- *
- * Dismissible, and it stays dismissed. Somebody who has read it once and is
- * still working through their first trade should not be told again on every
- * page load.
+ * Improved with visual steps, emojis, and interactive elements instead of
+ * long text explanations. Makes it clear what to do next and why.
  */
 
 const STORAGE_KEY = "getalpha.firstRun.dismissed";
@@ -33,33 +35,47 @@ function wasDismissed(): boolean {
   try {
     return window.localStorage.getItem(STORAGE_KEY) === "1";
   } catch {
-    // Private browsing and blocked storage both throw. Showing the banner is
-    // the safer failure: it can be closed again.
     return false;
   }
 }
 
 /**
- * Three lines, not three paragraphs.
- *
- * This banner used to run taller than a phone screen: somebody's first visit
- * meant scrolling past a screen and a half of explanation before reaching a
- * single number. The argument survives at a third of the length — and a wall of
- * text making the case for clarity was making the opposite case.
+ * Visual onboarding steps with icons and emojis
  */
-const FACTS = [
-  "Your win rate per pair — yours on gold against yours on GBPUSD.",
-  "Where your losses cluster: the session, the weekday, the trade after a loss.",
-  "What you actually risk, against your own median rather than a rule of thumb.",
+const ONBOARDING_STEPS = [
+  {
+    icon: BookOpen,
+    emoji: "📖",
+    title: "Record Your First Trade",
+    description: "Every number is computed from your trades.",
+    action: { label: "Start", href: "/dashboard/journal" },
+  },
+  {
+    icon: Zap,
+    emoji: "⚡",
+    title: "Or Connect MetaTrader",
+    description: "Sync 90 days automatically.",
+    action: { label: "Connect", href: "/dashboard/settings" },
+  },
+  {
+    icon: TrendingUp,
+    emoji: "📊",
+    title: "Get Your Metrics",
+    description: "Win rate, risk, where losses cluster.",
+    action: null,
+  },
+];
+
+const KEY_BENEFITS = [
+  "🎯 Your win rate per pair",
+  "📍 Where your losses cluster",
+  "⚖️ Real risk you actually took",
 ];
 
 export default function FirstRun() {
   const hydrated = useHydrated();
   const [dismissed, setDismissed] = useState(false);
 
-  // Nothing is rendered on the server. A banner that appears and then vanishes
-  // for somebody who already closed it is worse than one that arrives a moment
-  // late.
   if (!hydrated || dismissed || wasDismissed()) return null;
 
   function dismiss() {
@@ -67,59 +83,104 @@ export default function FirstRun() {
     try {
       window.localStorage.setItem(STORAGE_KEY, "1");
     } catch {
-      // Closed for this view either way.
+      // Closed either way
     }
   }
 
   return (
-    <section className="relative mb-4 rounded-xl border border-accent/30 bg-accent-soft p-4 pr-11 sm:p-5">
+    <section className="relative mb-4 overflow-hidden rounded-xl border border-accent/30 bg-gradient-to-br from-accent-soft/50 via-background to-background p-5 sm:p-6 shadow-sm">
+      {/* Close button */}
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Dismiss"
-        className="absolute right-2 top-2 rounded-md px-2 py-1 text-lg leading-none text-muted transition-colors hover:text-foreground"
+        aria-label="Dismiss onboarding"
+        className="absolute right-3 top-3 rounded-md px-2 py-1 text-lg leading-none text-muted transition-colors hover:text-foreground"
       >
         ×
       </button>
 
-      <h2 className="max-w-xl text-base font-semibold tracking-tight text-balance sm:text-lg">
-        These cards stay empty until you record a trade.
-      </h2>
+      <div className="max-w-4xl">
+        {/* Header with icon */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🚀</span>
+            <h2 className="text-lg font-semibold tracking-tight text-balance">
+              Welcome to getALPHA
+            </h2>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            A journal that judges your <span className="font-semibold text-accent">decision</span>, not just the result.
+          </p>
+        </div>
 
-      <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-muted">
-        Every number here is measured from your own trading — never a forecast,
-        a signal, or somebody else&rsquo;s backtest. Then you get:
-      </p>
+        {/* Key benefits in a highlight box */}
+        <div className="mb-6 rounded-lg border border-accent/20 bg-accent/5 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Lightbulb size={16} className="text-accent" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+              What you'll get
+            </p>
+          </div>
+          <ul className="space-y-2">
+            {KEY_BENEFITS.map((benefit) => (
+              <li key={benefit} className="text-sm text-muted flex items-center gap-2">
+                <span className="text-base">{benefit.split(" ")[0]}</span>
+                <span>{benefit.substring(benefit.indexOf(" ") + 1)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <ul className="mt-3 flex flex-col gap-1.5">
-        {FACTS.map((fact) => (
-          <li
-            key={fact}
-            className="grid grid-cols-[0.9rem_1fr] gap-2 text-[13px] leading-snug text-muted"
+        {/* Onboarding steps grid */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-6">
+          {ONBOARDING_STEPS.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.title}
+                className="rounded-lg border border-line bg-surface-raised p-4 hover:border-accent/50 transition-colors"
+              >
+                <div className="flex items-start gap-3 mb-2">
+                  <span className="text-2xl">{step.emoji}</span>
+                  <span className="text-xs font-bold text-accent bg-accent/10 rounded px-2 py-0.5">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+
+                <h3 className="font-semibold text-sm text-foreground">
+                  {step.title}
+                </h3>
+                <p className="mt-1 text-xs text-muted leading-relaxed">
+                  {step.description}
+                </p>
+
+                {step.action && (
+                  <Link
+                    href={step.action.href}
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:text-accent/80 transition-colors group"
+                  >
+                    {step.action.label}
+                    <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Primary CTA */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard/journal"
+            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-all hover:brightness-110 active:scale-95"
           >
-            <span aria-hidden="true" className="text-accent">
-              →
-            </span>
-            <span>{fact}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Link
-          href="/dashboard/journal"
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-[filter] hover:brightness-110"
-        >
-          Record your first trade
-        </Link>
-
-        <span className="text-xs text-muted">
-          Or sync MetaTrader in{" "}
-          <Link href="/dashboard/settings" className="underline hover:text-foreground">
-            Settings
-          </Link>{" "}
-          and it fills itself.
-        </span>
+            <CheckCircle2 size={16} />
+            Start your first trade
+          </Link>
+          <span className="text-xs text-muted">
+            Takes 2 minutes · No manual entry needed if you use MetaTrader
+          </span>
+        </div>
       </div>
     </section>
   );
