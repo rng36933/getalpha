@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-const fs = require("node:fs");
-const path = require("node:path");
+import { readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 function walk(dir) {
   let results = [];
-  const list = fs.readdirSync(dir);
+  const list = readdirSync(dir);
 
   list.forEach((file) => {
-    const fullPath = path.resolve(dir, file);
-    const stat = fs.statSync(fullPath);
+    const fullPath = resolve(dir, file);
+    const stat = statSync(fullPath);
     if (stat && stat.isDirectory()) results = results.concat(walk(fullPath));
     else results.push(fullPath);
   });
@@ -23,9 +23,9 @@ function replace() {
   const replacement = "#f2c94c";
 
   files.forEach((file) => {
-    const content = fs.readFileSync(file, "utf8");
+    const content = readFileSync(file, "utf8");
     if (content.includes(old)) {
-      fs.writeFileSync(file, content.split(old).join(replacement), "utf8");
+      writeFileSync(file, content.split(old).join(replacement), "utf8");
       console.log("Replaced in", file);
     }
   });

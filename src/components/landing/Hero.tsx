@@ -9,16 +9,33 @@ import VerdictCard from "@/components/landing/VerdictCard";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 
+interface HeroCopy {
+  hero: {
+    badge: string;
+    headingMuted: string;
+    headingBright: string;
+    body: string;
+    bodyEmphasis: string;
+    cta: string;
+    ctaNoteLine1: string;
+    ctaNoteLine2: string;
+    securityEmphasis: string;
+    securityRest: string;
+    waitlistHint: string;
+    waitlistLink: string;
+  };
+}
+
 export default function Hero({
   copy,
   referralCode,
   landingTape,
   landingDaily,
 }: {
-  copy: any;
+  copy: HeroCopy;
   referralCode: string | null;
-  landingTape: any;
-  landingDaily: any;
+  landingTape: unknown;
+  landingDaily: unknown;
 }) {
   return (
     <section className="relative overflow-hidden py-14 sm:py-24">
