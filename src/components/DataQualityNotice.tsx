@@ -1,3 +1,4 @@
+import { AlertCircle, AlertTriangle, Wifi, WifiOff } from "lucide-react";
 import type { SourceResult } from "@/lib/market-data/types";
 
 type Source = {
@@ -22,46 +23,88 @@ function formatAge(fetchedAt: string | null): string {
 }
 
 /**
- * The one banner that says the page is not showing live data.
+ * Visual data quality notice with better icons and status indicators.
  *
- * Rendered instead of letting a provider failure throw: a page that half-works
- * and says so is more useful than an error boundary, and a trader reading stale
- * levels without being told is worse than either.
+ * Shows live/cached/unavailable status clearly with visual cues so new users
+ * understand what data they're looking at.
  *
- * Renders nothing when every source is live, so it can be dropped into any page
- * unconditionally.
+ * Renders nothing when every source is live.
  */
 export default function DataQualityNotice({ sources }: DataQualityNoticeProps) {
   const degraded = sources.filter((s) => s.result.status !== "LIVE");
   if (degraded.length === 0) return null;
 
+  const cached = degraded.filter((s) => s.result.status === "CACHED");
   const missing = degraded.filter((s) => s.result.status === "UNAVAILABLE");
+  const hasMissing = missing.length > 0;
 
   return (
     <div
       role="status"
-      className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
+      className="mb-4 rounded-lg border border-warning/30 bg-warning/5 p-4 sm:p-5"
     >
-      <p className="font-medium">
-        Data may be temporarily incomplete or out of date
-      </p>
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 pt-0.5">
+          <AlertTriangle className="size-5 text-warning" aria-hidden="true" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-sm text-warning">
+            ⚠️ Data Quality Notice
+          </h3>
 
-      <ul className="mt-1 space-y-0.5 text-xs text-warning/80">
-        {degraded.map((source) => (
-          <li key={source.label}>
-            {source.result.status === "CACHED"
-              ? `${source.label}: provider unreachable, showing the last stored data (${formatAge(source.result.fetchedAt)}).`
-              : `${source.label}: provider unreachable and nothing stored for today, so nothing is shown.`}
-          </li>
-        ))}
-      </ul>
+          <p className="mt-2 text-sm text-muted leading-relaxed">
+            Some data sources are not live. Here's what you're looking at:
+          </p>
 
-      {missing.length > 0 ? (
-        <p className="mt-1 text-xs text-warning/80">
-          Nothing is being guessed — a missing source is left blank rather than
-          filled in.
-        </p>
-      ) : null}
+          {/* Cached sources */}
+          {cached.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
+                <Wifi size={14} />
+                Last Stored Data (Updated):
+              </div>
+              <ul className="ml-6 space-y-1">
+                {cached.map((source) => (
+                  <li key={source.label} className="text-xs text-muted">
+                    <span className="text-foreground font-medium">
+                      {source.label}
+                    </span>{" "}
+                    — {formatAge(source.result.fetchedAt)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Missing sources */}
+          {missing.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-red-400">
+                <WifiOff size={14} />
+                Unavailable (Nothing Shown):
+              </div>
+              <ul className="ml-6 space-y-1">
+                {missing.map((source) => (
+                  <li key={source.label} className="text-xs text-muted">
+                    <span className="text-foreground font-medium">
+                      {source.label}
+                    </span>{" "}
+                    — No data available today
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Disclaimer */}
+          <div className="mt-3 flex items-start gap-2 rounded-lg border border-warning/20 bg-warning/5 p-2.5">
+            <AlertCircle size={14} className="text-warning flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-muted">
+              No data is guessed or filled in. Missing sources stay blank so you see exactly what's real.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
