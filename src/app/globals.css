@@ -4,6 +4,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  /* Accent color changed to warm gold (matches provided screenshots) */
+  --accent: #f2c94c;
+  --accent-soft: rgba(242, 201, 76, 0.12);
+  --accent-foreground: #0a0b0f;
+
   /* existing tokens kept, additions for spacing */
 }
 
