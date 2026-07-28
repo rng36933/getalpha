@@ -15,19 +15,19 @@ type Mt5ConnectProps = {
 
 /** Why somebody would bother, in the terms they would use. */
 const REASONS = [
-  "Every trade lands in the journal by itself — including the ones you would not have bothered to type in, which are usually the ones worth reading later.",
-  "Open positions show what they risk while they are still open, not after.",
-  "The stop, the size and the units per lot come from the terminal, so the risk and the result are exact rather than approximate.",
+  "Every trade lands in the journal by itself — even the ones you'd skip typing in.",
+  "Open positions show their risk while still open, not after.",
+  "Stop, size and units come straight from the terminal — exact, not estimated.",
 ];
 
 const STEPS = [
   {
     title: "Generate your key",
-    body: "One click below. It is shown once and never stored, so keep it somewhere until the EA has it.",
+    body: "One click below. Shown once — save it somewhere until the EA has it.",
   },
   {
     title: "Save the file into MetaTrader",
-    body: "Download it, then in MT5 open File → Open Data Folder → MQL5 → Experts, and drop it in.",
+    body: "Download it. In MT5: File → Open Data Folder → MQL5 → Experts, then drop it in.",
   },
   {
     // The step whose absence sends everybody to support. MetaTrader's Navigator
@@ -35,7 +35,7 @@ const STEPS = [
     // invisible until this happens — and the symptom is "it isn't there", which
     // reads like the download failed.
     title: "Compile it — this is the step people miss",
-    body: "Double-click getALPHA-Sync.mq5 to open it in MetaEditor and press F7. It should report 0 errors. Until you do this the Navigator will not list it: MetaTrader only shows compiled programs, and what you downloaded is the readable source.",
+    body: "Double-click getALPHA-Sync.mq5 to open MetaEditor, press F7. 0 errors. Until compiled, the Navigator won't show it.",
   },
   {
     // A chart holds exactly one Expert Advisor. Attaching a second one removes
@@ -45,15 +45,15 @@ const STEPS = [
     // hit this eventually, so the fix is in the instructions rather than in a
     // support reply.
     title: "Give it a chart of its own",
-    body: "Back in MT5, right-click Expert Advisors in the Navigator → Refresh. Open a fresh chart — File → New Chart, any symbol, it does not have to be one you trade — and drag getALPHA-Sync onto that. Paste the key into ConnectionToken and press OK. Keep this chart for getALPHA alone: MetaTrader runs one Expert Advisor per chart, so attaching another to the same chart removes this one without saying so.",
+    body: "Refresh Expert Advisors in the Navigator. Open any new chart, drag getALPHA-Sync onto it, paste the key, press OK. One EA per chart — a second one silently replaces this.",
   },
   {
     title: "Allow it to reach us",
-    body: "Tools → Options → Expert Advisors → tick “Allow WebRequest for listed URL” and add https://www.getalpha.org — MetaTrader blocks every outbound request until you do.",
+    body: "Tools → Options → Expert Advisors → allow WebRequest for https://www.getalpha.org.",
   },
   {
     title: "Check that it is alive",
-    body: "A smiling face appears in the top-right corner of that chart, and within two minutes the Experts tab (Ctrl+T) shows a line beginning “getALPHA:”. If AutoTrading in the toolbar is grey rather than green, press Ctrl+E. No getALPHA line after two minutes means it is not running, whatever the chart looks like.",
+    body: "A smiley appears on the chart; the Experts tab (Ctrl+T) shows a “getALPHA:” line within two minutes. Toolbar grey, not green? Press Ctrl+E.",
   },
 ];
 
@@ -137,9 +137,8 @@ export default function Mt5Connect({
     <div className="space-y-6">
       <div>
         <p className="text-sm leading-relaxed text-muted">
-          A small program runs inside your MetaTrader and sends this desk what
-          you traded. It only ever sends — it cannot place an order, cannot
-          change one, and there is no password involved anywhere.{" "}
+          A small program inside MetaTrader sends this desk what you traded. It
+          only sends — never places or changes an order, no password involved.{" "}
           <strong className="font-medium text-foreground">
             We never connect to your account; your terminal connects to us.
           </strong>
@@ -188,15 +187,14 @@ export default function Mt5Connect({
                 }${broker ? ` · ${broker}` : ""} · ${tradeCount} synced trade${
                   tradeCount === 1 ? "" : "s"
                 }`
-              : "Nothing has arrived yet. Finish the steps below, then check the Experts tab in MetaTrader for a message from getALPHA."}
+              : "Nothing yet — finish the steps below, then check the Experts tab."}
           </p>
           {lastSeenAt && hasGoneQuiet(lastSeenAt) ? (
             <p className="mt-2 text-xs leading-relaxed text-muted">
-              Anything opened since then is missing from this desk. Usually
-              MetaTrader is closed — it has to be running for trades to arrive.
-              If it is open, check the Experts tab (Ctrl+T): no line beginning
-              “getALPHA:” in the last two minutes means the program is not
-              running, and the common reason is that a second Expert Advisor was
+              Anything opened since then is missing. Usually MetaTrader is just
+              closed — it has to run to sync. If open, check the Experts tab
+              (Ctrl+T): no “getALPHA:” line in the last two minutes means the
+              program is not running, often because a second Expert Advisor was
               attached to the same chart, which removes the first one silently.
             </p>
           ) : null}
@@ -283,10 +281,8 @@ export default function Mt5Connect({
       </div>
 
       <p className="border-t border-line pt-4 text-xs leading-relaxed text-muted">
-        Two things worth knowing before you start. MetaTrader has to be running
-        for anything to arrive — close it and syncing stops until you open it
-        again, at which point it catches up. And this only works on the desktop
-        terminal: the phone app cannot run programs like this one.
+        MetaTrader has to be running to sync — it catches up when reopened.
+        Desktop terminal only; the phone app can&rsquo;t run this.
       </p>
     </div>
   );

@@ -20,9 +20,9 @@
  */
 
 const REASONS = [
-  "The review can only judge what it can see. Sizing and exits it reads from the numbers; whether you followed your own plan it can only read from you.",
-  "One sentence is enough. What you saw, and what you meant to do — written while you still remember, not reconstructed later.",
-  "Patterns need a few dozen before they say anything. The trades you note this month are what next month's review has to work with.",
+  "The review can only judge what it can see — plan adherence needs your words.",
+  "One sentence is enough, written while you still remember.",
+  "Patterns need a few dozen notes before they say anything.",
 ];
 
 /** Above this many, the habit exists and the prompt has done its job. */
@@ -54,12 +54,9 @@ export default function NotesPrompt({ total, withNotes }: NotesPromptProps) {
       </h2>
 
       <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-        Every number here arrived by itself, and that is most of the work — but
-        it is also the part of a trade that says the least about the decision
-        behind it.{" "}
+        The numbers arrive by themselves, but say the least about the decision.{" "}
         <span className="text-foreground">
-          A review with your reasoning in front of it is a different document
-          from one without.
+          A review with your reasoning is a different document.
         </span>
       </p>
 

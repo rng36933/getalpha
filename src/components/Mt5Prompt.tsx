@@ -30,9 +30,9 @@ type Mt5PromptProps = {
 };
 
 const REASONS = [
-  "Every closed trade lands in the journal by itself — including the ones you would never have bothered to type in, which are usually the ones worth reading later.",
-  "The stop, the size and the units per lot come from the terminal, so the risk and the result are exact rather than approximate.",
-  "The per-pair breakdown needs a body of trades before it can say anything. Ninety days of history arrives on the first sync; typing it by hand does not happen.",
+  "Every closed trade lands in the journal by itself — even the ones you'd skip.",
+  "Stop, size and units come straight from the terminal — exact, not estimated.",
+  "Ninety days of history arrives on the first sync. Typing it by hand doesn't.",
 ];
 
 export default function Mt5Prompt({
@@ -54,15 +54,12 @@ export default function Mt5Prompt({
         </h2>
 
         <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-          Nothing has arrived for a while, so any position opened since then is
-          missing from this desk and the cards below are incomplete. Usually
-          MetaTrader is simply closed — it has to be running. If it is open,
-          press <span className="text-foreground">Ctrl+T</span> and look at the
-          Experts tab: no line beginning{" "}
-          <span className="text-foreground">getALPHA:</span> in the last two
-          minutes means the program is not running, and the usual reason is that
-          another Expert Advisor was attached to the same chart. MetaTrader
-          allows one per chart and replaces the old one without saying so.
+          Anything opened since is missing from this desk. Usually MetaTrader is
+          just closed. If it&rsquo;s open, press{" "}
+          <span className="text-foreground">Ctrl+T</span> — no{" "}
+          <span className="text-foreground">getALPHA:</span> line in the last
+          two minutes means it&rsquo;s not running, often because another Expert
+          Advisor got attached to the same chart.
         </p>
 
         <Link
@@ -87,11 +84,10 @@ export default function Mt5Prompt({
         </h2>
 
         <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-          Nothing has arrived yet. Two things stop it, both fixable in a minute:
-          MetaTrader has to be running, and it blocks every outbound request
-          until <span className="text-foreground">https://www.getalpha.org</span>{" "}
-          is added under Tools → Options → Expert Advisors. The program reports
-          which one it is in MetaTrader&rsquo;s Experts tab.
+          Two things stop it, both a minute&rsquo;s fix: MetaTrader must be running,
+          and{" "}
+          <span className="text-foreground">https://www.getalpha.org</span> must
+          be allowed under Tools → Options → Expert Advisors.
         </p>
 
         <Link
@@ -113,12 +109,9 @@ export default function Mt5Prompt({
       </h2>
 
       <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-muted">
-        A small program runs inside your terminal and sends this desk what you
-        traded. It only ever sends — it cannot place an order or change one, and{" "}
-        <span className="text-foreground">
-          there is no password involved anywhere
-        </span>
-        : your terminal connects to us, never the other way round.
+        A small program inside your terminal sends this desk what you traded.
+        It only sends, and{" "}
+        <span className="text-foreground">no password is ever involved</span>.
       </p>
 
       <ul className="mt-3 flex flex-col gap-2">
@@ -143,7 +136,7 @@ export default function Mt5Prompt({
           Connect MetaTrader
         </Link>
         <span className="text-xs text-muted">
-          Five steps, desktop terminal only — one of them is compiling the file, which is the one everybody misses. The phone app cannot run programs.
+          Five steps, desktop only. One is compiling the file — easy to miss.
         </span>
       </div>
     </section>

@@ -147,7 +147,7 @@ export default function TradeNotes({
 
       <Field
         label="How it felt"
-        hint="Impatience, hesitation, revenge after a loss. The review reads this as your own words, not as a diagnosis."
+        hint="Impatience, hesitation, revenge after a loss — in your own words."
       >
         <textarea
           className={`${inputClass} min-h-20 resize-y`}
