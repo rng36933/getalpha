@@ -1,0 +1,8 @@
+/* Accent color changed to warm gold (match screenshots) */
+:root {
+  --accent: #f2c94c;
+  --accent-soft: rgba(242, 201, 76, 0.12);
+  --accent-foreground: #0a0b0f;
+}
+
+/* Update Clerk appearance to use gold */
