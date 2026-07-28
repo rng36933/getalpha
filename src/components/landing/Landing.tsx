@@ -193,13 +193,14 @@ export default function Landing({
             <Eyebrow>{copy.steps.eyebrow}</Eyebrow>
             <Heading>{copy.steps.heading}</Heading>
 
-            <div className="relative mt-10">
-              <div aria-hidden="true" className="pointer-events-none absolute inset-x-[16%] top-[3.25rem] hidden h-px sm:block">
-                <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-                <span className="lp-flow absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(242,201,76,0.5)]" />
-              </div>
+            {/* Animated divider between the heading and the step cards */}
+            <div aria-hidden="true" className="relative mt-8 hidden h-px overflow-visible sm:block">
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
+              <span className="lp-flow absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(242,201,76,0.5)]" />
+            </div>
 
-              <ol className="relative grid gap-4 sm:grid-cols-3">
+            <div className="mt-6">
+              <ol className="grid gap-4 sm:grid-cols-3">
                 {copy.steps.items.map((step, index) => {
                   const Icon = STEP_ICONS[index] ?? PlugZap;
                   return (
