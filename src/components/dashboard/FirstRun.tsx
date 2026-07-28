@@ -44,21 +44,18 @@ function wasDismissed(): boolean {
  */
 const ONBOARDING_STEPS = [
   {
-    icon: BookOpen,
     emoji: "📖",
     title: "Record Your First Trade",
     description: "Every number is computed from your trades.",
     action: { label: "Start", href: "/dashboard/journal" },
   },
   {
-    icon: Zap,
     emoji: "⚡",
     title: "Or Connect MetaTrader",
     description: "Sync 90 days automatically.",
     action: { label: "Connect", href: "/dashboard/settings" },
   },
   {
-    icon: TrendingUp,
     emoji: "📊",
     title: "Get Your Metrics",
     description: "Win rate, risk, where losses cluster.",
@@ -109,7 +106,9 @@ export default function FirstRun() {
             </h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            A journal that judges your <span className="font-semibold text-accent">decision</span>, not just the result.
+            A journal that judges your{" "}
+            <span className="font-semibold text-accent">decision</span>, not just
+            the result.
           </p>
         </div>
 
@@ -118,12 +117,15 @@ export default function FirstRun() {
           <div className="flex items-center gap-2 mb-3">
             <Lightbulb size={16} className="text-accent" />
             <p className="text-xs font-semibold uppercase tracking-wider text-accent">
-              What you'll get
+              What you&apos;ll get
             </p>
           </div>
           <ul className="space-y-2">
             {KEY_BENEFITS.map((benefit) => (
-              <li key={benefit} className="text-sm text-muted flex items-center gap-2">
+              <li
+                key={benefit}
+                className="text-sm text-muted flex items-center gap-2"
+              >
                 <span className="text-base">{benefit.split(" ")[0]}</span>
                 <span>{benefit.substring(benefit.indexOf(" ") + 1)}</span>
               </li>
@@ -134,7 +136,6 @@ export default function FirstRun() {
         {/* Onboarding steps grid */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-6">
           {ONBOARDING_STEPS.map((step, index) => {
-            const Icon = step.icon;
             return (
               <div
                 key={step.title}
@@ -160,7 +161,10 @@ export default function FirstRun() {
                     className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:text-accent/80 transition-colors group"
                   >
                     {step.action.label}
-                    <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight
+                      size={12}
+                      className="group-hover:translate-x-0.5 transition-transform"
+                    />
                   </Link>
                 )}
               </div>
