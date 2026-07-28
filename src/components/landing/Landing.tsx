@@ -76,10 +76,10 @@ export default function Landing() {
   const copy = landingCopy;
 
   return (
-    <div className="min-h-screen bg-[#030712]">
+    <div className="min-h-screen bg-background">
       <Ticker />
 
-      <header className="sticky top-0 z-40 border-b border-white/[0.05] bg-[#030712]/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-white/[0.05] bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
           <Link href="/" aria-label="getALPHA">
             <Wordmark />
@@ -103,7 +103,7 @@ export default function Landing() {
         <section className="relative overflow-hidden py-14 sm:py-24">
           <div aria-hidden="true" className="lp-grid pointer-events-none absolute inset-0" />
           <AmbientCandles />
-          <div aria-hidden="true" className="pointer-events-none absolute -top-72 left-1/2 h-[40rem] w-[min(64rem,130vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.16),transparent_62%)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute -top-72 left-1/2 h-[40rem] w-[min(64rem,130vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(242,201,76,0.10),transparent_62%)]" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             {MOTES.map((mote) => (
               <span
@@ -124,7 +124,7 @@ export default function Landing() {
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
-                <Zap className="size-3 shrink-0 text-emerald-400" aria-hidden="true" />
+                <Zap className="size-3 shrink-0 text-accent" aria-hidden="true" />
                 {copy.hero.badge}
               </span>
 
@@ -143,7 +143,7 @@ export default function Landing() {
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link href="/register" className="lp-shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-emerald-500 px-6 py-3.5 font-semibold text-[#030712] shadow-lg">
+                <Link href="/register" className="lp-shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-6 py-3.5 font-semibold text-accent-foreground shadow-lg shadow-accent/20">
                   {copy.hero.cta}
                   <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
                 </Link>
@@ -155,7 +155,7 @@ export default function Landing() {
               </div>
 
               <p className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] leading-relaxed text-zinc-400">
-                <Lock className="mt-0.5 size-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
+                <Lock className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden="true" />
                 <span>
                   <span className="text-zinc-200">{copy.hero.securityEmphasis}</span>{" "}
                   {copy.hero.securityRest}
@@ -192,7 +192,7 @@ export default function Landing() {
             <div className="relative mt-10">
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-[16%] top-[3.25rem] hidden h-px sm:block">
                 <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-                <span className="lp-flow absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400 shadow-[0_0_12px_2px_rgba(16,185,129,0.6)]" />
+                <span className="lp-flow absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(242,201,76,0.5)]" />
               </div>
 
               <ol className="relative grid gap-4 sm:grid-cols-3">
@@ -217,7 +217,7 @@ export default function Landing() {
             </div>
 
             <p className="mt-6 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-600">
-              <span aria-hidden="true" className="live-dot size-1.5 rounded-full bg-emerald-400" />
+              <span aria-hidden="true" className="live-dot size-1.5 rounded-full bg-accent" />
               {copy.steps.footnote}
             </p>
           </div>
@@ -274,7 +274,7 @@ export default function Landing() {
                       <p className="mt-2 text-[13px] text-zinc-500">{copy.pricing.pro.note}</p>
                     </div>
 
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent">
                       <Sparkles className="size-3 shrink-0" aria-hidden="true" />
                       {copy.pricing.pro.badge}
                     </span>
