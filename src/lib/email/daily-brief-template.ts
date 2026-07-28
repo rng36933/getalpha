@@ -119,7 +119,7 @@ export function dailyBriefHtml({
         <tr>
           <td style="padding:28px 32px 20px 32px;border-bottom:1px solid #252935;">
             <p style="margin:0;font-size:17px;font-weight:600;color:#e9ebf0;">
-              get<span style="color:#5b8cff;">ALPHA</span>
+              get<span style="color:#f2c94c;">ALPHA</span>
             </p>
             <p style="margin:6px 0 0 0;font-size:13px;color:#8a90a0;">
               London session brief &middot; ${escape(dateLabel)}
@@ -156,7 +156,7 @@ export function dailyBriefHtml({
         <tr>
           <td style="padding:0 32px 28px 32px;">
             <a href="${escape(appUrl)}"
-               style="display:inline-block;padding:11px 20px;border-radius:8px;background-color:#5b8cff;color:#0a0b0f;font-size:14px;font-weight:600;text-decoration:none;">
+               style="display:inline-block;padding:11px 20px;border-radius:8px;background-color:#f2c94c;color:#0a0b0f;font-size:14px;font-weight:600;text-decoration:none;">
               Open the desk
             </a>
           </td>
