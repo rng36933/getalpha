@@ -6,7 +6,8 @@ import {
   isPerUserCapped,
   perUserDailyBudgetUsd,
 } from "./budget-limits";
-import { costOfUsage, worstCaseCost } from "./pricing";
+import { AI_MODEL } from "./client";
+import { COACH_RESERVE_TOKENS, costOfUsage, worstCaseCost } from "./pricing";
 import type { AiUsage } from "./types";
 
 export {
@@ -145,7 +146,7 @@ export async function reserveBudget(
     // both read the same total, both fit, and together go over — the identical
     // race the application-wide cap is held under one lock to avoid.
     if (userId !== null && isPerUserCapped(feature)) {
-      const perUserLimit = perUserDailyBudgetUsd();
+      const perUserLimit = perUserDailyBudgetUsd(userId);
 
       const mine = await tx.aiUsageLog.aggregate({
         _sum: { costUsd: true },
@@ -282,6 +283,91 @@ export async function budgetStatus(): Promise<BudgetStatus> {
     limitUsd,
     remainingUsd: Number(Math.max(limitUsd - spent, 0).toFixed(6)),
     blocked: spent >= limitUsd,
+    resetsAt: nextReset.toISOString(),
+  };
+}
+
+export type CoachBudgetStatus = {
+  spentTodayUsd: number;
+  limitUsd: number;
+  remainingUsd: number;
+  /**
+   * How many more reviews this account can start today, at today's prices.
+   *
+   * An estimate, not a promise: it is the same division the reservation gate
+   * itself will apply on the next call, so it is honest about what happens
+   * next rather than optimistic about it. A review that runs unusually long
+   * still costs more than this figure assumes, which is why the constant it
+   * divides by is a measured ceiling and not an average.
+   */
+  reviewsRemaining: number;
+  /**
+   * Roughly how many reviews this account's own daily ceiling buys in total,
+   * ignoring the application-wide cap. Shown as the "of Y" in "X of Y reviews
+   * left today" — a number that describes the plan, not today's remainder, so
+   * it should not itself shrink as the account spends through the day.
+   */
+  estimatedDailyReviews: number;
+  resetsAt: string;
+};
+
+/**
+ * What this account can still spend on Coach reviews today, and roughly how
+ * many that buys.
+ *
+ * Reads both ceilings that `reserveBudget` enforces — this account's own share
+ * and the application-wide total — because a per-account allowance that looks
+ * healthy is not usable when the whole desk's budget is nearly spent. The
+ * smaller of the two is what the reader is actually held to, so it is the
+ * smaller of the two that is shown.
+ */
+export async function coachBudgetStatus(
+  userId: string,
+  now: Date = new Date(),
+): Promise<CoachBudgetStatus> {
+  const dayStart = startOfUtcDay(now);
+  const staleBefore = new Date(now.getTime() - STALE_RESERVATION_MS);
+  const perUserLimit = perUserDailyBudgetUsd(userId);
+
+  const [mine, appWideSpent] = await Promise.all([
+    prisma.aiUsageLog.aggregate({
+      _sum: { costUsd: true },
+      where: {
+        userId,
+        feature: "TRADE_COACH",
+        createdAt: { gte: dayStart },
+        OR: [
+          { pending: false },
+          { pending: true, createdAt: { gt: staleBefore } },
+        ],
+      },
+    }),
+    spentTodayUsd(now),
+  ]);
+
+  const spentByUser = mine._sum.costUsd?.toNumber() ?? 0;
+  const appWideLimit = dailyBudgetUsd();
+
+  const remainingForUser = Math.max(perUserLimit - spentByUser, 0);
+  const remainingForApp = Math.max(appWideLimit - appWideSpent, 0);
+  const remainingUsd = Math.min(remainingForUser, remainingForApp);
+
+  const reservePerReview = worstCaseCost(AI_MODEL, COACH_RESERVE_TOKENS);
+  const reviewsRemaining =
+    reservePerReview > 0
+      ? Math.max(0, Math.floor(remainingUsd / reservePerReview))
+      : 0;
+  const estimatedDailyReviews =
+    reservePerReview > 0 ? Math.floor(perUserLimit / reservePerReview) : 0;
+
+  const nextReset = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+
+  return {
+    spentTodayUsd: Number(spentByUser.toFixed(6)),
+    limitUsd: perUserLimit,
+    remainingUsd: Number(remainingUsd.toFixed(6)),
+    reviewsRemaining,
+    estimatedDailyReviews,
     resetsAt: nextReset.toISOString(),
   };
 }

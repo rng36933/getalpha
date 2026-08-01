@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DEFAULT_PER_USER_BUDGET_USD } from "../src/lib/ai/budget-limits.ts";
 import {
+  COACH_RESERVE_TOKENS,
   costOfUsage,
   isKnownModel,
   worstCaseCost,
@@ -79,13 +80,11 @@ test("worst case reserves the whole output budget", () => {
  * `DEFAULT_PER_USER_BUDGET_USD` — a comment in budget-limits.ts promised five
  * or six reviews a day, and the reservation math actually delivered two.
  *
- * `4000` here is `coach.ts`'s `reserveTokens` — the two are not imported from
- * one place because `coach.ts` pulls in the Anthropic SDK, which the bare node
- * test runner cannot resolve. If that constant changes, this test's simulated
- * review count should be re-checked against it by hand.
+ * Imports the real `COACH_RESERVE_TOKENS` `coach.ts` uses, rather than a copy
+ * of the number, so this test fails the moment the two could drift apart
+ * instead of silently testing a value nothing reads any more.
  */
 test("the per-account budget delivers roughly the reviews per day it promises", () => {
-  const COACH_RESERVE_TOKENS = 4000;
   const reserve = worstCaseCost("claude-opus-5", COACH_RESERVE_TOKENS);
   // The measured average from a real review (AiUsageLog: 742 in / 2664 out).
   const measuredRealCost = 0.09;

@@ -2,9 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
 import TradeList, { type TradeRow } from "@/components/TradeList";
+import { coachBudgetStatus } from "@/lib/ai/budget";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
 import CountUp from "@/components/CountUp";
 import NotesPrompt from "@/components/NotesPrompt";
+import { checkAccess } from "@/lib/billing/subscription";
 import { getAccountCurrency } from "@/lib/mt5/account";
 import { prisma } from "@/lib/prisma";
 
@@ -78,6 +80,26 @@ export default async function JournalPage() {
     }
   }
 
+  // Only Pro accounts spend against this budget, and a failure here should
+  // hide the note rather than break the page a reader came to see their
+  // trades on.
+  let reviewsLeft: { remaining: number; ofEstimate: number } | null = null;
+
+  if (userId) {
+    try {
+      const access = await checkAccess(userId);
+      if (access.allowed) {
+        const status = await coachBudgetStatus(userId);
+        reviewsLeft = {
+          remaining: status.reviewsRemaining,
+          ofEstimate: status.estimatedDailyReviews,
+        };
+      }
+    } catch (error) {
+      console.error("Could not read the Coach budget:", error);
+    }
+  }
+
   // Every trade with a result, not only the ones that had a stop. These tiles
   // used to count R, which existed on well under half the journal.
   const closed = trades.filter((t) => t.pnl !== null);
@@ -96,6 +118,13 @@ export default async function JournalPage() {
         title="Journal"
         subtitle="Every closed trade, straight from your terminal. Nothing here is typed by hand."
       />
+
+      {reviewsLeft ? (
+        <p className="-mt-4 mb-6 text-xs text-muted">
+          {reviewsLeft.remaining} of ~{reviewsLeft.ofEstimate} AI reviews left
+          today
+        </p>
+      ) : null}
 
       <NotesPrompt total={closed.length} withNotes={withNotes} />
 

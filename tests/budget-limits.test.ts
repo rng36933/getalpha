@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   DEFAULT_DAILY_BUDGET_USD,
+  DEFAULT_HIGH_PER_USER_BUDGET_USD,
   DEFAULT_PER_USER_BUDGET_USD,
+  highBudgetUserIds,
   isPerUserCapped,
+  perUserDailyBudgetUsd,
   readBudgetUsd,
 } from "../src/lib/ai/budget-limits.ts";
 
@@ -50,4 +53,39 @@ test("only the Coach is charged to one account", () => {
   // reading and lock out the first visitor of each window.
   assert.equal(isPerUserCapped("SESSION_BRIEF"), false);
   assert.equal(isPerUserCapped("SOMETHING_NEW"), false);
+});
+
+test("highBudgetUserIds parses the same shape as PRO_USER_IDS", () => {
+  assert.deepEqual(highBudgetUserIds("user_a, user_b ,, user_c"), [
+    "user_a",
+    "user_b",
+    "user_c",
+  ]);
+  assert.deepEqual(highBudgetUserIds(undefined), []);
+  assert.deepEqual(highBudgetUserIds(""), []);
+});
+
+test("nobody is raised without an explicit userId", () => {
+  // Every existing call site that predates this override passes no id, and
+  // must keep getting the ordinary cap rather than silently gaining a higher
+  // one because some unrelated env var happens to be set.
+  assert.equal(perUserDailyBudgetUsd(), DEFAULT_PER_USER_BUDGET_USD);
+  assert.equal(perUserDailyBudgetUsd(null), DEFAULT_PER_USER_BUDGET_USD);
+});
+
+test("an id outside the list still gets the ordinary cap", () => {
+  assert.equal(perUserDailyBudgetUsd("user_not_listed"), DEFAULT_PER_USER_BUDGET_USD);
+});
+
+test("the raised cap is well above the ordinary one but still a number, not infinity", () => {
+  // Bounded, because this is for the operator testing the product, not a
+  // second unmetered plan quietly available to anyone whose id gets added to
+  // the list for an unrelated reason. It is not compared against
+  // DEFAULT_DAILY_BUDGET_USD here — that comparison depends on the
+  // *application-wide* cap actually configured in the deployment, which this
+  // module knows nothing about, and a passing unit test must not imply that
+  // relationship holds in production when it is really an operator's env-var
+  // decision on the day.
+  assert.ok(DEFAULT_HIGH_PER_USER_BUDGET_USD > DEFAULT_PER_USER_BUDGET_USD);
+  assert.ok(Number.isFinite(DEFAULT_HIGH_PER_USER_BUDGET_USD));
 });

@@ -37,6 +37,22 @@ const UNKNOWN_MODEL_RATE: ModelRate = { inputPerMTok: 10, outputPerMTok: 50 };
 const CACHE_WRITE_MULTIPLIER = 1.25;
 const CACHE_READ_MULTIPLIER = 0.1;
 
+/**
+ * What the Coach's budget reservation prices itself against, in output tokens.
+ *
+ * Defined once here rather than duplicated wherever it is needed — `coach.ts`
+ * passes it as `reserveTokens`, and the "reviews remaining today" figure shown
+ * to a signed-in reader divides their remaining budget by the same number. Two
+ * copies of this constant is how those two would quietly drift apart: the
+ * displayed count would promise a review the actual gate then refuses.
+ *
+ * Sized at roughly 1.5x the largest output actually measured (2,664 tokens),
+ * not at the Coach's `maxTokens: 16000` — that ceiling exists to stop a
+ * response that runs away, not to describe what one typically costs, and
+ * reserving against it was the bug this constant fixes.
+ */
+export const COACH_RESERVE_TOKENS = 4000;
+
 export function rateFor(model: string): ModelRate {
   const rate = RATES[model];
 

@@ -59,7 +59,58 @@ export function dailyBudgetUsd(): number {
   );
 }
 
-export function perUserDailyBudgetUsd(): number {
+/**
+ * A higher ceiling for specific accounts, the same shape as `PRO_USER_IDS`.
+ *
+ * Built for the operator and anyone else testing the product against their own
+ * usage rather than a customer's — a $0.50 cap sized around what one paying
+ * subscriber can be trusted to run without the app losing money on them is the
+ * wrong number for somebody deliberately exercising the Coach ten times in an
+ * afternoon. Configuration rather than a code change: naming an id here does
+ * not touch what every other account is held to, and removing it revokes the
+ * higher ceiling on the next deploy with nothing else to clean up.
+ */
+export function highBudgetUserIds(
+  raw: string | undefined = process.env.AI_HIGH_BUDGET_USER_IDS,
+): string[] {
+  return (raw ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id !== "");
+}
+
+/**
+ * The raised ceiling itself, applied only to `highBudgetUserIds()`.
+ *
+ * Raising this alone is not enough on its own to unblock a lot of testing: the
+ * application-wide `dailyBudgetUsd()` (default $2) is checked first, inside
+ * the same reservation, and it applies to every account combined regardless of
+ * this override. A per-user cap higher than what is left in the whole day's
+ * budget still gets refused with `scope: "GLOBAL"` — raising `AI_DAILY_BUDGET_USD`
+ * too is part of actually getting the extra headroom this exists to grant.
+ */
+export const DEFAULT_HIGH_PER_USER_BUDGET_USD = 5;
+
+function highPerUserDailyBudgetUsd(): number {
+  return readBudgetUsd(
+    process.env.AI_HIGH_DAILY_BUDGET_PER_USER_USD,
+    DEFAULT_HIGH_PER_USER_BUDGET_USD,
+    "AI_HIGH_DAILY_BUDGET_PER_USER_USD",
+  );
+}
+
+/**
+ * The daily ceiling this account is held to.
+ *
+ * `userId` is optional and defaults to nobody matching the raised list, so
+ * every existing call site that does not pass one keeps the ordinary $0.50
+ * cap rather than silently gaining a higher one.
+ */
+export function perUserDailyBudgetUsd(userId: string | null = null): number {
+  if (userId !== null && highBudgetUserIds().includes(userId)) {
+    return highPerUserDailyBudgetUsd();
+  }
+
   return readBudgetUsd(
     process.env.AI_DAILY_BUDGET_PER_USER_USD,
     DEFAULT_PER_USER_BUDGET_USD,
