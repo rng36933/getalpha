@@ -17,7 +17,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * The dashboard's card grid, reordered by dragging.
@@ -36,13 +36,23 @@ export type GridItem = {
   children: ReactNode;
 };
 
-function SortableCard({ item }: { item: GridItem }) {
+function SortableCard({
+  item,
+  registerNode,
+}: {
+  item: GridItem;
+  /** Hands the rendered node up to the grid, so it can measure rows after layout. */
+  registerNode: (key: string, node: HTMLDivElement | null) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.key });
 
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        registerNode(item.key, node);
+      }}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -111,6 +121,63 @@ export default function DraggableGrid({
   const [order, setOrder] = useState(initialOrder);
   const byKey = new Map(items.map((item) => [item.key, item]));
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const nodesRef = useRef(new Map<string, HTMLDivElement>());
+
+  function registerNode(key: string, node: HTMLDivElement | null) {
+    if (node) nodesRef.current.set(key, node);
+    else nodesRef.current.delete(key);
+  }
+
+  /**
+   * Stretches a lone trailing card to fill whatever's left of its row.
+   *
+   * `grid-auto-flow: dense` backfills a gap a wide card leaves *before* it —
+   * see the comment where each page sets it — but nothing in CSS Grid alone
+   * closes a gap *after* the last card, because there is nothing left to move
+   * into it. Measuring the actual layout and stretching that last card's
+   * `grid-column-end` to the final line is the only way to close it, so this
+   * runs after every layout pass rather than being expressed as a class.
+   */
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    function fillLastRow() {
+      if (!container || getComputedStyle(container).display !== "grid") return;
+
+      const nodes = order
+        .map((key) => nodesRef.current.get(key))
+        .filter((node): node is HTMLDivElement => Boolean(node));
+
+      // Cleared before remeasuring, not just set when needed: a stretch that
+      // made sense at desktop width has to let go once the viewport narrows
+      // to where that card is no longer trailing alone.
+      for (const node of nodes) node.style.gridColumnEnd = "";
+      if (nodes.length === 0) return;
+
+      // Grouped by top offset, rounded — dense packing and subpixel layout
+      // can leave two cards on the same row a fraction of a pixel apart.
+      const rows = new Map<number, HTMLDivElement>();
+      for (const node of nodes) rows.set(Math.round(node.offsetTop), node);
+
+      const last = [...rows.entries()].sort((a, b) => a[0] - b[0]).pop()?.[1];
+      if (!last) return;
+
+      const gap = container.getBoundingClientRect().right - last.getBoundingClientRect().right;
+
+      // A couple of pixels of slack for rounding; anything past that is a
+      // real gap the row was left with.
+      if (gap > 2) last.style.gridColumnEnd = "-1";
+    }
+
+    fillLastRow();
+
+    const observer = new ResizeObserver(fillLastRow);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [order]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -138,10 +205,12 @@ export default function DraggableGrid({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={order} strategy={rectSortingStrategy}>
-        <div className={className}>
+        <div ref={containerRef} className={className}>
           {order.map((key) => {
             const item = byKey.get(key);
-            return item ? <SortableCard key={key} item={item} /> : null;
+            return item ? (
+              <SortableCard key={key} item={item} registerNode={registerNode} />
+            ) : null;
           })}
         </div>
       </SortableContext>

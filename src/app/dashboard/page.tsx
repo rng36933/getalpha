@@ -534,7 +534,13 @@ export default async function DashboardPage({
             page="dashboard"
             items={items}
             initialOrder={order}
-            className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+            // `grid-flow-dense` backfills a shorter card into the gap a wider
+            // one leaves when it does not fit the rest of its row, rather
+            // than leaving that cell empty until the next row starts. Matters
+            // more once cards are draggable: any card can end up next to a
+            // 2- or 3-wide one now, not just the ones originally laid out
+            // that way.
+            className="grid grid-flow-dense grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
           />
         );
       })()}

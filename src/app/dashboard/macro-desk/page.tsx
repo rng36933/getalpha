@@ -74,7 +74,7 @@ export default async function MacroDeskPage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-flow-dense grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card title="Yields and the dollar">
           <ReadingList readings={readingsFor(macro.data, YIELD_SERIES)} />
         </Card>
