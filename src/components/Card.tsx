@@ -35,7 +35,7 @@ export default function Card({
     // reading as a wireframe.
     <section
       style={{ "--enter": enter } as React.CSSProperties}
-      className={`surface-lit card-enter relative isolate rounded-xl border border-line p-4 sm:p-5 ${className}`}
+      className={`surface-lit card-enter relative isolate rounded-xl border border-line bg-surface p-4 sm:p-5 ${className}`}
     >
       <header className="flex items-center justify-between gap-3">
         <h2 className="text-[0.9375rem] font-semibold tracking-tight">

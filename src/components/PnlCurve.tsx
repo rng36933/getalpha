@@ -17,8 +17,8 @@ import { formatCompactMoney, formatSignedMoney } from "@/lib/format/money";
  */
 
 const W = 720;
-const H = 150;
-const PAD = { top: 14, right: 14, bottom: 20, left: 52 };
+const H = 100;
+const PAD = { top: 10, right: 14, bottom: 18, left: 52 };
 
 const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
