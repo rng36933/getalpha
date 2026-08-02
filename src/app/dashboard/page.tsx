@@ -486,7 +486,6 @@ export default async function DashboardPage({
           pnl_curve: summary.pnlCurve
             ? {
                 key: "pnl_curve",
-                className: "md:col-span-2 xl:col-span-3",
                 children: (
                   <Card
                     title="Cumulative P&L, trade by trade"

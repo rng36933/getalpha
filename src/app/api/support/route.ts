@@ -4,6 +4,7 @@ import { SupportKind } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { requireJsonRequest } from "@/lib/request-guards";
+import { notifySupportTicket } from "@/lib/support/discord";
 import { cleanMessage, cleanPageUrl } from "@/lib/support/sanitise";
 
 const KINDS = Object.values(SupportKind);
@@ -72,6 +73,8 @@ export async function POST(request: Request) {
       },
       select: { id: true, createdAt: true },
     });
+
+    notifySupportTicket(payload.kind, message);
 
     return NextResponse.json(
       { id: ticket.id, createdAt: ticket.createdAt.toISOString() },

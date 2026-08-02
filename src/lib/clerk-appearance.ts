@@ -17,7 +17,12 @@ export const clerkAppearance = {
     // above renders these too dark to read against the popover background.
     // Targeted here rather than raising `colorNeutral` globally, which would
     // also lighten borders and dividers that are fine as they are.
-    userButtonPopoverActionButtonText: { color: "#f2c94c" },
+    //
+    // There is no "...ActionButtonText" element — the button itself is the
+    // element Clerk assigns a class to, and the text inside inherits its
+    // colour from it. The first attempt at this used a key that does not
+    // exist in this Clerk version, which silently did nothing.
+    userButtonPopoverActionButton: { color: "#f2c94c" },
     userButtonPopoverActionButtonIcon: { color: "#f2c94c" },
   },
 };
