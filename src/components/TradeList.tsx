@@ -61,7 +61,7 @@ const OUTCOMES: { value: Outcome; label: string }[] = [
 ];
 
 /** Rows per page. Short enough to read without scrolling past the filters. */
-const PER_PAGE = 25;
+const PER_PAGE = 10;
 
 const pagerClass =
   "rounded-lg border border-line px-2.5 py-1.5 text-xs text-muted transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-muted";
