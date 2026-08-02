@@ -496,7 +496,7 @@ export default async function DashboardPage({
           // twice.
           performance: {
             key: "performance",
-            className: "md:col-span-2 xl:col-span-3",
+            className: "md:col-span-2 xl:col-span-2",
             children: (
               <Card title="Performance" className="h-full">
                 {summary.pnlDistribution ? (
