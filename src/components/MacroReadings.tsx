@@ -8,6 +8,67 @@ import type { MacroReading } from "@/lib/market-data/fred";
  * of the card. Daily yields and monthly CPI sit side by side, and a reader
  * needs to see that one is from yesterday and the other from three weeks ago.
  */
+/** Geometry for a reading's range dial. Smaller than the positioning rings —
+ *  up to four of these stack in one card, against six across a whole row for
+ *  positioning. */
+const RANGE_R = 20;
+const RANGE_STROKE = 5;
+const RANGE_CIRCUMFERENCE = 2 * Math.PI * RANGE_R;
+
+/**
+ * Where a print sits in its own twelve-month range, as a ring.
+ *
+ * Was a horizontal bar with a dot on it. The ring reads the way the
+ * positioning dials below it do — one glance, no prior knowledge of what a
+ * "normal" ten-year yield is needed — and keeping the two shapes consistent
+ * on one page means a reader only has to learn the convention once.
+ */
+function RangeDial({ reading }: { reading: MacroReading }) {
+  if (reading.rangePercent === null) return null;
+
+  const arc = (reading.rangePercent / 100) * RANGE_CIRCUMFERENCE;
+
+  return (
+    <span className="relative inline-grid shrink-0 place-items-center">
+      <svg
+        viewBox="0 0 48 48"
+        className="size-10"
+        role="img"
+        aria-label={`${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`}
+      >
+        {/* Rotated so the arc starts at twelve o'clock, matching the
+            positioning dials. */}
+        <g transform="rotate(-90 24 24)">
+          <circle
+            cx={24}
+            cy={24}
+            r={RANGE_R}
+            fill="none"
+            stroke="var(--line)"
+            strokeWidth={RANGE_STROKE}
+          />
+          <circle
+            cx={24}
+            cy={24}
+            r={RANGE_R}
+            fill="none"
+            stroke="var(--accent)"
+            strokeWidth={RANGE_STROKE}
+            strokeLinecap="round"
+            strokeDasharray={`${arc} ${RANGE_CIRCUMFERENCE - arc}`}
+          />
+        </g>
+      </svg>
+
+      <span className="pointer-events-none absolute inset-0 grid place-items-center">
+        <span className="figure text-[0.6rem] text-muted">
+          {reading.rangePercent}%
+        </span>
+      </span>
+    </span>
+  );
+}
+
 export function ReadingList({ readings }: { readings: MacroReading[] }) {
   if (readings.length === 0) {
     // One quiet line, not a tall centred box. When the provider is down all
@@ -20,73 +81,44 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
   return (
     <ul className="divide-y divide-line">
       {readings.map((reading) => (
-        <li key={reading.id} className="py-2.5">
-          <div className="flex items-baseline gap-3">
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm">{reading.label}</span>
-              {reading.asOf ? (
-                <span className="block font-mono text-[11px] text-muted">
-                  {reading.asOf}
-                </span>
-              ) : null}
-            </span>
-
-            <span className="shrink-0 text-right">
-              <span className="block font-mono text-sm tabular-nums">
-                {reading.value ?? "—"}
+        <li key={reading.id} className="flex items-center gap-3 py-2.5">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm">{reading.label}</span>
+            {reading.asOf ? (
+              <span className="block font-mono text-[11px] text-muted">
+                {reading.asOf}
               </span>
-              {reading.change ? (
-                <span
-                  className={`block font-mono text-[11px] tabular-nums ${
-                    reading.direction > 0
-                      ? "text-positive"
-                      : reading.direction < 0
-                        ? "text-negative"
-                        : "text-muted"
-                  }`}
-                >
-                  {reading.change}
-                </span>
-              ) : null}
+            ) : null}
+          </span>
+
+          <span className="shrink-0 text-right">
+            <span className="block font-mono text-sm tabular-nums">
+              {reading.value ?? "—"}
             </span>
-          </div>
-
-          {/* Where the print sits in its own year.
-              "4.71%" tells a reader nothing unless they already know what a
-              normal ten-year yield is. A marker inside the twelve-month range
-              answers "high or low" without any prior knowledge, and because it
-              is a share of a whole it is the one figure here that compares
-              across a yield, a spread and an index. */}
-          {reading.rangePercent !== null ? (
-            <div className="mt-2">
-              <div
-                className="relative h-1 rounded-full bg-surface-raised"
-                role="img"
-                aria-label={`${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`}
+            {reading.change ? (
+              <span
+                className={`block font-mono text-[11px] tabular-nums ${
+                  reading.direction > 0
+                    ? "text-positive"
+                    : reading.direction < 0
+                      ? "text-negative"
+                      : "text-muted"
+                }`}
               >
-                <span
-                  className="absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-background"
-                  style={{ left: `${reading.rangePercent}%` }}
-                />
-              </div>
+                {reading.change}
+              </span>
+            ) : null}
+          </span>
 
-              <div className="mt-1.5 flex items-baseline justify-between gap-2 font-mono text-[10px] tabular-nums text-muted">
-                <span>{reading.rangeLow}</span>
-                <span className="text-accent">
-                  {reading.rangePercent}% of 12m range
-                </span>
-                <span>{reading.rangeHigh}</span>
-              </div>
-            </div>
-          ) : null}
+          <RangeDial reading={reading} />
         </li>
       ))}
     </ul>
   );
 }
 
-/** Geometry for one dial. A ring rather than a filled circle: the hole is
- *  where the figure goes, and a solid pie has nowhere to put it. */
+/** Geometry for one positioning dial. A ring rather than a filled circle: the
+ *  hole is where the figure goes, and a solid pie has nowhere to put it. */
 const R = 30;
 const STROKE = 9;
 const CIRCUMFERENCE = 2 * Math.PI * R;
