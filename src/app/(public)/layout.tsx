@@ -37,7 +37,7 @@ export default function PublicLayout({
       <main className="mx-auto max-w-3xl px-6 py-10">{children}</main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-6 py-6 text-xs text-muted">
+        <div className="mx-auto max-w-3xl px-6 py-6 text-base font-semibold text-accent">
           getALPHA is an educational and informational tool. It does not provide
           financial advice.
         </div>
