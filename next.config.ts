@@ -9,9 +9,10 @@ import type { NextConfig } from "next";
  * origin, and a response could be re-interpreted as a type it never claimed.
  * Neither is exotic and both are one line.
  *
- * `Content-Security-Policy` is set in `src/middleware.ts` instead of here —
- * it needs a fresh nonce on every request, which a static `headers()` config
- * can't generate.
+ * Deliberately no `Content-Security-Policy` here. A real one for this app has
+ * to admit Clerk, Stripe, PostHog and Sentry, and Next's inline bootstrap needs
+ * a nonce — written blind it either breaks sign-in or is loose enough to be
+ * decoration. Worth doing properly and separately rather than guessing at now.
  */
 const SECURITY_HEADERS = [
   // Nothing here is meant to be framed, and a journal showing account balances
