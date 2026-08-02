@@ -24,7 +24,7 @@ export default function RegisterConsent() {
     <div className="surface-lit w-full max-w-md rounded-xl border border-line p-6">
       <h1 className="text-lg font-semibold tracking-tight">Create your account</h1>
 
-      <p className="mt-3 text-sm leading-relaxed text-muted">
+      <p className="mt-3 rounded-lg border border-warning/30 bg-warning/10 px-3.5 py-3 text-sm font-medium leading-relaxed text-warning">
         getALPHA is an educational and informational tool. It does not provide
         financial advice or trading signals, and every financial decision you
         make using it is yours alone.
@@ -52,7 +52,7 @@ export default function RegisterConsent() {
           onChange={(event) => setAgreed(event.target.checked)}
           className="mt-0.5 size-4 shrink-0 accent-accent"
         />
-        <span className="text-sm leading-relaxed">
+        <span className="text-sm font-medium leading-relaxed text-warning">
           I agree to the Terms of Service and the Risk Disclaimer, and I accept
           that I am solely responsible for my own financial decisions.
         </span>
