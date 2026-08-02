@@ -1,19 +1,15 @@
 import type { PnlDistribution as Data } from "@/lib/dashboard/pnl-distribution";
-import { formatCompactMoney, formatMoney } from "@/lib/format/money";
+import { formatMoney } from "@/lib/format/money";
 
 /**
- * The shape of a trader's results, as columns.
+ * Wins against losses, as one shape.
  *
- * A histogram, because the question is where results cluster along an ordered
- * scale — and columns are the one form where a fat left tail is visible before
- * anything is read.
- *
- * Red left of break-even, green right of it, with the boundary drawn. The count
- * sits above every column that has one, so the colour is a second encoding
- * rather than the only one.
- *
- * The bin width is derived from the trader's own typical result rather than
- * fixed, because money has a scale and R did not — see `pnl-distribution.ts`.
+ * Was a nine-column histogram of where results land in money. Traded for a
+ * two-slice split on the same underlying bins: how many trades won against
+ * how many lost. The histogram's actual finding — a worst loss far outside
+ * the typical one — survives as the sentence underneath, which is the part
+ * anyone acts on; the column-by-column shape was detail past what a glance
+ * at this card needs.
  */
 export default function PnlDistribution({
   data,
@@ -22,106 +18,74 @@ export default function PnlDistribution({
   data: Data;
   currency: string | null;
 }) {
-  const { bins, scored, peak, step, worstLoss, medianLoss } = data;
+  const { bins, scored, worstLoss, medianLoss } = data;
 
-  // How far outside the usual a bad day went. This is the money answer to the
-  // question R answered with "worse than planned": without a stop on the record
-  // there is no plan to compare against, but there is still a typical loss, and
-  // a worst loss several times that size is the same warning.
+  const wins = bins
+    .filter((bin) => bin.sign === "WIN")
+    .reduce((sum, bin) => sum + bin.count, 0);
+  const losses = scored - wins;
+  const winPercent = scored > 0 ? Math.round((wins / scored) * 100) : 0;
+
+  // How far outside the usual a bad loss went. This is the money answer to
+  // the question R answered with "worse than planned": without a stop on the
+  // record there is no plan to compare against, but there is still a typical
+  // loss, and a worst loss several times that size is the same warning.
   const outlierFactor =
     worstLoss !== null && medianLoss !== null && medianLoss > 0
       ? worstLoss / medianLoss
       : null;
 
   return (
-    <div>
-      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-        <span className="flex items-baseline gap-2">
-          <span className="figure text-[1.5rem]">{scored}</span>
-          <span className="text-xs text-muted">closed trades</span>
-        </span>
-
-        <span className="flex items-baseline gap-2">
-          <span
-            className={`figure text-[1.5rem] ${
-              outlierFactor !== null && outlierFactor >= 3
-                ? "text-warning"
-                : "text-muted"
-            }`}
-          >
-            {worstLoss === null ? "—" : formatMoney(worstLoss, currency)}
-          </span>
-          <span className="text-xs text-muted">worst single loss</span>
-        </span>
-
-        <span className="flex items-baseline gap-2">
-          <span className="figure text-[1.5rem] text-muted">
-            {medianLoss === null ? "—" : formatMoney(medianLoss, currency)}
-          </span>
-          <span className="text-xs text-muted">typical loss</span>
-        </span>
+    <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-8">
+      <div
+        role="img"
+        aria-label={`${wins} winning trades, ${losses} losing trades`}
+        className="relative size-32 shrink-0 rounded-full"
+        style={{
+          background: `conic-gradient(var(--positive) 0deg ${
+            winPercent * 3.6
+          }deg, var(--negative) ${winPercent * 3.6}deg 360deg)`,
+        }}
+      >
+        <div className="absolute inset-3 grid place-items-center rounded-full bg-surface">
+          <span className="figure text-2xl">{winPercent}%</span>
+          <span className="text-[10px] text-muted">won</span>
+        </div>
       </div>
 
-      {/* Columns rather than an SVG: ten bars with a label each is a job for
-          flexbox, and this way the type is real text at real sizes. */}
-      <div className="mt-5 flex h-40 items-end gap-1 sm:gap-1.5">
-        {bins.map((bin, index) => {
-          const height = peak > 0 ? (bin.count / peak) * 100 : 0;
-          // The break-even boundary: drawn once, on the first winning bin.
-          const isFirstWin =
-            bin.sign === "WIN" && bins[index - 1]?.sign === "LOSS";
-
-          return (
-            <div
-              key={bin.key}
-              className={`relative flex h-full flex-1 flex-col justify-end ${
-                isFirstWin ? "border-l border-line pl-1 sm:pl-1.5" : ""
-              }`}
-              title={`${bin.count} trade${bin.count === 1 ? "" : "s"} · ${bin.percent}%`}
-            >
-              {bin.count > 0 ? (
-                <span className="mb-1 text-center font-mono text-[10px] tabular-nums text-muted">
-                  {bin.count}
-                </span>
-              ) : null}
-
-              <span
-                className={`w-full rounded-t-sm ${
-                  bin.count === 0
-                    ? "h-px bg-line"
-                    : bin.sign === "WIN"
-                      ? "bg-positive/70"
-                      : "bg-negative/70"
-                }`}
-                style={bin.count === 0 ? undefined : { height: `${height}%` }}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-1.5 flex gap-1 sm:gap-1.5">
-        {bins.map((bin, index) => (
-          <span
-            key={bin.key}
-            className={`flex-1 text-center font-mono text-[10px] tabular-nums text-muted ${
-              bin.sign === "WIN" && bins[index - 1]?.sign === "LOSS"
-                ? "pl-1 sm:pl-1.5"
-                : ""
-            }`}
-          >
-            {bin.labelValue === null
-              ? ""
-              : formatCompactMoney(bin.labelValue, currency)}
+      <div className="w-full space-y-3">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
+          <span className="flex items-center gap-2">
+            <span className="size-2 shrink-0 rounded-full bg-positive" />
+            {wins} won
           </span>
-        ))}
-      </div>
+          <span className="flex items-center gap-2">
+            <span className="size-2 shrink-0 rounded-full bg-negative" />
+            {losses} lost
+          </span>
+          <span className="text-muted">{scored} closed trades</span>
+        </div>
 
-      <p className="mt-4 border-t border-line pt-3 text-xs leading-relaxed text-muted">
-        {outlierFactor !== null && outlierFactor >= 3
-          ? `Your worst loss is ${outlierFactor.toFixed(1)}× your typical one. A single loss that far outside the usual is a stop that was moved, widened, or never really there.`
-          : `Each column is ${formatMoney(step, currency)} wide, sized from your own typical result rather than a fixed amount.`}
-      </p>
+        <p className="text-xs leading-relaxed text-muted">
+          {outlierFactor !== null && outlierFactor >= 3 ? (
+            <>
+              Worst single loss{" "}
+              <span className="text-warning">
+                {formatMoney(worstLoss!, currency)}
+              </span>{" "}
+              is {outlierFactor.toFixed(1)}× the typical one (
+              {formatMoney(medianLoss!, currency)}). A loss that far outside
+              the usual is a stop that was moved, widened, or never really
+              there.
+            </>
+          ) : worstLoss !== null && medianLoss !== null ? (
+            <>
+              Worst single loss {formatMoney(worstLoss, currency)}, typical
+              loss {formatMoney(medianLoss, currency)}.
+            </>
+          ) : null}
+        </p>
+      </div>
     </div>
   );
 }
