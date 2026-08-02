@@ -134,9 +134,12 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
 }
 
 /** Geometry for one positioning dial. A ring rather than a filled circle: the
- *  hole is where the figure goes, and a solid pie has nowhere to put it. */
-const R = 30;
-const STROKE = 9;
+ *  hole is where the figure goes, and a solid pie has nowhere to put it.
+ *  Sized to read clearly on its own — this card usually holds one or two of
+ *  these, not a full row, since it only shows markets on the user's own
+ *  watchlist. */
+const R = 52;
+const STROKE = 15;
 const CIRCUMFERENCE = 2 * Math.PI * R;
 
 /**
@@ -155,20 +158,20 @@ function CotDial({ row }: { row: CotRow }) {
   const longArc = (longShare / 100) * CIRCUMFERENCE;
 
   return (
-    <li className="flex flex-col items-center gap-2 text-center">
+    <li className="flex flex-col items-center gap-2.5 text-center">
       <span className="relative">
         <svg
-          viewBox="0 0 80 80"
-          className="size-[4.5rem]"
+          viewBox="0 0 128 128"
+          className="size-32"
           role="img"
           aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
         >
           {/* Rotated so both arcs start at twelve o'clock, which is where the
               eye starts reading a dial. */}
-          <g transform="rotate(-90 40 40)">
+          <g transform="rotate(-90 64 64)">
             <circle
-              cx={40}
-              cy={40}
+              cx={64}
+              cy={64}
               r={R}
               fill="none"
               stroke="var(--negative)"
@@ -176,8 +179,8 @@ function CotDial({ row }: { row: CotRow }) {
               opacity={0.75}
             />
             <circle
-              cx={40}
-              cy={40}
+              cx={64}
+              cy={64}
               r={R}
               fill="none"
               stroke="var(--positive)"
@@ -190,7 +193,7 @@ function CotDial({ row }: { row: CotRow }) {
 
         <span className="pointer-events-none absolute inset-0 grid place-items-center">
           <span
-            className={`figure text-[0.8rem] ${
+            className={`figure text-xl ${
               isLong ? "text-positive" : "text-negative"
             }`}
           >
@@ -199,9 +202,9 @@ function CotDial({ row }: { row: CotRow }) {
         </span>
       </span>
 
-      <span className="text-xs font-medium">{row.label}</span>
+      <span className="text-sm font-medium">{row.label}</span>
       <span
-        className={`font-mono text-[10px] uppercase tracking-wider ${
+        className={`font-mono text-[11px] uppercase tracking-wider ${
           isLong ? "text-positive" : "text-negative"
         }`}
       >
@@ -231,13 +234,24 @@ export function CotList({ rows }: { rows: CotRow[] }) {
 
   return (
     <div>
-      <ul className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-6">
+      {/* One line, plainly said, before the rings — what large speculative
+          traders are positioned for, not what will happen next. */}
+      <p className="text-center text-sm text-muted">
+        How large speculative traders are positioned right now — long (betting
+        on a rise) versus short (betting on a fall).
+      </p>
+
+      {/* Centred rather than left-packed in a fixed grid: this card usually
+          holds one or two rings, since it only shows markets on the user's
+          own watchlist, and a couple of large dials stranded at the left
+          edge of an otherwise empty row read as a layout bug. */}
+      <ul className="mt-5 flex flex-wrap justify-center gap-x-8 gap-y-6">
         {rows.map((row) => (
           <CotDial key={row.label} row={row} />
         ))}
       </ul>
 
-      <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
+      <p className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2 rounded-full bg-positive" aria-hidden="true" />
           long
