@@ -20,12 +20,68 @@ import {
  */
 const isPublicRoute = createRouteMatcher([...PUBLIC_ROUTES]);
 
+/**
+ * Content-Security-Policy, generated per request rather than in
+ * `next.config.ts`'s static `headers()` because it needs a fresh nonce every
+ * time — a hardcoded one would just be a public password for `script-src`.
+ *
+ * `strict-dynamic` is what makes this viable at all: Next's own bootstrap
+ * script carries the nonce, and everything that script goes on to load
+ * (Next's chunks, Clerk's client bundle) inherits that trust regardless of
+ * origin. Without it, every third-party script host would need listing here
+ * by hand and would break the moment one of them changed a CDN URL.
+ *
+ * `strict-dynamic` only covers scripts, so Clerk's own network calls, its
+ * avatar images and its bot-check iframe still need explicit origins below.
+ * Stripe never appears here — checkout is a redirect to Stripe's own hosted
+ * page, never an embedded script — and neither does PostHog, which only runs
+ * server-side (see `src/lib/analytics/index.ts`). Sentry's browser reports
+ * go out through `/monitoring`, this app's own origin, for the same reason.
+ */
+function buildCsp(nonce: string): string {
+  // React's development build calls eval() for its debugging tools and never
+  // does in production, so the looser script-src only applies locally —
+  // shipping it in prod would undo most of the point of this policy.
+  const scriptSrc =
+    process.env.NODE_ENV === "production"
+      ? `'self' 'nonce-${nonce}' 'strict-dynamic'`
+      : `'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval'`;
+
+  return [
+    `default-src 'self'`,
+    `script-src ${scriptSrc}`,
+    `style-src 'self' 'unsafe-inline'`,
+    `img-src 'self' blob: data: https://img.clerk.com`,
+    `font-src 'self'`,
+    `connect-src 'self' https://*.clerk.accounts.dev https://clerk-telemetry.com`,
+    `frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com`,
+    `worker-src 'self' blob:`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `frame-ancestors 'none'`,
+    `upgrade-insecure-requests`,
+  ].join("; ");
+}
+
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
 
-  const response = NextResponse.next();
+  // Passed to the request, not just the response: Next reads the nonce back
+  // off the incoming request headers to stamp it onto the scripts it renders
+  // for this same request, so the value has to be visible before that render
+  // happens, not only on the way out.
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = buildCsp(nonce);
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("Content-Security-Policy", csp);
 
   // An invite code arrives on the landing page but is only usable after the
   // visitor has signed up, which happens on Clerk's pages. The cookie is what
