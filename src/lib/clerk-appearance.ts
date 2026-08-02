@@ -12,4 +12,12 @@ export const clerkAppearance = {
     borderRadius: "0.5rem",
     spacingUnit: "0.5rem",
   },
+  elements: {
+    // "Manage account" / "Sign out" in the account menu — `colorNeutral`
+    // above renders these too dark to read against the popover background.
+    // Targeted here rather than raising `colorNeutral` globally, which would
+    // also lighten borders and dividers that are fine as they are.
+    userButtonPopoverActionButtonText: { color: "#f2c94c" },
+    userButtonPopoverActionButtonIcon: { color: "#f2c94c" },
+  },
 };
