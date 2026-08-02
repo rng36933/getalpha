@@ -65,7 +65,10 @@ function Tab({
   );
 }
 
-export default function MobileNav({ pro }: Readonly<{ pro: boolean }>) {
+export default function MobileNav({
+  pro,
+  admin,
+}: Readonly<{ pro: boolean; admin?: boolean }>) {
   const pathname = usePathname();
 
   /**
@@ -150,6 +153,21 @@ export default function MobileNav({ pro }: Readonly<{ pro: boolean }>) {
                 </Link>
               );
             })}
+            {admin && (
+              <Link
+                href="/dashboard/admin"
+                onClick={close}
+                aria-current={pathname === "/dashboard/admin" ? "page" : undefined}
+                className={`flex items-center gap-3 border-t border-line px-4 py-3.5 text-sm ${
+                  pathname === "/dashboard/admin"
+                    ? "bg-accent-soft text-accent"
+                    : "text-foreground"
+                }`}
+              >
+                <Icon path="M12 2L2 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5Z" />
+                <span className="truncate">Admin</span>
+              </Link>
+            )}
           </div>
         </>
       ) : null}

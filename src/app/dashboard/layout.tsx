@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import { checkAccess } from "@/lib/billing/subscription";
 import { hasAcceptedCurrentTerms } from "@/lib/legal/acceptance";
 import { CURRENT_LEGAL_VERSION, LEGAL_PAGES } from "@/lib/legal/documents";
+import { isAdmin } from "@/lib/admin";
 import { ensureReferralLinked } from "@/lib/referral/program";
 import { REFERRAL_COOKIE } from "@/lib/referral/cookie";
 
@@ -67,6 +68,8 @@ export default async function AppLayout({
     user?.primaryEmailAddress?.emailAddress ??
     "Account";
 
+  const admin = userId ? isAdmin(userId) : false;
+
   return (
     // A column on a phone, so the top bar can be sticky and the content can run
     // the full width; a row from `sm` up, where the sidebar returns.
@@ -74,8 +77,8 @@ export default async function AppLayout({
     // desk. `isolate` keeps its fixed pseudo-element from being painted over
     // the cards, which sit in the normal flow above it.
     <div className="app-grid isolate flex min-h-screen flex-col sm:flex-row">
-      <MobileNav pro={access.allowed} />
-      <Sidebar name={name} pro={access.allowed} />
+      <MobileNav pro={access.allowed} admin={admin} />
+      <Sidebar name={name} pro={access.allowed} admin={admin} />
       {/* The bottom padding clears the fixed tab bar. Without it the last card
           on every page sits underneath the navigation. */}
       <main className="relative z-10 min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-8 sm:py-8 sm:pb-8 lg:px-10">

@@ -16,7 +16,8 @@ import PlanBadge from "@/components/PlanBadge";
 export default function Sidebar({
   name,
   pro,
-}: Readonly<{ name: string; pro: boolean }>) {
+  admin,
+}: Readonly<{ name: string; pro: boolean; admin?: boolean }>) {
   const pathname = usePathname();
 
   return (
@@ -61,6 +62,31 @@ export default function Sidebar({
             </Link>
           );
         })}
+        {admin && (
+          <Link
+            href="/dashboard/admin"
+            aria-current={pathname === "/dashboard/admin" ? "page" : undefined}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+              pathname === "/dashboard/admin"
+                ? "bg-accent-soft font-medium text-accent"
+                : "text-muted hover:bg-surface-raised hover:text-foreground"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="size-5 shrink-0"
+            >
+              <path d="M12 2L2 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5Z" />
+            </svg>
+            <span className="truncate">Admin</span>
+          </Link>
+        )}
       </nav>
 
       <div className="flex items-center gap-3 border-t border-line p-4">
