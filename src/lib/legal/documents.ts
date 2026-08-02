@@ -11,9 +11,9 @@
  * that day", and a date answers it directly.
  */
 export const LEGAL_VERSIONS = {
-  terms: "2026-07-26",
-  privacy: "2026-07-26",
-  disclaimer: "2026-07-26",
+  terms: "2026-08-02",
+  privacy: "2026-08-02",
+  disclaimer: "2026-08-02",
 } as const;
 
 /**
@@ -35,16 +35,21 @@ export const LEGAL_PAGES = [
 ] as const;
 
 /**
- * Placeholders the operator must replace before launch.
+ * The operator, filled from the individuali veikla certificate (No. 1534465,
+ * issued 2026-08-02) and the Stripe account it matches.
  *
- * Left visible in the rendered pages on purpose. A document that says
- * "[COMPANY LEGAL NAME]" is obviously unfinished; one silently filled with a
- * plausible guess is a document nobody notices is wrong.
+ * getALPHA runs as a Lithuanian sole proprietorship (individuali veikla)
+ * rather than a company, so "registration number" here is the activity
+ * certificate number, not a company registration number — there isn't one.
+ * The certificate number is published rather than the personal taxpayer ID
+ * that also appears on that document: the taxpayer ID is a national personal
+ * code, and publishing it on a public page is a materially different kind of
+ * exposure than publishing a business certificate number.
  */
 export const OPERATOR = {
-  legalName: "[COMPANY LEGAL NAME]",
-  registrationNumber: "[COMPANY REGISTRATION NUMBER]",
-  address: "[REGISTERED ADDRESS]",
-  contactEmail: "[CONTACT EMAIL]",
-  jurisdiction: "[COUNTRY OF REGISTRATION]",
+  legalName: "Vaclovas Almintas",
+  registrationNumber: "1534465 (individuali veikla)",
+  address: "Gegužių g. 33-17, LT-78320 Šiauliai, Lithuania",
+  contactEmail: "support@getalpha.org",
+  jurisdiction: "Lithuania",
 } as const;
