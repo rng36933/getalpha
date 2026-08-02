@@ -186,7 +186,7 @@ export default function Landing({
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>{copy.features.eyebrow}</Eyebrow>
             <Heading>{copy.features.heading}</Heading>
-            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-zinc-400">{copy.features.body}</p>
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-accent">{copy.features.body}</p>
             <Features />
           </div>
         </section>
@@ -212,12 +212,12 @@ export default function Landing({
                         <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.03] transition-all duration-300 ease-in-out group-hover:-translate-y-1">
                           <Icon className="size-4 text-zinc-300" aria-hidden="true" />
                         </span>
-                        <span className="font-mono text-[11px] tracking-[0.16em] text-zinc-600">0{index + 1}</span>
+                        <span className="font-mono text-[11px] tracking-[0.16em] text-positive">0{index + 1}</span>
                       </div>
 
                       <h3 className="mt-4 text-lg font-semibold tracking-tight text-white">{step.title}</h3>
                       <p className="mt-2 text-[14px] leading-relaxed text-zinc-400">{step.body}</p>
-                      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-600">{step.note}</p>
+                      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">{step.note}</p>
                     </li>
                   );
                 })}
