@@ -497,25 +497,24 @@ export default async function DashboardPage({
                 ),
               }
             : null,
-          pnl_distribution: summary.pnlDistribution
-            ? {
-                key: "pnl_distribution",
-                className: "md:col-span-2 xl:col-span-3",
-                children: (
-                  <Card title="Where the results land" className="h-full">
-                    <PnlDistribution
-                      data={summary.pnlDistribution}
-                      currency={mt5.currency}
-                    />
-                  </Card>
-                ),
-              }
-            : null,
+          // The donut and the stat tiles used to be two separate cards
+          // showing overlapping numbers (both had a closed count, both had a
+          // win rate) — one card now, the shape of the account first and the
+          // figures that describe it underneath, divided rather than bordered
+          // twice.
           performance: {
             key: "performance",
             className: "md:col-span-2 xl:col-span-3",
             children: (
               <Card title="Performance" className="h-full">
+                {summary.pnlDistribution ? (
+                  <div className="mb-5 border-b border-line pb-5">
+                    <PnlDistribution
+                      data={summary.pnlDistribution}
+                      currency={mt5.currency}
+                    />
+                  </div>
+                ) : null}
                 <PerformanceStats
                   performance={summary.performance}
                   currency={mt5.currency}

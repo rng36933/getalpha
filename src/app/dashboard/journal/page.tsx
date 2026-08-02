@@ -5,7 +5,6 @@ import TradeList, { type TradeRow } from "@/components/TradeList";
 import { coachBudgetStatus } from "@/lib/ai/budget";
 import { computeTradeMetrics } from "@/lib/ai/trade-metrics";
 import CountUp from "@/components/CountUp";
-import NotesPrompt from "@/components/NotesPrompt";
 import { checkAccess } from "@/lib/billing/subscription";
 import { getAccountCurrency } from "@/lib/mt5/account";
 import { prisma } from "@/lib/prisma";
@@ -106,12 +105,6 @@ export default async function JournalPage() {
   const totalPnl = closed.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
   const wins = closed.filter((t) => (t.pnl ?? 0) > 0).length;
 
-  // Either field counts. Somebody who wrote what they saw but not how they felt
-  // has still told the review the thing it could never have known.
-  const withNotes = trades.filter(
-    (trade) => trade.marketContext !== null || trade.emotionalState !== null,
-  ).length;
-
   return (
     <>
       <PageHeader
@@ -125,8 +118,6 @@ export default async function JournalPage() {
           today
         </p>
       ) : null}
-
-      <NotesPrompt total={closed.length} withNotes={withNotes} />
 
       <div className="space-y-4">
         {closed.length > 0 ? (

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Fragment, useRef, useState } from "react";
 import CoachReviewPanel from "@/components/CoachReviewPanel";
-import TradeNotes, { type Notes } from "@/components/TradeNotes";
 import type { TradeMetrics } from "@/lib/ai/trade-metrics";
 import type { CoachReview } from "@/lib/ai/types";
 import { formatSignedMoney } from "@/lib/format/money";
@@ -146,13 +145,7 @@ export default function TradeList({
   // Anchors the scroll when the page changes; the pager sits below the table.
   const topRef = useRef<HTMLDivElement>(null);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [notesId, setNotesId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<string, ReviewState>>({});
-  // Notes saved in this session, layered over the server's rows rather than
-  // replacing them. Copying `trades` into state instead would freeze the table
-  // at whatever the first render held, and a newly logged trade would not
-  // appear when the page refreshes itself.
-  const [edits, setEdits] = useState<Record<string, Notes>>({});
 
   // Filtering is client-side on purpose. The page already has every row it is
   // going to show, so a round trip per filter would spend a request to hide
@@ -161,22 +154,18 @@ export default function TradeList({
   const [setup, setSetup] = useState("ALL");
   const [outcome, setOutcome] = useState<Outcome>("ALL");
 
-  const withEdits = trades.map((trade) =>
-    edits[trade.id] ? { ...trade, ...edits[trade.id] } : trade,
-  );
-
   // Filter options come from what is actually in the journal, so nobody is
   // offered a pair or a setup that would return nothing.
-  const assets = [...new Set(withEdits.map((row) => row.asset))].sort();
+  const assets = [...new Set(trades.map((row) => row.asset))].sort();
   const setups = [
     ...new Set(
-      withEdits
+      trades
         .map((row) => row.setup)
         .filter((setup): setup is string => setup !== null && setup !== ""),
     ),
   ].sort();
 
-  const rows = withEdits.filter((row) => {
+  const rows = trades.filter((row) => {
     if (asset !== "ALL" && row.asset !== asset) return false;
     if (setup !== "ALL" && row.setup !== setup) return false;
     if (outcome === "WINS" && !((row.pnl ?? 0) > 0)) return false;
@@ -188,7 +177,7 @@ export default function TradeList({
     return true;
   });
 
-  const filtered = rows.length !== withEdits.length;
+  const filtered = rows.length !== trades.length;
 
   /**
    * Which page of the filtered rows is on screen.
@@ -233,21 +222,6 @@ export default function TradeList({
 
   function stateOf(id: string): ReviewState {
     return reviews[id] ?? { status: "idle" };
-  }
-
-  function applyNotes(id: string, notes: Notes) {
-    setEdits((current) => ({ ...current, [id]: notes }));
-
-    // The review the user is looking at was written without these notes. Drop
-    // it rather than leave a verdict on screen that says the context is
-    // missing while the context sits filled in above it.
-    setReviews((current) => {
-      if (!current[id]) return current;
-      const next = { ...current };
-      delete next[id];
-      return next;
-    });
-    if (openId === id) setOpenId(null);
   }
 
   async function review(id: string) {
@@ -302,7 +276,7 @@ export default function TradeList({
   // The whole journal, not the filtered view. "No trades yet" is a different
   // statement from "nothing matches those filters", and showing the first when
   // the second is true tells somebody their records are gone.
-  if (withEdits.length === 0) {
+  if (trades.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted">
         No trades yet. Connect MetaTrader from the dashboard and ninety days of
@@ -379,7 +353,7 @@ export default function TradeList({
 
         {filtered ? (
           <span className="text-xs text-muted">
-            {rows.length} of {withEdits.length}
+            {rows.length} of {trades.length}
           </span>
         ) : null}
       </div>
@@ -414,7 +388,6 @@ export default function TradeList({
             <th className="py-2 pr-3 text-right font-normal">Planned RR</th>
             <th className="py-2 pr-3 text-left font-normal">Exit</th>
             <th className="py-2 pr-3 text-right font-normal">Result</th>
-            <th className="py-2 pr-3 text-right font-normal">Notes</th>
             <th className="py-2 text-right font-normal">Review</th>
           </tr>
         </thead>
@@ -423,9 +396,6 @@ export default function TradeList({
           {visible.map((trade) => {
             const state = stateOf(trade.id);
             const open = openId === trade.id;
-            const editing = notesId === trade.id;
-            const hasNotes =
-              trade.marketContext !== null || trade.emotionalState !== null;
 
             return (
               // The key belongs on the fragment, not on the rows inside it: a
@@ -440,7 +410,7 @@ export default function TradeList({
                     {trade.asset}
                     {trade.source === "MT5" ? (
                       <span
-                        title="Synced from MetaTrader. The prices belong to the terminal; the notes are yours."
+                        title="Synced from MetaTrader."
                         className="ml-2 rounded border border-line px-1 py-0.5 align-middle text-[10px] font-normal tracking-wide text-muted"
                       >
                         MT5
@@ -496,22 +466,6 @@ export default function TradeList({
                       </span>
                     </span>
                   </td>
-                  <td className="py-3 pr-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setNotesId(editing ? null : trade.id)
-                      }
-                      aria-expanded={editing}
-                      className={`rounded-lg border px-3 py-1.5 text-xs transition-colors hover:border-accent hover:text-accent ${
-                        hasNotes
-                          ? "border-line text-foreground"
-                          : "border-line text-muted"
-                      }`}
-                    >
-                      {editing ? "Close" : hasNotes ? "Notes" : "Add notes"}
-                    </button>
-                  </td>
                   <td className="py-3 text-right">
                     <button
                       type="button"
@@ -531,36 +485,9 @@ export default function TradeList({
                   </td>
                 </tr>
 
-                {editing ? (
-                  <tr>
-                    <td colSpan={10} className="pb-6">
-                      <div className="rounded-lg border border-line bg-surface-raised p-4">
-                        {trade.source === "MT5" ? (
-                          <p className="mb-3 text-xs text-muted">
-                            MetaTrader sends the prices and can never send the
-                            reason. What you write here is the half the review
-                            cannot compute.
-                          </p>
-                        ) : null}
-
-                        <TradeNotes
-                          tradeId={trade.id}
-                          notes={{
-                            setup: trade.setup,
-                            timeframe: trade.timeframe,
-                            marketContext: trade.marketContext,
-                            emotionalState: trade.emotionalState,
-                          }}
-                          onSaved={(notes) => applyNotes(trade.id, notes)}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ) : null}
-
                 {open ? (
                   <tr>
-                    <td colSpan={10} className="pb-6">
+                    <td colSpan={9} className="pb-6">
                       <div className="rounded-lg border border-line bg-surface-raised p-4">
                         {state.status === "loading" ? (
                           <p className="text-sm text-muted">
