@@ -136,7 +136,7 @@ export default function SessionBriefPanel({
             className={`rounded-lg border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
               session === option.value && state.status !== "idle"
                 ? "border-accent bg-accent-soft text-accent"
-                : "border-line text-muted hover:text-foreground"
+                : "border-accent/30 text-accent/80 hover:border-accent hover:text-accent"
             }`}
           >
             {option.label}

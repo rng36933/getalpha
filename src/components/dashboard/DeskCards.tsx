@@ -48,10 +48,7 @@ function pnl(value: number | null, currency: string | null): string {
 export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
   if (positions.length === 0) {
     return (
-      <Empty>
-        Nothing open. A trade counts as open until you record its exit —{" "}
-        <JournalLink label="log one" />.
-      </Empty>
+      <Empty>Nothing open.</Empty>
     );
   }
 

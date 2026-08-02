@@ -14,7 +14,6 @@ export const DASHBOARD_CARD_KEYS = [
   "open_positions",
   "risk_exposure",
   "recent_trades",
-  "pnl_curve",
   "performance",
 ] as const;
 

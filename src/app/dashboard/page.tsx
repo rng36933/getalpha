@@ -470,10 +470,18 @@ export default async function DashboardPage({
               </Card>
             ),
           },
+          // Merged with the curve below: two cards both reading straight off
+          // recent activity, now one — the shape of the account first, the
+          // rows that make it up underneath.
           recent_trades: {
             key: "recent_trades",
             children: (
-              <Card title="Recent trades">
+              <Card title="Recent trades" className="h-full">
+                {summary.pnlCurve ? (
+                  <div className="mb-5 border-b border-line pb-5">
+                    <PnlCurve curve={summary.pnlCurve} currency={mt5.currency} />
+                  </div>
+                ) : null}
                 <RecentTrades
                   trades={summary.recentTrades}
                   currency={mt5.currency}
@@ -481,21 +489,6 @@ export default async function DashboardPage({
               </Card>
             ),
           },
-          // Summary before detail: the shape of the account first, the
-          // figures that describe it underneath.
-          pnl_curve: summary.pnlCurve
-            ? {
-                key: "pnl_curve",
-                children: (
-                  <Card
-                    title="Cumulative P&L, trade by trade"
-                    className="h-full"
-                  >
-                    <PnlCurve curve={summary.pnlCurve} currency={mt5.currency} />
-                  </Card>
-                ),
-              }
-            : null,
           // The donut and the stat tiles used to be two separate cards
           // showing overlapping numbers (both had a closed count, both had a
           // win rate) — one card now, the shape of the account first and the
