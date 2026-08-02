@@ -58,8 +58,11 @@ export default function EmailPreferences({
             Morning Session Brief
           </span>
           <span className="mt-0.5 block text-xs text-muted">
-            One email before the London open, 07:30 UK time, with the same brief
-            the desk shows. Off by default.
+            One email before the London open, 07:30 UK time. Off by default.
+          </span>
+          <span className="mt-1 block text-xs text-muted">
+            Currently XAUUSD only, regardless of your watchlist — more
+            instruments may be added later.
           </span>
         </span>
       </label>
