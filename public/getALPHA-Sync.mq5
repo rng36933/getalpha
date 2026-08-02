@@ -340,11 +340,12 @@ void CollectClosedTrades(string &trades[], int &count,
 
       string symbol = HistoryDealGetString(dealTicket, DEAL_SYMBOL);
 
-      double entryPrice = 0;
-      datetime openedAt = 0;
-      long   entryType  = -1;
-      double stop       = 0;
-      double target     = 0;
+      double entryPrice   = 0;
+      datetime openedAt   = 0;
+      long   entryType    = -1;
+      ulong  entryOrder   = 0;
+      double stop         = 0;
+      double target       = 0;
 
       // Find the opening deal of the same position.
       for(int j = 0; j < deals; j++)
@@ -360,6 +361,12 @@ void CollectClosedTrades(string &trades[], int &count,
          entryPrice = HistoryDealGetDouble(other, DEAL_PRICE);
          openedAt   = (datetime)HistoryDealGetInteger(other, DEAL_TIME);
          entryType  = HistoryDealGetInteger(other, DEAL_TYPE);
+         // The order that placed this deal, not the position ticket. They
+         // are two different ticket spaces, and passing the position ticket
+         // to HistoryOrderSelect below silently selects nothing on most
+         // brokers — the reason every synced trade read "no stop" even when
+         // one was genuinely set.
+         entryOrder = HistoryDealGetInteger(other, DEAL_ORDER);
          break;
         }
 
@@ -372,12 +379,16 @@ void CollectClosedTrades(string &trades[], int &count,
       if(contractSize <= 0)
          contractSize = 1;
 
-      // The stop and target the position carried when it closed, if the
-      // history holds them.
-      if(HistoryOrderSelect(positionId))
+      // The stop and target requested on the order that opened the position.
+      // A stop added or moved afterwards by modifying the open position
+      // directly (rather than through a new order) will not show here — MT5
+      // does not keep that as a separate history order on every broker — but
+      // this is the stop the trader set at entry, which is what "no stop"
+      // should actually mean.
+      if(HistoryOrderSelect(entryOrder))
         {
-         stop   = HistoryOrderGetDouble(positionId, ORDER_SL);
-         target = HistoryOrderGetDouble(positionId, ORDER_TP);
+         stop   = HistoryOrderGetDouble(entryOrder, ORDER_SL);
+         target = HistoryOrderGetDouble(entryOrder, ORDER_TP);
         }
 
       ArrayResize(trades, count + 1);
