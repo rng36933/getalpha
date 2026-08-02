@@ -1,5 +1,6 @@
 import type { CotRow } from "@/lib/market-data/cot";
 import type { MacroReading } from "@/lib/market-data/fred";
+import { GOLD_RELATIONSHIP } from "@/lib/market-data/gold-relationship";
 
 /**
  * A row per series: what it is, what it reads, and which way it moved.
@@ -80,39 +81,54 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
 
   return (
     <ul className="divide-y divide-line">
-      {readings.map((reading) => (
-        <li key={reading.id} className="flex items-center gap-3 py-2.5">
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm">{reading.label}</span>
-            {reading.asOf ? (
-              <span className="block font-mono text-[11px] text-muted">
-                {reading.asOf}
-              </span>
-            ) : null}
-          </span>
+      {readings.map((reading) => {
+        const relationship = GOLD_RELATIONSHIP[reading.id];
 
-          <span className="shrink-0 text-right">
-            <span className="block font-mono text-sm tabular-nums">
-              {reading.value ?? "—"}
-            </span>
-            {reading.change ? (
-              <span
-                className={`block font-mono text-[11px] tabular-nums ${
-                  reading.direction > 0
-                    ? "text-positive"
-                    : reading.direction < 0
-                      ? "text-negative"
-                      : "text-muted"
-                }`}
-              >
-                {reading.change}
+        return (
+          <li key={reading.id} className="py-2.5">
+            <div className="flex items-center gap-3">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm">{reading.label}</span>
+                {reading.asOf ? (
+                  <span className="block font-mono text-[11px] text-muted">
+                    {reading.asOf}
+                  </span>
+                ) : null}
               </span>
-            ) : null}
-          </span>
 
-          <RangeDial reading={reading} />
-        </li>
-      ))}
+              <span className="shrink-0 text-right">
+                <span className="block font-mono text-sm tabular-nums">
+                  {reading.value ?? "—"}
+                </span>
+                {reading.change ? (
+                  <span
+                    className={`block font-mono text-[11px] tabular-nums ${
+                      reading.direction > 0
+                        ? "text-positive"
+                        : reading.direction < 0
+                          ? "text-negative"
+                          : "text-muted"
+                    }`}
+                  >
+                    {reading.change}
+                  </span>
+                ) : null}
+              </span>
+
+              <RangeDial reading={reading} />
+            </div>
+
+            {/* A fixed statement of mechanism, not a live prediction — see
+                `gold-relationship.ts`. Reads the same whatever today's print
+                was, on purpose. */}
+            {relationship ? (
+              <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+                <span className="text-accent">→ XAUUSD:</span> {relationship}
+              </p>
+            ) : null}
+          </li>
+        );
+      })}
     </ul>
   );
 }
