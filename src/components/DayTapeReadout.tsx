@@ -57,6 +57,18 @@ function Arrow({
   );
 }
 
+/**
+ * Reading keys whose detail sentence only restates a number shown elsewhere on
+ * the card — the open/now pair above, the low/high under the range bar, or a
+ * boilerplate line with no data in it. Cut here rather than in the copy files,
+ * so the sentence still exists for anything else that reads `tape-copy.ts`.
+ */
+const DETAIL_REDUNDANT: ReadonlySet<string> = new Set([
+  "VS_OPEN",
+  "RANGE_POSITION",
+  "INTRADAY_BARS",
+]);
+
 /** Where price sits between the day's low and its high. */
 function RangeBar({ tape, copy }: { tape: DayTape; copy: TapeCopy["readout"] }) {
   if (tape.rangePosition === null) return null;
@@ -212,9 +224,11 @@ export default function DayTapeReadout({
                   {reading.value}
                 </span>
               </p>
-              <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
-                {reading.detail}
-              </p>
+              {DETAIL_REDUNDANT.has(reading.key) ? null : (
+                <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                  {reading.detail}
+                </p>
+              )}
             </div>
           </li>
         ))}
@@ -249,9 +263,14 @@ export default function DayTapeReadout({
         {stale ? <p className="text-warning">{copy.staleNote}</p> : null}
       </div>
 
-      <p className="border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-        {copy.footnote}
-      </p>
+      {/* Skipped when the market-closed warning already ran: both sentences
+          make the same "not a forecast" point, and saying it twice on one
+          card reads as noise rather than caution. */}
+      {tape.barelyTraded ? null : (
+        <p className="border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
+          {copy.footnote}
+        </p>
+      )}
     </div>
   );
 }
