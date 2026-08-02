@@ -36,6 +36,9 @@ export const PUBLIC_ROUTES = [
   "/sitemap.xml",
   "/robots.txt",
   "/opengraph-image",
+  // The favicon/app icon, same as `/opengraph-image` above — a browser tab
+  // has no Clerk session either.
+  "/icon",
   // Stripe has no Clerk session. The webhook authenticates itself with a
   // signature over the raw body instead.
   "/api/billing/webhook",
