@@ -42,7 +42,6 @@ export type TradeMetrics = {
     riskAboveTwoPercent: boolean;
     plannedRRBelowOne: boolean;
     contextNoteMissing: boolean;
-    emotionNoteMissing: boolean;
   };
 };
 
@@ -148,8 +147,6 @@ export function computeTradeMetrics(trade: Trade): TradeMetrics {
       plannedRRBelowOne: plannedRR !== null && plannedRR < 1,
       contextNoteMissing:
         trade.marketContext === null || trade.marketContext.trim() === "",
-      emotionNoteMissing:
-        trade.emotionalState === null || trade.emotionalState.trim() === "",
     },
   };
 }

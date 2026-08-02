@@ -109,7 +109,6 @@ export async function POST(request: Request) {
       pnl: trade.pnl?.toNumber() ?? null,
       accountBalance: trade.accountBalance?.toNumber() ?? null,
       marketContext: trade.marketContext,
-      emotionalState: trade.emotionalState,
       openedAt: trade.createdAt.toISOString(),
       closedAt: trade.closedAt?.toISOString() ?? null,
     },

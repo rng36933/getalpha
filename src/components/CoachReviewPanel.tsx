@@ -24,7 +24,6 @@ const DIMENSIONS: { key: keyof CoachReview["scorecard"]; label: string }[] = [
   { key: "stopPlacement", label: "Stop placement" },
   { key: "exitManagement", label: "Exit management" },
   { key: "planAdherence", label: "Plan adherence" },
-  { key: "emotionalControl", label: "Emotional control" },
 ];
 
 export default function CoachReviewPanel({ review }: { review: CoachReview }) {

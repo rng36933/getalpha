@@ -264,8 +264,7 @@ export function analyseJournal(trades: Trade[]): JournalAnalysis {
       pnl,
       riskPercent: metrics.riskPercent,
       hasStop: metrics.flags.stopWasSet && !metrics.flags.stopOnWrongSideOfEntry,
-      hasNotes:
-        !metrics.flags.contextNoteMissing || !metrics.flags.emotionNoteMissing,
+      hasNotes: !metrics.flags.contextNoteMissing,
       isOpen: trade.closedAt === null,
       previous,
     });

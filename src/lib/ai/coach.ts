@@ -25,14 +25,14 @@ The unit of assessment is R: one R is the money the trader would have lost if th
 - A trade with no stop recorded has undefined risk. That alone caps the verdict at PROCESS_MIXED at best, and stopPlacement is WEAK, not NOT_ASSESSABLE — the failure is that no stop existed.
 - Risk materially above the trader's own median matters more than the result of this trade.
 - An exit classified as DISCRETIONARY_EXIT is neither good nor bad on its own. Judge it against whether the record shows a reason for it.
-- A losing streak immediately before the trade is context for sizing and emotional-control findings, not an excuse.
+- A losing streak immediately before the trade is context for sizing, not an excuse.
 - Planned reward-to-risk below 1 requires an unusually high hit rate to break even. Compare against the trader's supplied win rate before calling it a flaw.
 
 ## The fields
 
 - verdict: PROCESS_SOUND, PROCESS_MIXED or PROCESS_BROKEN, on process alone.
 - headline: one sentence a risk manager could read in isolation and know what happened. Lead with the finding, not the result.
-- scorecard: six dimensions, each a rating plus one sentence of evidence. Rate against this trader's history where the data allows it.
+- scorecard: five dimensions, each a rating plus one sentence of evidence. Rate against this trader's history where the data allows it.
 - primaryLeak: the single most expensive recurring behaviour this trade is evidence of, with the evidence and why it compounds over a sample. Null if the trade shows no leak.
 - strengths: at most three, each tied to a supplied number or note. Empty array if there are none — an empty array is a valid and useful answer.
 - ruleForNextTime: one rule the trader can check before the next entry, phrased so that compliance is objectively verifiable. "Size so that risk is at or below 1.2% of equity" is checkable; "manage risk better" is not.
@@ -86,9 +86,6 @@ const SCHEMA: Record<string, unknown> = {
         planAdherence: dimension(
           "Did execution match the plan the record describes?",
         ),
-        emotionalControl: dimension(
-          "What the emotional note and preceding streak show about state.",
-        ),
       },
       required: [
         "tradeSelection",
@@ -96,7 +93,6 @@ const SCHEMA: Record<string, unknown> = {
         "stopPlacement",
         "exitManagement",
         "planAdherence",
-        "emotionalControl",
       ],
       additionalProperties: false,
     },
@@ -155,7 +151,7 @@ export async function reviewTrade(
     instruction: `Review this ${input.trade.direction} trade on ${input.trade.asset}. All figures are pre-computed — judge them, do not recalculate them.`,
     userPayload: input,
     schema: SCHEMA,
-    // A six-dimension assessment weighed against the trader's history is the
+    // A five-dimension assessment weighed against the trader's history is the
     // kind of task where reasoning depth changes the answer.
     effort: "xhigh",
     maxTokens: 16000,

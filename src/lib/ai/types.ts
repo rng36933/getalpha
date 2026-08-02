@@ -71,7 +71,6 @@ export type CoachInput = {
     pnl: number | null;
     accountBalance: number | null;
     marketContext: string | null;
-    emotionalState: string | null;
     openedAt: string;
     closedAt: string | null;
   };
@@ -96,7 +95,6 @@ export type CoachReview = {
     stopPlacement: CoachDimension;
     exitManagement: CoachDimension;
     planAdherence: CoachDimension;
-    emotionalControl: CoachDimension;
   };
   primaryLeak: {
     name: string;
