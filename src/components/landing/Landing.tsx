@@ -372,6 +372,9 @@ export default function Landing({
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-7 text-[13px] text-zinc-500 sm:px-8">
           <span>© {new Date().getUTCFullYear()} getALPHA</span>
           <nav className="flex gap-5">
+            <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
+              Changelog
+            </Link>
             {LEGAL_PAGES.map((page) => (
               <Link key={page.href} href={page.href} className="transition-all duration-300 ease-in-out hover:text-white">
                 {page.label}
