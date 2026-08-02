@@ -59,6 +59,43 @@ const OUTCOMES: { value: Outcome; label: string }[] = [
   { value: "NO_STOP", label: "No stop" },
 ];
 
+type SortKey = "DATE_DESC" | "DATE_ASC" | "RESULT_DESC" | "RESULT_ASC" | "RISK_DESC";
+
+const SORTS: { value: SortKey; label: string }[] = [
+  { value: "DATE_DESC", label: "Newest first" },
+  { value: "DATE_ASC", label: "Oldest first" },
+  { value: "RESULT_DESC", label: "Biggest win first" },
+  { value: "RESULT_ASC", label: "Biggest loss first" },
+  { value: "RISK_DESC", label: "Highest risk first" },
+];
+
+/**
+ * Ordered without mutating the array the caller handed in — `sort` is
+ * in-place, and `rows` here is a `.filter()` result that only happens to be a
+ * fresh array today.
+ */
+function sortRows(rows: TradeRow[], key: SortKey): TradeRow[] {
+  const sorted = [...rows];
+
+  switch (key) {
+    case "DATE_ASC":
+      return sorted.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    case "RESULT_DESC":
+      return sorted.sort((a, b) => (b.pnl ?? 0) - (a.pnl ?? 0));
+    case "RESULT_ASC":
+      return sorted.sort((a, b) => (a.pnl ?? 0) - (b.pnl ?? 0));
+    case "RISK_DESC":
+      // No stop means undefined risk, not zero — sorted to the back rather
+      // than read as the safest trades in the list.
+      return sorted.sort(
+        (a, b) => (b.metrics.riskPercent ?? -1) - (a.metrics.riskPercent ?? -1),
+      );
+    case "DATE_DESC":
+    default:
+      return sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+}
+
 /** Rows per page. Short enough to read without scrolling past the filters. */
 const PER_PAGE = 10;
 
@@ -153,6 +190,7 @@ export default function TradeList({
   const [asset, setAsset] = useState("ALL");
   const [setup, setSetup] = useState("ALL");
   const [outcome, setOutcome] = useState<Outcome>("ALL");
+  const [sortKey, setSortKey] = useState<SortKey>("DATE_DESC");
 
   // Filter options come from what is actually in the journal, so nobody is
   // offered a pair or a setup that would return nothing.
@@ -165,17 +203,23 @@ export default function TradeList({
     ),
   ].sort();
 
-  const rows = trades.filter((row) => {
-    if (asset !== "ALL" && row.asset !== asset) return false;
-    if (setup !== "ALL" && row.setup !== setup) return false;
-    if (outcome === "WINS" && !((row.pnl ?? 0) > 0)) return false;
-    if (outcome === "LOSSES" && !((row.pnl ?? 0) < 0)) return false;
-    if (outcome === "OPEN" && row.metrics.exitClassification !== "STILL_OPEN") {
-      return false;
-    }
-    if (outcome === "NO_STOP" && row.metrics.flags.stopWasSet) return false;
-    return true;
-  });
+  const rows = sortRows(
+    trades.filter((row) => {
+      if (asset !== "ALL" && row.asset !== asset) return false;
+      if (setup !== "ALL" && row.setup !== setup) return false;
+      if (outcome === "WINS" && !((row.pnl ?? 0) > 0)) return false;
+      if (outcome === "LOSSES" && !((row.pnl ?? 0) < 0)) return false;
+      if (
+        outcome === "OPEN" &&
+        row.metrics.exitClassification !== "STILL_OPEN"
+      ) {
+        return false;
+      }
+      if (outcome === "NO_STOP" && row.metrics.flags.stopWasSet) return false;
+      return true;
+    }),
+    sortKey,
+  );
 
   const filtered = rows.length !== trades.length;
 
@@ -191,7 +235,7 @@ export default function TradeList({
    * empty page. Derived rather than reset in an effect, which is the cascading
    * render the React compiler rejects.
    */
-  const filterKey = `${asset}|${setup}|${outcome}`;
+  const filterKey = `${asset}|${setup}|${outcome}|${sortKey}`;
   const [paging, setPaging] = useState({ key: filterKey, page: 1 });
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PER_PAGE));
@@ -350,6 +394,19 @@ export default function TradeList({
             ))}
           </select>
         ) : null}
+
+        <select
+          value={sortKey}
+          onChange={(event) => setSortKey(event.target.value as SortKey)}
+          aria-label="Sort by"
+          className={selectClass}
+        >
+          {SORTS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
 
         {filtered ? (
           <span className="text-xs text-muted">

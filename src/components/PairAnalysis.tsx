@@ -99,7 +99,7 @@ function BucketRow({
           `${bucket.winRatePercent}%`
         )}
       </td>
-      <td className="w-[38%] min-w-[7rem] py-2 pl-2">
+      <td className="w-[38%] py-2 pl-2">
         <div className="flex items-center gap-2">
           {/* Read from the centre, so which side of break-even a bucket falls
               on is visible before any number is. */}
