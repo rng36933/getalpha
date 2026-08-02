@@ -35,7 +35,11 @@ export default function Card({
     // reading as a wireframe.
     <section
       style={{ "--enter": enter } as React.CSSProperties}
-      className={`surface-lit card-enter relative isolate rounded-xl border border-line bg-surface p-4 sm:p-5 ${className}`}
+      // `h-full` is what makes a row of cards line up: a grid row stretches
+      // its cells to the tallest one by default, but nothing inside a cell
+      // fills that height on its own, so a short card and a tall card side
+      // by side kept their own content heights and left uneven bottoms.
+      className={`surface-lit card-enter relative isolate flex h-full flex-col rounded-xl border border-line bg-surface p-4 sm:p-5 ${className}`}
     >
       <header className="flex items-center justify-between gap-3">
         <h2 className="text-[0.9375rem] font-semibold tracking-tight">
