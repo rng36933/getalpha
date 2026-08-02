@@ -59,7 +59,12 @@ function SortableCard({ item }: { item: GridItem }) {
         aria-label="Drag to reorder"
         {...attributes}
         {...listeners}
-        className="absolute right-3 top-3 z-10 flex size-7 cursor-grab items-center justify-center rounded-md text-muted opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 active:cursor-grabbing"
+        // Always visible, not just on hover: half this site's traffic is a
+        // phone, which has no hover state at all — a handle that only
+        // appears on :hover is a handle a touch visitor can never find.
+        // `touch-none` stops the browser reading the first touch as a page
+        // scroll instead of the start of a drag.
+        className="absolute right-3 top-3 z-10 flex size-7 touch-none cursor-grab items-center justify-center rounded-md bg-surface-raised text-muted transition-colors hover:text-foreground focus-visible:text-foreground active:cursor-grabbing"
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden="true">
           <circle cx="9" cy="6" r="1.4" />
