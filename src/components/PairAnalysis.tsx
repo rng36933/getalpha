@@ -99,7 +99,7 @@ function BucketRow({
           `${bucket.winRatePercent}%`
         )}
       </td>
-      <td className="w-[38%] py-2 pl-2">
+      <td className="py-2 pl-2">
         <div className="flex items-center gap-2">
           {/* Read from the centre, so which side of break-even a bucket falls
               on is visible before any number is. */}
@@ -150,14 +150,19 @@ function BucketTable({
   );
 
   return (
+    // `table-fixed` plus widths on the header cells, rather than the default
+    // auto layout: auto sizes every column from its content's natural width
+    // first and only then applies the `w-*` classes as a minimum, so a table
+    // that "fits" at 100% width can still force the row wider than its card
+    // and trigger a scrollbar the fixed layout never needed.
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full table-fixed text-sm">
         <thead>
           <tr className="text-[11px] uppercase tracking-wider text-muted">
-            <th className="py-1 pr-3 text-left font-normal">{caption}</th>
-            <th className="py-1 pr-3 text-right font-normal">Trades</th>
-            <th className="py-1 pr-3 text-right font-normal">Win rate</th>
-            <th className="py-1 pl-2 text-right font-normal">Total P&L</th>
+            <th className="w-[30%] py-1 pr-3 text-left font-normal">{caption}</th>
+            <th className="w-[14%] py-1 pr-3 text-right font-normal">Trades</th>
+            <th className="w-[16%] py-1 pr-3 text-right font-normal">Win rate</th>
+            <th className="w-[40%] py-1 pl-2 text-right font-normal">Total P&L</th>
           </tr>
         </thead>
         <tbody>
