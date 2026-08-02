@@ -71,6 +71,39 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Cards.
+
+   `.surface-lit` is applied by every `Card` in the dashboard — every reading,
+   every stat tile, every panel across the whole app. It had no rule at all
+   until this comment: the class was in the markup but nothing defined it, so
+   every card site-wide has been rendering with none of its intended depth or
+   hover treatment. Fixed here, once, for everywhere it's used.
+   --------------------------------------------------------------------------- */
+
+.surface-lit {
+  transition:
+    transform 0.15s ease-out,
+    border-color 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+}
+
+.surface-lit:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px -8px rgba(242, 201, 76, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surface-lit {
+    transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+  }
+
+  .surface-lit:hover {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Landing page components.
 
    Custom classes rather than Tailwind utilities, because these combine
