@@ -17,7 +17,7 @@ import { formatCompactMoney, formatSignedMoney } from "@/lib/format/money";
  */
 
 const W = 720;
-const H = 220;
+const H = 150;
 const PAD = { top: 14, right: 14, bottom: 20, left: 52 };
 
 const PLOT_W = W - PAD.left - PAD.right;
@@ -77,6 +77,19 @@ export default function PnlCurve({
     (value, index, all) => all.indexOf(value) === index,
   );
 
+  // Zero is kept first and always labelled; max and min only get a label if
+  // they land far enough from what is already kept. A curve that starts flat
+  // near break-even puts min a few pixels from zero, and two prices printed on
+  // top of each other read as neither.
+  const MIN_LABEL_GAP = 14;
+  const labelledValues = [0, max, min]
+    .filter((value, index, all) => all.indexOf(value) === index)
+    .reduce<number[]>((kept, value) => {
+      const yPos = y(value);
+      const clear = kept.every((other) => Math.abs(y(other) - yPos) >= MIN_LABEL_GAP);
+      return clear ? [...kept, value] : kept;
+    }, []);
+
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
@@ -126,14 +139,16 @@ export default function PnlCurve({
               strokeWidth={1}
               strokeDasharray={value === 0 ? undefined : "3 4"}
             />
-            <text
-              x={PAD.left - 6}
-              y={y(value) + 3.5}
-              textAnchor="end"
-              className="fill-[var(--muted)] text-[10px] tabular-nums"
-            >
-              {formatCompactMoney(value, currency)}
-            </text>
+            {labelledValues.includes(value) ? (
+              <text
+                x={PAD.left - 6}
+                y={y(value) + 3.5}
+                textAnchor="end"
+                className="fill-[var(--muted)] text-[10px] tabular-nums"
+              >
+                {formatCompactMoney(value, currency)}
+              </text>
+            ) : null}
           </g>
         ))}
 
