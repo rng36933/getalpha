@@ -3,7 +3,12 @@ import Card from "@/components/Card";
 import EmailPreferences from "@/components/EmailPreferences";
 import Mt5Connect from "@/components/Mt5Connect";
 import PageHeader from "@/components/PageHeader";
+import DraggableGrid, {
+  type GridItem,
+} from "@/components/dashboard/DraggableGrid";
 import { checkAccess } from "@/lib/billing/subscription";
+import { SETTINGS_CARD_KEYS } from "@/lib/dashboard/card-keys";
+import { loadOrder, resolveOrder } from "@/lib/dashboard/layout";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -63,11 +68,41 @@ async function loadMt5(userId: string): Promise<Mt5State> {
 export default async function SettingsPage() {
   const { userId } = await auth();
 
-  const [dailyBrief, access, mt5] = await Promise.all([
+  const [dailyBrief, access, mt5, savedOrder] = await Promise.all([
     userId ? loadPreference(userId) : Promise.resolve(false),
     userId ? checkAccess(userId) : Promise.resolve({ allowed: false } as const),
     userId ? loadMt5(userId) : Promise.resolve(NO_MT5),
+    userId
+      ? loadOrder(userId, "settings").catch((error) => {
+          console.error("Could not read the settings layout:", error);
+          return null;
+        })
+      : Promise.resolve(null),
   ]);
+
+  const items: GridItem[] = [
+    {
+      key: "mt5",
+      children: (
+        <Card title="MetaTrader 5">
+          <Mt5Connect {...mt5} />
+        </Card>
+      ),
+    },
+    {
+      key: "email",
+      children: (
+        <Card title="Email">
+          <EmailPreferences
+            initialDailyBrief={dailyBrief}
+            entitled={access.allowed}
+          />
+        </Card>
+      ),
+    },
+  ];
+
+  const order = resolveOrder(savedOrder ?? [], [...SETTINGS_CARD_KEYS]);
 
   return (
     <>
@@ -76,18 +111,12 @@ export default async function SettingsPage() {
         subtitle="Connect your terminal, and choose what reaches your inbox."
       />
 
-      <div className="grid max-w-2xl grid-cols-1 gap-4">
-        <Card title="MetaTrader 5">
-          <Mt5Connect {...mt5} />
-        </Card>
-
-        <Card title="Email">
-          <EmailPreferences
-            initialDailyBrief={dailyBrief}
-            entitled={access.allowed}
-          />
-        </Card>
-      </div>
+      <DraggableGrid
+        page="settings"
+        items={items}
+        initialOrder={order}
+        className="grid max-w-2xl grid-cols-1 gap-4"
+      />
     </>
   );
 }

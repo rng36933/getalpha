@@ -87,19 +87,22 @@ function SortableCard({ item }: { item: GridItem }) {
  * last saved order, not that this one has to be undone in front of the
  * visitor.
  */
-function persistOrder(order: string[]): void {
+function persistOrder(page: string, order: string[]): void {
   fetch("/api/dashboard/layout", {
     method: "PUT",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ order }),
+    body: JSON.stringify({ page, order }),
   }).catch(() => {});
 }
 
 export default function DraggableGrid({
+  page,
   items,
   initialOrder,
   className,
 }: {
+  /** Which page's saved order this grid reads and writes — see `LAYOUT_PAGES`. */
+  page: string;
   items: GridItem[];
   /** Keys, in the order to show them on first paint. */
   initialOrder: string[];
@@ -123,7 +126,7 @@ export default function DraggableGrid({
       if (from === -1 || to === -1) return current;
 
       const next = arrayMove(current, from, to);
-      persistOrder(next);
+      persistOrder(page, next);
       return next;
     });
   }

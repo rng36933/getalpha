@@ -4,7 +4,12 @@ import Card from "@/components/Card";
 import EconomicCalendar from "@/components/EconomicCalendar";
 import PageHeader from "@/components/PageHeader";
 import PairAnalysis from "@/components/PairAnalysis";
+import DraggableGrid, {
+  type GridItem,
+} from "@/components/dashboard/DraggableGrid";
 import { analyseJournal, type JournalAnalysis } from "@/lib/analysis/per-pair";
+import { PAIRS_CARD_KEYS } from "@/lib/dashboard/card-keys";
+import { loadOrder, resolveOrder } from "@/lib/dashboard/layout";
 import { fetchEconomicCalendar } from "@/lib/market-data/calendar";
 import { currenciesFromSymbols } from "@/lib/market-data/currencies";
 import { toEconomicEvents } from "@/lib/market-data/display";
@@ -47,9 +52,15 @@ export default async function PairsPage({
   const { userId } = await auth();
   const { pair: requested } = await searchParams;
 
-  const [analysis, currency] = await Promise.all([
+  const [analysis, currency, savedOrder] = await Promise.all([
     userId ? loadAnalysis(userId) : Promise.resolve(null),
     getAccountCurrency(userId),
+    userId
+      ? loadOrder(userId, "pairs").catch((error) => {
+          console.error("Could not read the pairs layout:", error);
+          return null;
+        })
+      : Promise.resolve(null),
   ]);
 
   if (analysis === null) {
@@ -150,17 +161,42 @@ export default async function PairsPage({
         })}
       </nav>
 
-      <div className="space-y-4">
-        <Card title={`${selected.asset} — your record`}>
-          <PairAnalysis pair={selected} currency={currency} />
-        </Card>
+      {(() => {
+        const cards: Record<(typeof PAIRS_CARD_KEYS)[number], GridItem | null> = {
+          record: {
+            key: "record",
+            children: (
+              <Card title={`${selected.asset} — your record`}>
+                <PairAnalysis pair={selected} currency={currency} />
+              </Card>
+            ),
+          },
+          calendar:
+            currencies.length > 0
+              ? {
+                  key: "calendar",
+                  children: (
+                    <Card title={`Today's calendar for ${currencies.join(", ")}`}>
+                      <EconomicCalendar events={events} />
+                    </Card>
+                  ),
+                }
+              : null,
+        };
 
-        {currencies.length > 0 ? (
-          <Card title={`Today's calendar for ${currencies.join(", ")}`}>
-            <EconomicCalendar events={events} />
-          </Card>
-        ) : null}
-      </div>
+        const present = PAIRS_CARD_KEYS.filter((key) => cards[key] !== null);
+        const order = resolveOrder(savedOrder ?? [], present);
+        const items = present.map((key) => cards[key]!);
+
+        return (
+          <DraggableGrid
+            page="pairs"
+            items={items}
+            initialOrder={order}
+            className="space-y-4"
+          />
+        );
+      })()}
     </>
   );
 }

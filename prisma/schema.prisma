@@ -221,21 +221,31 @@ model EmailPreference {
   @@index([dailyBrief])
 }
 
-/// Which order a user has dragged their dashboard cards into.
+/// Which order a user has dragged a page's cards into.
 ///
-/// A row only exists once somebody has actually rearranged something — the
-/// default order lives in code, not in a row every account would otherwise
-/// need. `order` holds the card keys defined in `dashboard/card-keys.ts`; a
-/// key from a later release that predates this row simply falls back to its
-/// default position, appended after whatever the user already placed.
+/// One table for every draggable page (`dashboard`, `settings`, `pairs`, …),
+/// not one per page: the shape is identical and `page` is the only thing that
+/// differs. A row only exists once somebody has actually rearranged
+/// something on that particular page — the default order lives in code, not
+/// in a row every account would otherwise need. `order` holds the card keys
+/// defined in that page's own `card-keys.ts`; a key from a later release that
+/// predates this row simply falls back to its default position, appended
+/// after whatever the user already placed.
+///
+/// Started as `dashboard`-only with `userId @unique`; widened to `page` on
+/// the same commit that added Settings and Pairs, which is why the unique
+/// constraint moved from the single field to the pair.
 model DashboardLayout {
   id     String @id @default(uuid())
-  userId String @unique
+  userId String
+  page   String @default("dashboard")
 
   order String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, page])
 }
 
 /// One row per day the morning email went out.

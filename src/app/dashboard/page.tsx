@@ -25,7 +25,7 @@ import {
   DASHBOARD_CARD_KEYS,
   type DashboardCardKey,
 } from "@/lib/dashboard/card-keys";
-import { loadDashboardOrder, resolveOrder } from "@/lib/dashboard/layout";
+import { loadOrder, resolveOrder } from "@/lib/dashboard/layout";
 import { summariseTrades, type DashboardSummary } from "@/lib/dashboard/summary";
 import {
   TIMEFRAMES,
@@ -266,7 +266,7 @@ export default async function DashboardPage({
       // A failed read falls back to the default order rather than taking the
       // whole page down over a card's position.
       userId
-        ? loadDashboardOrder(userId).catch((error) => {
+        ? loadOrder(userId, "dashboard").catch((error) => {
             console.error("Could not read the dashboard layout:", error);
             return null;
           })
@@ -531,6 +531,7 @@ export default async function DashboardPage({
 
         return (
           <DraggableGrid
+            page="dashboard"
             items={items}
             initialOrder={order}
             className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"

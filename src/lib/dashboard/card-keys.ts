@@ -21,9 +21,19 @@ export const DASHBOARD_CARD_KEYS = [
 
 export type DashboardCardKey = (typeof DASHBOARD_CARD_KEYS)[number];
 
-function isCardKey(value: string): value is DashboardCardKey {
-  return (DASHBOARD_CARD_KEYS as readonly string[]).includes(value);
-}
+/** The reorderable cards on Settings, in their default order. */
+export const SETTINGS_CARD_KEYS = ["mt5", "email"] as const;
+export type SettingsCardKey = (typeof SETTINGS_CARD_KEYS)[number];
+
+/**
+ * The reorderable cards on a Pairs page.
+ *
+ * Same two keys regardless of which instrument is selected — the calendar
+ * card is simply absent for gold, same as `resolveOrder` handles an absent
+ * card everywhere else.
+ */
+export const PAIRS_CARD_KEYS = ["record", "calendar"] as const;
+export type PairsCardKey = (typeof PAIRS_CARD_KEYS)[number];
 
 /**
  * A saved order, reconciled against the cards actually present on this visit.
@@ -34,13 +44,14 @@ function isCardKey(value: string): value is DashboardCardKey {
  * saved. Unknown keys are dropped, present-but-unlisted keys are appended in
  * their default position, so a new card is never accidentally hidden by an
  * old save.
+ *
+ * Generic over the key type so every draggable page (dashboard, settings,
+ * pairs) can reuse it against its own fixed list rather than each writing the
+ * same reconciliation.
  */
-export function resolveOrder(
-  saved: string[],
-  present: DashboardCardKey[],
-): DashboardCardKey[] {
-  const presentSet = new Set(present);
-  const ordered = saved.filter(isCardKey).filter((key) => presentSet.has(key));
+export function resolveOrder<K extends string>(saved: string[], present: K[]): K[] {
+  const presentSet = new Set<string>(present);
+  const ordered = saved.filter((key): key is K => presentSet.has(key));
 
   const seen = new Set(ordered);
   const remaining = present.filter((key) => !seen.has(key));
