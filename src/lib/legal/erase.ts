@@ -11,6 +11,7 @@ export type ErasureResult = {
   referralRewards: number;
   aiUsageLogs: number;
   legalAcceptances: number;
+  dashboardLayouts: number;
 };
 
 /**
@@ -76,6 +77,11 @@ export async function eraseUserData(userId: string): Promise<ErasureResult> {
 
     const legalAcceptances = await tx.legalAcceptance.count({ where: { userId } });
 
+    // Just a card order, but it names an account like everything else here.
+    const dashboardLayouts = await tx.dashboardLayout.deleteMany({
+      where: { userId },
+    });
+
     return {
       trades: trades.count,
       watchlistItems: watchlistItems.count,
@@ -87,6 +93,7 @@ export async function eraseUserData(userId: string): Promise<ErasureResult> {
       referralRewards: referralRewards.count,
       aiUsageLogs: aiUsageLogs.count,
       legalAcceptances,
+      dashboardLayouts: dashboardLayouts.count,
     };
   });
 }

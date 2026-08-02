@@ -17,7 +17,15 @@ import {
   RecentTrades,
   RiskExposure,
 } from "@/components/dashboard/DeskCards";
+import DraggableGrid, {
+  type GridItem,
+} from "@/components/dashboard/DraggableGrid";
 import FirstRun from "@/components/dashboard/FirstRun";
+import {
+  DASHBOARD_CARD_KEYS,
+  type DashboardCardKey,
+} from "@/lib/dashboard/card-keys";
+import { loadDashboardOrder, resolveOrder } from "@/lib/dashboard/layout";
 import { summariseTrades, type DashboardSummary } from "@/lib/dashboard/summary";
 import {
   TIMEFRAMES,
@@ -245,16 +253,25 @@ export default async function DashboardPage({
 
   const timeframe = parseTimeframe(tf);
 
-  const [{ entries, instrument }, summary, mt5, briefAudience] = await Promise.all([
-    loadWatchlist(symbol),
-    loadSummary(userId),
-    loadMt5State(userId),
-    // Resolved here so the card states what it covers on first paint, rather
-    // than claiming a coverage it has to correct once the reader presses a
-    // session. The route resolves it again on its own; this is a label, not a
-    // permission, and the route never trusts what the client was told.
-    userId ? resolveBriefAudience(userId) : Promise.resolve(defaultAudience()),
-  ]);
+  const [{ entries, instrument }, summary, mt5, briefAudience, savedOrder] =
+    await Promise.all([
+      loadWatchlist(symbol),
+      loadSummary(userId),
+      loadMt5State(userId),
+      // Resolved here so the card states what it covers on first paint, rather
+      // than claiming a coverage it has to correct once the reader presses a
+      // session. The route resolves it again on its own; this is a label, not
+      // a permission, and the route never trusts what the client was told.
+      userId ? resolveBriefAudience(userId) : Promise.resolve(defaultAudience()),
+      // A failed read falls back to the default order rather than taking the
+      // whole page down over a card's position.
+      userId
+        ? loadDashboardOrder(userId).catch((error) => {
+            console.error("Could not read the dashboard layout:", error);
+            return null;
+          })
+        : Promise.resolve(null),
+    ]);
 
   const choices = tapeChoices(
     entries.map((entry) => ({ symbol: entry.symbol, label: entry.label })),
@@ -372,92 +389,154 @@ export default async function DashboardPage({
         lastSeenAt={mt5.lastSeenAt}
       />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="md:col-span-2">
-          <ChartCard
-            instruments={entries.map((entry) => ({
-              symbol: entry.symbol,
-              label: entry.label,
-            }))}
-            selectedSymbol={instrument.symbol}
-            selectedLabel={instrument.label}
-            timeframe={timeframe}
-            timeframes={Object.entries(TIMEFRAMES).map(([key, value]) => ({
-              key,
-              label: value.label,
-            }))}
-            candles={candles.data}
+      {(() => {
+        // Built in the fixed `DASHBOARD_CARD_KEYS` order, filtered to what
+        // this visit actually has something to show for — the curve and the
+        // distribution need two closed trades between them, and a key with
+        // no card behind it would be a draggable gap.
+        const cards: Record<DashboardCardKey, GridItem | null> = {
+          chart: {
+            key: "chart",
+            className: "md:col-span-2",
+            children: (
+              <ChartCard
+                instruments={entries.map((entry) => ({
+                  symbol: entry.symbol,
+                  label: entry.label,
+                }))}
+                selectedSymbol={instrument.symbol}
+                selectedLabel={instrument.label}
+                timeframe={timeframe}
+                timeframes={Object.entries(TIMEFRAMES).map(([key, value]) => ({
+                  key,
+                  label: value.label,
+                }))}
+                candles={candles.data}
+              />
+            ),
+          },
+          // The one card on the desk allowed to glow. Violet is the same
+          // signal the landing page's Pro column uses, and it says "this one
+          // costs money to run" rather than "get excited".
+          brief: {
+            key: "brief",
+            children: (
+              <Card title="AI Session Brief" className="glow-ai">
+                <SessionBriefPanel
+                  instruments={briefAudience.symbols.map((entry) => entry.label)}
+                  personalised={briefAudience.personalised}
+                  truncated={briefAudience.truncated}
+                />
+              </Card>
+            ),
+          },
+          watchlist: {
+            key: "watchlist",
+            children: (
+              <Card title="Watchlist">
+                <WatchlistManager
+                  initialEntries={entries.map((entry) => ({
+                    symbol: entry.symbol,
+                    label: entry.label,
+                    name: entry.name,
+                  }))}
+                  max={MAX_WATCHLIST_SIZE}
+                  selectedSymbol={instrument.symbol}
+                />
+              </Card>
+            ),
+          },
+          // There is no Signal Feed card and there will not be one. The
+          // landing page says this product never tells anyone what to trade,
+          // and a dashboard promising a signal stream would contradict it.
+          // Macro Snapshot went too — it belongs on the Macro Desk, next to
+          // the data it summarises.
+          open_positions: {
+            key: "open_positions",
+            children: (
+              <Card title="Open positions">
+                <OpenPositions positions={summary.openPositions} />
+              </Card>
+            ),
+          },
+          risk_exposure: {
+            key: "risk_exposure",
+            children: (
+              <Card title="Risk exposure">
+                <RiskExposure
+                  exposure={summary.exposure}
+                  currency={mt5.currency}
+                />
+              </Card>
+            ),
+          },
+          recent_trades: {
+            key: "recent_trades",
+            children: (
+              <Card title="Recent trades">
+                <RecentTrades
+                  trades={summary.recentTrades}
+                  currency={mt5.currency}
+                />
+              </Card>
+            ),
+          },
+          // Summary before detail: the shape of the account first, the
+          // figures that describe it underneath.
+          pnl_curve: summary.pnlCurve
+            ? {
+                key: "pnl_curve",
+                className: "md:col-span-2 xl:col-span-3",
+                children: (
+                  <Card
+                    title="Cumulative P&L, trade by trade"
+                    className="h-full"
+                  >
+                    <PnlCurve curve={summary.pnlCurve} currency={mt5.currency} />
+                  </Card>
+                ),
+              }
+            : null,
+          pnl_distribution: summary.pnlDistribution
+            ? {
+                key: "pnl_distribution",
+                className: "md:col-span-2 xl:col-span-3",
+                children: (
+                  <Card title="Where the results land" className="h-full">
+                    <PnlDistribution
+                      data={summary.pnlDistribution}
+                      currency={mt5.currency}
+                    />
+                  </Card>
+                ),
+              }
+            : null,
+          performance: {
+            key: "performance",
+            className: "md:col-span-2 xl:col-span-3",
+            children: (
+              <Card title="Performance" className="h-full">
+                <PerformanceStats
+                  performance={summary.performance}
+                  currency={mt5.currency}
+                />
+              </Card>
+            ),
+          },
+        };
+
+        const present = DASHBOARD_CARD_KEYS.filter((key) => cards[key] !== null);
+        const order = resolveOrder(savedOrder ?? [], present);
+        const items = present.map((key) => cards[key]!);
+
+        return (
+          <DraggableGrid
+            items={items}
+            initialOrder={order}
+            className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
           />
-        </div>
-        {/* The one card on the desk allowed to glow. Violet is the same signal
-            the landing page's Pro column uses, and it says "this one costs
-            money to run" rather than "get excited". */}
-        <Card title="AI Session Brief" className="glow-ai">
-          <SessionBriefPanel
-            instruments={briefAudience.symbols.map((entry) => entry.label)}
-            personalised={briefAudience.personalised}
-            truncated={briefAudience.truncated}
-          />
-        </Card>
-        <Card title="Watchlist">
-          <WatchlistManager
-            initialEntries={entries.map((entry) => ({
-              symbol: entry.symbol,
-              label: entry.label,
-              name: entry.name,
-            }))}
-            max={MAX_WATCHLIST_SIZE}
-            selectedSymbol={instrument.symbol}
-          />
-        </Card>
-        {/* There is no Signal Feed card and there will not be one. The landing
-            page says this product never tells anyone what to trade, and a
-            dashboard promising a signal stream would contradict it. Macro
-            Snapshot went too — it belongs on the Macro Desk, next to the data
-            it summarises. */}
-
-        <Card title="Open positions">
-          <OpenPositions positions={summary.openPositions} />
-        </Card>
-
-        <Card title="Risk exposure">
-          <RiskExposure exposure={summary.exposure} currency={mt5.currency} />
-        </Card>
-
-        <Card title="Recent trades">
-          <RecentTrades trades={summary.recentTrades} currency={mt5.currency} />
-        </Card>
-
-        {/* Summary before detail: the shape of the account first, the figures
-            that describe it underneath. */}
-        {summary.pnlCurve ? (
-          <Card
-            title="Cumulative P&L, trade by trade"
-            className="md:col-span-2 xl:col-span-3"
-          >
-            <PnlCurve curve={summary.pnlCurve} currency={mt5.currency} />
-          </Card>
-        ) : null}
-
-        {summary.pnlDistribution ? (
-          <Card
-            title="Where the results land"
-            className="md:col-span-2 xl:col-span-3"
-          >
-            <PnlDistribution
-              data={summary.pnlDistribution}
-              currency={mt5.currency}
-            />
-          </Card>
-        ) : null}
-
-        <Card title="Performance" className="md:col-span-2 xl:col-span-3">
-          <PerformanceStats
-            performance={summary.performance}
-            currency={mt5.currency}
-          />
-        </Card>
-      </div>
+        );
+      })()}
     </>
   );
 }
