@@ -31,6 +31,8 @@ export type IncomingTrade = {
   accountBalance: number | null;
   openedAt: string;
   closedAt: string | null;
+  /** The order comment MT5 carries, e.g. the tag an EA set at entry. */
+  setup: string | null;
 };
 
 /**
@@ -51,6 +53,13 @@ function parseDate(value: string | null): Date | null {
   if (!value) return null;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/** MT5's own comment field, trimmed and capped — not a field this app defines the shape of. */
+function setupTag(value: string | null): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed.slice(0, 64);
 }
 
 /**
@@ -121,6 +130,7 @@ export async function applySync(
       accountBalance: decimal(incoming.accountBalance),
       closedAt: parseDate(incoming.closedAt),
       source: TradeSource.MT5,
+      setup: setupTag(incoming.setup),
     };
 
     try {

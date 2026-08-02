@@ -137,7 +137,8 @@ string TradeJson(const string ticket, const string symbol, const string directio
                  const double volume, const double contractSize,
                  const double entry, const double stop, const double target,
                  const double exit, const double profit,
-                 const datetime opened, const datetime closed)
+                 const datetime opened, const datetime closed,
+                 const string comment)
   {
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    if(digits <= 0)
@@ -156,7 +157,12 @@ string TradeJson(const string ticket, const string symbol, const string directio
    json += "\"profit\":" + JsonNumber(profit, 2) + ",";
    json += "\"accountBalance\":" + JsonNumber(AccountInfoDouble(ACCOUNT_BALANCE), 2) + ",";
    json += "\"openedAt\":" + IsoUtc(opened) + ",";
-   json += "\"closedAt\":" + IsoUtc(closed);
+   json += "\"closedAt\":" + IsoUtc(closed) + ",";
+   // The order comment an EA sets at entry — "ZonuRetestas" and the like —
+   // is the closest thing to a stated reason for the trade that MT5 carries.
+   // Empty for anything opened by hand, which is a fact worth keeping rather
+   // than papering over with a made-up label.
+   json += "\"setup\":" + (StringLen(comment) > 0 ? "\"" + JsonEscape(comment) + "\"" : "null");
    json += "}";
 
    return json;
@@ -278,7 +284,8 @@ void CollectOpenPositions(string &trades[], int &count)
          0,                                   // still open
          PositionGetDouble(POSITION_PROFIT),
          (datetime)PositionGetInteger(POSITION_TIME),
-         0);
+         0,
+         PositionGetString(POSITION_COMMENT));
 
       count++;
      }
@@ -346,6 +353,7 @@ void CollectClosedTrades(string &trades[], int &count,
       ulong  entryOrder   = 0;
       double stop         = 0;
       double target       = 0;
+      string comment      = "";
 
       // Find the opening deal of the same position.
       for(int j = 0; j < deals; j++)
@@ -387,8 +395,9 @@ void CollectClosedTrades(string &trades[], int &count,
       // should actually mean.
       if(HistoryOrderSelect(entryOrder))
         {
-         stop   = HistoryOrderGetDouble(entryOrder, ORDER_SL);
-         target = HistoryOrderGetDouble(entryOrder, ORDER_TP);
+         stop    = HistoryOrderGetDouble(entryOrder, ORDER_SL);
+         target  = HistoryOrderGetDouble(entryOrder, ORDER_TP);
+         comment = HistoryOrderGetString(entryOrder, ORDER_COMMENT);
         }
 
       ArrayResize(trades, count + 1);
@@ -404,7 +413,8 @@ void CollectClosedTrades(string &trades[], int &count,
          HistoryDealGetDouble(dealTicket, DEAL_PRICE),
          HistoryDealGetDouble(dealTicket, DEAL_PROFIT),
          openedAt,
-         closedAt);
+         closedAt,
+         comment);
 
       count++;
 

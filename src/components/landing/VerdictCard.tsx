@@ -21,8 +21,8 @@ import { landingCopy } from "@/lib/i18n/landing";
  * argument is that it reports measured facts, so an invented example that could
  * pass for a real account would undercut the page selling it.
  *
- * The scorecard carries bars as well as words: six ratings in a column read as
- * a list to skim, six bars at different lengths read as a verdict.
+ * The scorecard carries bars as well as words: five ratings in a column read as
+ * a list to skim, five bars at different lengths read as a verdict.
  */
 
 type Rating = "STRONG" | "ADEQUATE" | "WEAK" | "NOT_ASSESSABLE";
@@ -120,11 +120,6 @@ export default function VerdictCard() {
     { dimension: copy.dimensions.stop, rating: "WEAK", label: copy.ratings.weak },
     { dimension: copy.dimensions.exit, rating: "ADEQUATE", label: copy.ratings.adequate },
     { dimension: copy.dimensions.adherence, rating: "WEAK", label: copy.ratings.weak },
-    {
-      dimension: copy.dimensions.emotion,
-      rating: "NOT_ASSESSABLE",
-      label: copy.ratings.noData,
-    },
   ];
 
   const [phase, setPhase] = useState<Phase>("idle");

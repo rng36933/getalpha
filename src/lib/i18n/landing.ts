@@ -159,7 +159,6 @@ export type LandingCopy = {
       strong: string;
       adequate: string;
       weak: string;
-      noData: string;
     };
     dimensions: {
       selection: string;
@@ -167,7 +166,6 @@ export type LandingCopy = {
       stop: string;
       exit: string;
       adherence: string;
-      emotion: string;
     };
   };
   waitlist: { eyebrow: string; heading: string; body: string };
@@ -227,7 +225,7 @@ export const landingCopy: LandingCopy = {
       },
       review: {
         title: "A review of your process",
-        body: "Six dimensions, judged against your own history. “Twice your median risk” is a finding. “Risk should be 1%” is a platitude.",
+        body: "Five dimensions, judged against your own history. “Twice your median risk” is a finding. “Risk should be 1%” is a platitude.",
       },
       calendar: {
         title: "The releases that move your pairs",
@@ -345,7 +343,7 @@ export const landingCopy: LandingCopy = {
       items: [
         "AI Session Brief before every session",
         "AI Coach process review on any trade",
-        "Six dimensions judged against your own history",
+        "Five dimensions judged against your own history",
         "Everything in Free",
       ],
       cta: "Get started",
@@ -370,7 +368,6 @@ export const landingCopy: LandingCopy = {
       strong: "Strong",
       adequate: "Adequate",
       weak: "Weak",
-      noData: "No data",
     },
     dimensions: {
       selection: "Trade selection",
@@ -378,7 +375,6 @@ export const landingCopy: LandingCopy = {
       stop: "Stop placement",
       exit: "Exit management",
       adherence: "Plan adherence",
-      emotion: "Emotional control",
     },
   },
   waitlist: {

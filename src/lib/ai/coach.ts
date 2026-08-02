@@ -23,6 +23,7 @@ The unit of assessment is R: one R is the money the trader would have lost if th
 ## How to weight the evidence
 
 - A trade with no stop recorded has undefined risk. That alone caps the verdict at PROCESS_MIXED at best, and stopPlacement is WEAK, not NOT_ASSESSABLE — the failure is that no stop existed.
+- A trade with no setup tag and no market-context note is a different kind of gap: nobody enters a trade for literally no reason, the record just does not say what it was. That is missing documentation, not a bad decision — rate tradeSelection NOT_ASSESSABLE in that case, never WEAK, unless the trade's own numbers independently show a specific flaw (risk far above the trader's median with no defined edge, an entry chasing a move already well underway). The absence of a note is not itself the flaw.
 - Risk materially above the trader's own median matters more than the result of this trade.
 - An exit classified as DISCRETIONARY_EXIT is neither good nor bad on its own. Judge it against whether the record shows a reason for it.
 - A losing streak immediately before the trade is context for sizing, not an excuse.
