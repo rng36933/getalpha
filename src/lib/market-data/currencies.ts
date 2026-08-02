@@ -26,8 +26,20 @@ export function currenciesFromSymbols(symbols: string[]): CalendarCurrency[] {
   const found = new Set<CalendarCurrency>();
 
   for (const symbol of symbols) {
-    for (const part of symbol.toUpperCase().split(/[^A-Z]+/)) {
+    const upper = symbol.toUpperCase();
+
+    for (const part of upper.split(/[^A-Z]+/)) {
       if (KNOWN.has(part)) found.add(part as CalendarCurrency);
+    }
+
+    // A synced trade's asset carries no separator ("EURUSD", not "EUR/USD"),
+    // so the split above never fires for it. A plain six-letter symbol is
+    // base and quote concatenated — try both three-letter halves too.
+    if (/^[A-Z]{6}$/.test(upper)) {
+      const base = upper.slice(0, 3);
+      const quote = upper.slice(3);
+      if (KNOWN.has(base)) found.add(base as CalendarCurrency);
+      if (KNOWN.has(quote)) found.add(quote as CalendarCurrency);
     }
   }
 

@@ -27,9 +27,17 @@ test("duplicates collapse and the order is stable", () => {
 });
 
 test("separators other than a slash still parse", () => {
-  assert.deepEqual(currenciesFromSymbols(["EURUSD"]), []);
   assert.deepEqual(currenciesFromSymbols(["EUR-USD"]), ["USD", "EUR"]);
   assert.deepEqual(currenciesFromSymbols(["eur/usd"]), ["USD", "EUR"]);
+});
+
+test("a synced trade's asset has no separator at all, and still parses", () => {
+  // MT5 sends "EURUSD", not "EUR/USD" — the six-letter symbol is base and
+  // quote run together, which is what the per-pair page's asset field is.
+  assert.deepEqual(currenciesFromSymbols(["EURUSD"]), ["USD", "EUR"]);
+  assert.deepEqual(currenciesFromSymbols(["GBPJPY"]), ["GBP", "JPY"]);
+  assert.deepEqual(currenciesFromSymbols(["XAUUSD"]), ["USD"]);
+  assert.deepEqual(currenciesFromSymbols(["BTCUSD"]), ["USD"]);
 });
 
 test("an empty watchlist yields nothing", () => {

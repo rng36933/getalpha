@@ -100,13 +100,26 @@ export default async function PairsPage({
   const selected =
     analysis.pairs.find((p) => p.asset === requested) ?? analysis.pairs[0];
 
+  // Gold has no calendar of its own, and a per-pair page showing "here's
+  // today's USD calendar" under a XAUUSD heading reads as a finding about
+  // gold rather than what it actually is — releases that happen to share a
+  // currency with gold's quote leg. Left out here rather than folded into
+  // `currenciesFromSymbols`, which other callers still want the quote-leg
+  // behaviour from.
+  const isGold = selected.asset.toUpperCase().startsWith("XAU");
+
   // Widened to string, because an event's currency comes off a feed and is not
   // known to be one of ours until it is compared.
-  const currencies: string[] = currenciesFromSymbols([selected.asset]);
-  const calendar = await fetchEconomicCalendar();
-  const events = toEconomicEvents(calendar.data).filter(
-    (event) => currencies.length === 0 || currencies.includes(event.currency),
-  );
+  const currencies: string[] = isGold
+    ? []
+    : currenciesFromSymbols([selected.asset]);
+  const calendar =
+    currencies.length > 0 ? await fetchEconomicCalendar() : null;
+  const events = calendar
+    ? toEconomicEvents(calendar.data).filter((event) =>
+        currencies.includes(event.currency),
+      )
+    : [];
 
   return (
     <>
@@ -142,22 +155,11 @@ export default async function PairsPage({
           <PairAnalysis pair={selected} currency={currency} />
         </Card>
 
-        <Card
-          title={
-            currencies.length > 0
-              ? `Today's calendar for ${currencies.join(", ")}`
-              : "Today's calendar"
-          }
-        >
-          {currencies.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted">
-              {selected.asset} has no economic calendar of its own, and its
-              quote currency is not one the feed publishes releases for.
-            </p>
-          ) : (
+        {currencies.length > 0 ? (
+          <Card title={`Today's calendar for ${currencies.join(", ")}`}>
             <EconomicCalendar events={events} />
-          )}
-        </Card>
+          </Card>
+        ) : null}
       </div>
     </>
   );

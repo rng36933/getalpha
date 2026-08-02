@@ -287,57 +287,12 @@ export default function PairAnalysis({
         />
       </div>
 
-      {pair.withoutStop > 0 || pair.withoutNotes > 0 || pair.openTrades > 0 ? (
-        <ul className="space-y-1 text-xs text-muted">
-          {pair.openTrades > 0 ? (
-            <li>
-              {pair.openTrades} still open, so not counted in any result above.
-            </li>
-          ) : null}
-          {pair.withoutStop > 0 ? (
-            <li className="text-warning">
-              {pair.withoutStop} taken without a stop. They count towards every
-              figure above, but nothing here can say whether the size was
-              sensible — there was no risk defined to compare it against.
-            </li>
-          ) : null}
-          {pair.withoutNotes > 0 ? (
-            <li>
-              {pair.withoutNotes} carry no written note. The numbers can say
-              when it went wrong, never why.
-            </li>
-          ) : null}
-        </ul>
-      ) : null}
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <BucketTable
-          caption="By session"
-          buckets={pair.sessions}
-          hints={SESSION_HOURS}
-          currency={currency}
-        />
-        <BucketTable
-          caption="By weekday"
-          buckets={pair.weekdays}
-          currency={currency}
-        />
-      </div>
-
-      {pair.afterResult.length > 0 ? (
-        <div>
-          <BucketTable
-            caption="By what came before"
-            buckets={pair.afterResult}
-            currency={currency}
-          />
-          <p className="mt-2 text-xs text-muted">
-            &ldquo;Before&rdquo; means the previous trade anywhere in your
-            journal, not only on this instrument — a loss on one pair is what
-            you carry into the next one.
-          </p>
-        </div>
-      ) : null}
+      <BucketTable
+        caption="By session"
+        buckets={pair.sessions}
+        hints={SESSION_HOURS}
+        currency={currency}
+      />
     </div>
   );
 }
