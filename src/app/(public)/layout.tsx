@@ -21,7 +21,10 @@ export default function PublicLayout({
             get<span className="text-accent">ALPHA</span>
           </Link>
 
-          <nav className="flex gap-4 text-xs text-muted">
+          <nav className="flex items-center gap-4 text-xs text-muted">
+            <Link href="/changelog" className="font-medium text-accent hover:text-accent/80">
+              Changelog
+            </Link>
             {LEGAL_PAGES.map((page) => (
               <Link key={page.href} href={page.href} className="hover:text-foreground">
                 {page.label}

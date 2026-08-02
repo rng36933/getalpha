@@ -93,6 +93,9 @@ export default function Landing({
             <Link href="#how" className="hidden text-zinc-400 transition-all duration-300 ease-in-out hover:text-white sm:inline">
               {copy.nav.how}
             </Link>
+            <Link href="/changelog" className="font-medium text-accent transition-all duration-300 ease-in-out hover:text-accent/80">
+              Changelog
+            </Link>
             <Link href="/login" className="text-zinc-400 transition-all duration-300 ease-in-out hover:text-white">
               {copy.nav.signIn}
             </Link>
