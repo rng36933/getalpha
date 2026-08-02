@@ -130,20 +130,22 @@ export default function DraggableGrid({
   }
 
   /**
-   * Stretches a lone trailing card to fill whatever's left of its row.
+   * Stretches the last card in any incomplete row to fill what's left of it.
    *
    * `grid-auto-flow: dense` backfills a gap a wide card leaves *before* it —
-   * see the comment where each page sets it — but nothing in CSS Grid alone
-   * closes a gap *after* the last card, because there is nothing left to move
-   * into it. Measuring the actual layout and stretching that last card's
-   * `grid-column-end` to the final line is the only way to close it, so this
-   * runs after every layout pass rather than being expressed as a class.
+   * see the comment where each page sets it — but it cannot close a gap that
+   * survives *after* dense has done its best, because by definition nothing
+   * later in the order fits there either. That happens on any row, not only
+   * the grid's last one: a row of single-width cards sitting above a
+   * full-width summary card (the P&L curve, say) is already "last" as far as
+   * dense packing within that row is concerned, even though more rows follow
+   * it. So every row is checked here, not just the final one.
    */
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    function fillLastRow() {
+    function fillRowGaps() {
       if (!container || getComputedStyle(container).display !== "grid") return;
 
       const nodes = order
@@ -152,28 +154,32 @@ export default function DraggableGrid({
 
       // Cleared before remeasuring, not just set when needed: a stretch that
       // made sense at desktop width has to let go once the viewport narrows
-      // to where that card is no longer trailing alone.
+      // to where that card is no longer trailing alone in its row.
       for (const node of nodes) node.style.gridColumnEnd = "";
       if (nodes.length === 0) return;
 
       // Grouped by top offset, rounded — dense packing and subpixel layout
       // can leave two cards on the same row a fraction of a pixel apart.
+      // Keeping the last node seen per row is enough: within one row that is
+      // whichever card sits furthest right, since nothing later in the order
+      // was placed before it on that same row.
       const rows = new Map<number, HTMLDivElement>();
       for (const node of nodes) rows.set(Math.round(node.offsetTop), node);
 
-      const last = [...rows.entries()].sort((a, b) => a[0] - b[0]).pop()?.[1];
-      if (!last) return;
+      const containerRight = container.getBoundingClientRect().right;
 
-      const gap = container.getBoundingClientRect().right - last.getBoundingClientRect().right;
+      for (const last of rows.values()) {
+        const gap = containerRight - last.getBoundingClientRect().right;
 
-      // A couple of pixels of slack for rounding; anything past that is a
-      // real gap the row was left with.
-      if (gap > 2) last.style.gridColumnEnd = "-1";
+        // A couple of pixels of slack for rounding; anything past that is a
+        // real gap the row was left with.
+        if (gap > 2) last.style.gridColumnEnd = "-1";
+      }
     }
 
-    fillLastRow();
+    fillRowGaps();
 
-    const observer = new ResizeObserver(fillLastRow);
+    const observer = new ResizeObserver(fillRowGaps);
     observer.observe(container);
     return () => observer.disconnect();
   }, [order]);
