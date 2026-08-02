@@ -16,6 +16,11 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: "2026-08-02",
+    title: "Fixed the MetaTrader add-on reading the wrong stop-loss",
+    body: "Every synced trade showed \"no stop\" in the journal, even when a real stop-loss was set on the position. Re-download the add-on from Settings and reattach it to pick up the fix — trades synced before this will keep showing \"no stop\" until they're resynced, but everything closing from now on will read correctly.",
+  },
+  {
+    date: "2026-08-02",
     title: "Cards can now be dragged into any order",
     body: "Grab the handle in a card's top-right corner and drop it wherever you want — on the Dashboard, Settings and Pairs. Saved to your account, so the layout is the same next time you sign in.",
   },
