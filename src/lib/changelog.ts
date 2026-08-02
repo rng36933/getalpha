@@ -16,8 +16,8 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: "2026-08-02",
-    title: "Dashboard cards can now be dragged into any order",
-    body: "Grab the handle in a card's top-right corner and drop it wherever you want. Saved to your account, so the layout is the same next time you sign in.",
+    title: "Cards can now be dragged into any order",
+    body: "Grab the handle in a card's top-right corner and drop it wherever you want — on the Dashboard, Settings and Pairs. Saved to your account, so the layout is the same next time you sign in.",
   },
   {
     date: "2026-08-02",
