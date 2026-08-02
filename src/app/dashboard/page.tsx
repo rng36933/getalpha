@@ -34,19 +34,29 @@ import { computeDayTape } from "@/lib/market-data/tape";
 import { prisma } from "@/lib/prisma";
 import { MAX_WATCHLIST_SIZE, getWatchlist } from "@/lib/watchlist";
 
-/** Nothing older matters to a dashboard; the journal holds the full record. */
-const SUMMARY_WINDOW = 200;
+/**
+ * Same cap the Journal and Pairs pages read, so the three pages describe the
+ * same account.
+ *
+ * This used to be 200, on the reasoning that a curve's shape does not change
+ * for the two hundred and first trade. True for the curve's shape, false for
+ * `Performance`'s totals sitting right beside it — closed count, total P&L and
+ * win rate are sums over whatever was queried, and every trade past 200 was
+ * silently missing from them. An account past that mark showed one number on
+ * the Dashboard and a different, correct one on the Journal, which is the one
+ * kind of disagreement this product cannot afford to ship.
+ */
+const SUMMARY_WINDOW = 2000;
 
 /**
- * Open positions are read separately, and without that window.
+ * Open positions are read separately, and without `SUMMARY_WINDOW` at all.
  *
- * "The newest 200 trades" is a sound rule for the statistics — a curve does not
- * change shape for the two hundred and first — but it is the wrong rule for
- * open positions, because *open* has nothing to do with *recent*. A position
- * opened months ago and still running drops out of the window the moment two
- * hundred newer trades exist, and then vanishes from the card whose entire job
- * is to show it. Nothing on the page would look broken; it would simply say
- * nothing is open, which is the most expensive kind of wrong.
+ * `SUMMARY_WINDOW` is the newest N trades, and *open* has nothing to do with
+ * *recent* — a position opened months ago and still running would drop out of
+ * that window the moment enough newer trades exist, and then vanish from the
+ * card whose entire job is to show it. Nothing on the page would look broken;
+ * it would simply say nothing is open, which is the most expensive kind of
+ * wrong. So this is queried on its own, capped only against a runaway sync.
  *
  * Capped anyway, since an unbounded query on a request path is how a page
  * eventually dies. Nobody holds a hundred positions at once, and if they do,
