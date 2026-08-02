@@ -34,7 +34,12 @@ export function Clause({
   return (
     <section>
       <h2 className="text-sm font-medium">{heading}</h2>
-      <div className="mt-2 space-y-3 text-sm leading-relaxed text-muted">
+      {/* Every emphasised sentence across Terms, Privacy and Disclaimer reads
+          gold from this one place, rather than each clause colouring its own
+          <strong> — the parts worth stopping to read (who bears the risk,
+          what this platform is not) should look the same wherever they
+          appear. */}
+      <div className="mt-2 space-y-3 text-sm leading-relaxed text-muted [&_strong]:font-semibold [&_strong]:text-accent">
         {children}
       </div>
     </section>
