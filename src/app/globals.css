@@ -109,27 +109,12 @@ body {
    `app-grid` is applied by the dashboard layout and was, like `.surface-lit`
    above, referenced in markup with no rule defining it anywhere — the desk
    has been sitting on a flat background this whole time instead of the faint
-   ruled grid + ambient glow the comment beside it describes. A fixed
-   `::before` behind a `position: relative, z-10` main content area, same
-   shape as the landing page's own backdrop: the grid never scrolls with the
-   page, and `isolate` on the parent stops it from being painted over cards
-   that create their own stacking context.
+   ruled grid the comment beside it describes. A fixed `::before` behind a
+   `position: relative, z-10` main content area, same shape as the landing
+   page's own backdrop: the grid never scrolls with the page, and `isolate`
+   on the parent stops it from being painted over cards that create their own
+   stacking context.
    --------------------------------------------------------------------------- */
-
-/* Registered so the browser knows these are percentages and can interpolate
-   them smoothly across the keyframe below, rather than jumping between the
-   two positions the way an unregistered custom property would. */
-@property --glow-x {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 10%;
-}
-
-@property --glow-y {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 0%;
-}
 
 .app-grid {
   position: relative;
@@ -147,35 +132,24 @@ body {
   background-size: 40px 40px;
 }
 
-/* A slow gold glow drifting between two corners — the "something animated,
-   trading-desk, gold-dominant" backdrop asked for. Kept behind everything
-   (`z-index: 0`, same stacking layer as the grid), low opacity, and slow
-   enough (28s) that it reads as ambient rather than as a distraction on a
-   page meant to be read closely. */
-.app-grid::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: radial-gradient(
-    ellipse 60rem 40rem at var(--glow-x, 15%) var(--glow-y, 10%),
-    rgba(242, 201, 76, 0.07),
-    transparent 65%
-  );
-  animation: app-glow-drift 28s ease-in-out infinite;
+/* The dashboard's ambient candlestick strip — drawn once as two identical
+   copies side by side (`dashboard/AmbientCandles.tsx`) and drifted with a
+   transform loop rather than redrawn, which is what makes an animated
+   background affordable behind a page full of its own live-updating cards.
+   90s, not the landing ticker's 44s: this is peripheral texture on a page
+   meant to be read closely, not a headline element. */
+@keyframes app-candle-drift-anim {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
-@keyframes app-glow-drift {
-  0%, 100% { --glow-x: 10%; --glow-y: 0%; }
-  50%       { --glow-x: 90%; --glow-y: 60%; }
+.app-candle-drift {
+  animation: app-candle-drift-anim 90s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-grid::after {
+  .app-candle-drift {
     animation: none;
-    --glow-x: 50%;
-    --glow-y: 20%;
   }
 }
 

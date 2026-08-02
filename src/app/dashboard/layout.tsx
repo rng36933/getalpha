@@ -1,5 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
+import AmbientCandles from "@/components/dashboard/AmbientCandles";
 import ConsentGate from "@/components/ConsentGate";
 import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
@@ -77,6 +78,7 @@ export default async function AppLayout({
     // desk. `isolate` keeps its fixed pseudo-element from being painted over
     // the cards, which sit in the normal flow above it.
     <div className="app-grid isolate flex min-h-screen flex-col sm:flex-row">
+      <AmbientCandles />
       <MobileNav pro={access.allowed} admin={admin} />
       <Sidebar name={name} pro={access.allowed} admin={admin} />
       {/* The bottom padding clears the fixed tab bar. Without it the last card

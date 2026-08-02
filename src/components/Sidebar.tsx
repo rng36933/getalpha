@@ -21,7 +21,7 @@ export default function Sidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="relative z-10 hidden w-60 shrink-0 flex-col border-r border-line bg-surface backdrop-blur-md sm:flex">
+    <aside className="sticky top-0 z-10 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-surface backdrop-blur-md sm:flex">
       <div className="flex h-16 items-center gap-2.5 border-b border-line px-5">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-base font-bold text-background">
           α
@@ -96,7 +96,7 @@ export default function Sidebar({
           }}
         />
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="truncate text-xs text-muted">{name}</span>
+          <span className="truncate text-xs font-medium text-positive">{name}</span>
           <PlanBadge pro={pro} />
         </div>
       </div>
