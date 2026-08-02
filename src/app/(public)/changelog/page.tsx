@@ -19,9 +19,6 @@ export default function ChangelogPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight">Changelog</h1>
-      <p className="mt-2 text-sm text-muted">
-        What&rsquo;s shipped, in plain language. Newest first.
-      </p>
 
       <ol className="mt-8 space-y-8 border-l border-line pl-6">
         {CHANGELOG.map((entry) => (
