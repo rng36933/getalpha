@@ -15,6 +15,11 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-08-03",
+    title: "News headlines are now clickable",
+    body: "Each headline in the per-pair news feed links out to the original article instead of sitting there as plain text.",
+  },
+  {
     date: "2026-08-02",
     title: "Fixed the MetaTrader add-on reading the wrong stop-loss",
     body: "Every synced trade showed \"no stop\" in the journal, even when a real stop-loss was set on the position. Re-download the add-on from Settings and reattach it to pick up the fix — trades synced before this will keep showing \"no stop\" until they're resynced, but everything closing from now on will read correctly.",

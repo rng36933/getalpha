@@ -34,6 +34,8 @@ export type NewsInput = {
   source: string;
   publishedAt: string;
   summary?: string | null;
+  /** Link to the original article. Absent on snapshots stored before this field existed. */
+  url?: string | null;
 };
 
 export type SessionBriefInput = {

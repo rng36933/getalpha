@@ -68,7 +68,18 @@ export default function PairNews({
                 headline.publishedAt.slice(11, 16)}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm leading-snug">{headline.title}</p>
+              {headline.url ? (
+                <a
+                  href={headline.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm leading-snug hover:text-accent hover:underline"
+                >
+                  {headline.title}
+                </a>
+              ) : (
+                <p className="text-sm leading-snug">{headline.title}</p>
+              )}
               <p className="mt-0.5 text-[11px] text-muted">{headline.source}</p>
             </div>
           </div>

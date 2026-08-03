@@ -42,6 +42,7 @@ function parseFeed(xml: string, source: string): NewsInput[] {
     .map((item): NewsInput | null => {
       const title = extractTag(item, "title");
       const pubDate = extractTag(item, "pubDate");
+      const link = extractTag(item, "link");
 
       if (!title || !pubDate) return null;
 
@@ -53,6 +54,7 @@ function parseFeed(xml: string, source: string): NewsInput[] {
         source,
         publishedAt: published.toISOString(),
         summary: null,
+        url: link,
       };
     })
     .filter((n): n is NewsInput => n !== null);
