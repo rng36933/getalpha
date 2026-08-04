@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import AmbientCandles from "@/components/landing/AmbientCandles";
 import Features from "@/components/landing/Features";
+import SocialLinks from "@/components/landing/SocialLinks";
 import Ticker from "@/components/landing/Ticker";
 import TradeTest from "@/components/landing/TradeTest";
 import VerdictCard from "@/components/landing/VerdictCard";
@@ -374,6 +375,7 @@ export default function Landing({
       <footer className="border-t border-white/[0.05]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-7 text-[13px] text-zinc-500 sm:px-8">
           <span>© {new Date().getUTCFullYear()} getALPHA</span>
+          <SocialLinks />
           <nav className="flex gap-5">
             <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
               Changelog
