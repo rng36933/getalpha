@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Risk Disclaimer · getALPHA",
   description:
     "getALPHA is an educational and informational tool. It does not provide financial advice or trading signals.",
+  alternates: { canonical: "/disclaimer" },
 };
 
 export default function DisclaimerPage() {

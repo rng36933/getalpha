@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy · getALPHA",
   description:
     "What getALPHA collects, why, how long it is kept, and how to have it deleted.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

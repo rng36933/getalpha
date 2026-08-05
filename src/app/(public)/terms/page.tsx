@@ -5,6 +5,7 @@ import { LEGAL_VERSIONS, OPERATOR } from "@/lib/legal/documents";
 export const metadata: Metadata = {
   title: "Terms of Service · getALPHA",
   description: "The agreement between you and getALPHA.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

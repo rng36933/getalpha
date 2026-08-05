@@ -5,6 +5,7 @@ import { CHANGELOG } from "@/lib/changelog";
 export const metadata: Metadata = {
   title: "Changelog · getALPHA",
   description: "What's shipped on getALPHA, newest first.",
+  alternates: { canonical: "/changelog" },
 };
 
 /** Entries per page. Matches the journal's own page size. */
