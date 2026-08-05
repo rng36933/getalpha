@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import AmbientCandles from "@/components/dashboard/AmbientCandles";
@@ -5,6 +6,7 @@ import ConsentGate from "@/components/ConsentGate";
 import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
 import { checkAccess } from "@/lib/billing/subscription";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 import { hasAcceptedCurrentTerms } from "@/lib/legal/acceptance";
 import { CURRENT_LEGAL_VERSION, LEGAL_PAGES } from "@/lib/legal/documents";
 import { isAdmin } from "@/lib/admin";
@@ -47,7 +49,9 @@ export default async function AppLayout({
 
   if (userId && !(await hasAcceptedCurrentTerms(userId))) {
     return (
-      <ConsentGate version={CURRENT_LEGAL_VERSION} documents={LEGAL_PAGES} />
+      <ClerkProvider appearance={clerkAppearance}>
+        <ConsentGate version={CURRENT_LEGAL_VERSION} documents={LEGAL_PAGES} />
+      </ClerkProvider>
     );
   }
 
@@ -72,20 +76,22 @@ export default async function AppLayout({
   const admin = userId ? isAdmin(userId) : false;
 
   return (
-    // A column on a phone, so the top bar can be sticky and the content can run
-    // the full width; a row from `sm` up, where the sidebar returns.
-    // `app-grid` lays the same faint grid the landing page uses behind the
-    // desk. `isolate` keeps its fixed pseudo-element from being painted over
-    // the cards, which sit in the normal flow above it.
-    <div className="app-grid isolate flex min-h-screen flex-col sm:flex-row">
-      <AmbientCandles />
-      <MobileNav pro={access.allowed} admin={admin} />
-      <Sidebar name={name} pro={access.allowed} admin={admin} />
-      {/* The bottom padding clears the fixed tab bar. Without it the last card
-          on every page sits underneath the navigation. */}
-      <main className="relative z-10 min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-8 sm:py-8 sm:pb-8 lg:px-10">
-        {children}
-      </main>
-    </div>
+    <ClerkProvider appearance={clerkAppearance}>
+      {/* A column on a phone, so the top bar can be sticky and the content can
+          run the full width; a row from `sm` up, where the sidebar returns.
+          `app-grid` lays the same faint grid the landing page uses behind the
+          desk. `isolate` keeps its fixed pseudo-element from being painted over
+          the cards, which sit in the normal flow above it. */}
+      <div className="app-grid isolate flex min-h-screen flex-col sm:flex-row">
+        <AmbientCandles />
+        <MobileNav pro={access.allowed} admin={admin} />
+        <Sidebar name={name} pro={access.allowed} admin={admin} />
+        {/* The bottom padding clears the fixed tab bar. Without it the last
+            card on every page sits underneath the navigation. */}
+        <main className="relative z-10 min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-8 sm:py-8 sm:pb-8 lg:px-10">
+          {children}
+        </main>
+      </div>
+    </ClerkProvider>
   );
 }
