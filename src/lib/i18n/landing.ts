@@ -328,7 +328,7 @@ export const landingCopy: LandingCopy = {
       note: "For as long as you use it.",
       items: [
         "Trade journal with computed P&L and risk",
-        "Cumulative R curve and outcome distribution",
+        "Cumulative P&L curve and outcome distribution",
         "Live charts for your watchlist",
         "Economic calendar in your own timezone",
         "MetaTrader sync — 90 days of history",
