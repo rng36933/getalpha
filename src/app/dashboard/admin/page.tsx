@@ -156,6 +156,21 @@ export default async function AdminPage() {
           <p className="mt-1 text-xs text-muted">Registered accounts, via Clerk</p>
         </Card>
 
+        <Card title="Website visits">
+          <a
+            href="https://vercel.com/almintasv-2246/getalpha/analytics"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-accent hover:underline"
+          >
+            Open Vercel Analytics →
+          </a>
+          <p className="mt-1 text-xs text-muted">
+            Unique visitors and page views, tracked via Vercel — not queryable
+            from this app on the Hobby plan.
+          </p>
+        </Card>
+
         <Card title="By plan">
           <div className="space-y-1 text-sm">
             {PAID_PLANS.map((plan) => (
