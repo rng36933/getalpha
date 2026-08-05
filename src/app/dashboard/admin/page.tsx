@@ -158,7 +158,7 @@ export default async function AdminPage() {
 
         <Card title="Website visits">
           <a
-            href="https://vercel.com/almintasv-2246/getalpha/analytics"
+            href="https://vercel.com/almintasv-2246s-projects/getalpha/analytics"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-accent hover:underline"
