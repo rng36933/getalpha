@@ -19,6 +19,10 @@ import WaitlistForm from "@/components/WaitlistForm";
 import { landingCopy } from "@/lib/i18n/landing";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
 
+const siteUrl = (
+  process.env.NEXT_PUBLIC_APP_URL || "https://www.getalpha.org"
+).replace(/\/$/, "");
+
 function Wordmark() {
   return (
     <span className="flex items-center gap-2.5 font-semibold tracking-tight text-white">
@@ -108,6 +112,39 @@ export default function Landing({
       </header>
 
       <main>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "getALPHA",
+            applicationCategory: "FinanceApplication",
+            operatingSystem: "Web",
+            description:
+              "A trading journal and process-review tool for MetaTrader (MT5) traders. Syncs closed trades automatically, computes P&L and risk, and gives a written review of how a trade was taken — not a buy/sell signal.",
+            url: siteUrl,
+            offers: [
+              {
+                "@type": "Offer",
+                name: "Free",
+                price: "0",
+                priceCurrency: "EUR",
+              },
+              {
+                "@type": "Offer",
+                name: "Pro (monthly)",
+                price: "19.99",
+                priceCurrency: "EUR",
+              },
+              {
+                "@type": "Offer",
+                name: "Pro (yearly)",
+                price: "199.99",
+                priceCurrency: "EUR",
+              },
+            ],
+          })}
+        </script>
+
         <section className="relative overflow-hidden py-14 sm:py-24">
           <div aria-hidden="true" className="lp-grid pointer-events-none absolute inset-0" />
           <AmbientCandles />
