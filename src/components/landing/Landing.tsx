@@ -14,6 +14,7 @@ import Features from "@/components/landing/Features";
 import SocialLinks from "@/components/landing/SocialLinks";
 import Ticker from "@/components/landing/Ticker";
 import TradeTest from "@/components/landing/TradeTest";
+import Turbo0Badge from "@/components/landing/Turbo0Badge";
 import VerdictCard from "@/components/landing/VerdictCard";
 import WaitlistForm from "@/components/WaitlistForm";
 import { landingCopy } from "@/lib/i18n/landing";
@@ -412,7 +413,10 @@ export default function Landing({
       <footer className="border-t border-white/[0.05]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-7 text-[13px] text-zinc-500 sm:px-8">
           <span>© {new Date().getUTCFullYear()} getALPHA</span>
-          <SocialLinks />
+          <div className="flex items-center gap-5">
+            <SocialLinks />
+            <Turbo0Badge />
+          </div>
           <nav className="flex gap-5">
             <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
               Changelog
