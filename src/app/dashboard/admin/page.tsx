@@ -22,6 +22,59 @@ export const metadata = {
 
 const RECENT_LIMIT = 15;
 
+const VISIT_STATS_DAYS = 7;
+
+type DayVisits = { label: string; views: number; unique: number };
+type VisitStats = { totalViews: number; uniqueVisitors: number; days: DayVisits[] };
+
+/**
+ * Website visits over the last week, bucketed by UTC day.
+ *
+ * Computed here rather than in the database: the row count is small (this is
+ * the marketing site, not the app), and a `groupBy` cannot express "distinct
+ * visitors per day" directly — reducing rows already in memory is simpler
+ * than a raw query for a number this size.
+ */
+async function loadVisitStats(): Promise<VisitStats> {
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - (VISIT_STATS_DAYS - 1));
+  since.setUTCHours(0, 0, 0, 0);
+
+  const rows = await prisma.pageView.findMany({
+    where: { createdAt: { gte: since } },
+    select: { visitorId: true, createdAt: true },
+  });
+
+  const byDay = new Map<string, { views: number; visitors: Set<string> }>();
+  for (let i = 0; i < VISIT_STATS_DAYS; i++) {
+    const day = new Date(since);
+    day.setUTCDate(day.getUTCDate() + i);
+    byDay.set(day.toISOString().slice(0, 10), { views: 0, visitors: new Set() });
+  }
+
+  for (const row of rows) {
+    const key = row.createdAt.toISOString().slice(0, 10);
+    const bucket = byDay.get(key);
+    if (!bucket) continue;
+    bucket.views += 1;
+    bucket.visitors.add(row.visitorId);
+  }
+
+  const days: DayVisits[] = [...byDay.entries()].map(([key, bucket]) => ({
+    label: new Date(`${key}T00:00:00Z`).toLocaleDateString("en-IE", {
+      weekday: "short",
+    }),
+    views: bucket.views,
+    unique: bucket.visitors.size,
+  }));
+
+  return {
+    totalViews: rows.length,
+    uniqueVisitors: new Set(rows.map((r) => r.visitorId)).size,
+    days,
+  };
+}
+
 type PlanAmount = { slug: string; amountEuros: number; interval: string | null };
 
 /** The live price behind each paid plan, read from Stripe once per render. */
@@ -61,8 +114,16 @@ export default async function AdminPage() {
   const { userId } = await auth();
   if (!isAdmin(userId)) notFound();
 
-  const [activeSubs, trialing, pastDue, planAmounts, recentSubs, recentTickets, memberCount] =
-    await Promise.all([
+  const [
+    activeSubs,
+    trialing,
+    pastDue,
+    planAmounts,
+    recentSubs,
+    recentTickets,
+    memberCount,
+    visitStats,
+  ] = await Promise.all([
       prisma.subscription.groupBy({
         by: ["planSlug"],
         where: { status: SubscriptionStatus.ACTIVE },
@@ -88,6 +149,7 @@ export default async function AdminPage() {
           console.error("Admin panel could not read the Clerk user count:", error);
           return null;
         }),
+      loadVisitStats(),
     ]);
 
   const byPlan = new Map(activeSubs.map((row) => [row.planSlug, row._count._all]));
@@ -156,18 +218,10 @@ export default async function AdminPage() {
           <p className="mt-1 text-xs text-muted">Registered accounts, via Clerk</p>
         </Card>
 
-        <Card title="Website visits">
-          <a
-            href="https://vercel.com/almintasv-2246s-projects/getalpha/analytics"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-accent hover:underline"
-          >
-            Open Vercel Analytics →
-          </a>
+        <Card title="Website visits (7d)">
+          <p className="figure text-2xl">{visitStats.uniqueVisitors}</p>
           <p className="mt-1 text-xs text-muted">
-            Unique visitors and page views, tracked via Vercel — not queryable
-            from this app on the Hobby plan.
+            unique visitors · {visitStats.totalViews} page views
           </p>
         </Card>
 
@@ -180,6 +234,41 @@ export default async function AdminPage() {
               </div>
             ))}
           </div>
+        </Card>
+      </div>
+
+      <div className="mt-4">
+        <Card title="Website visits, last 7 days">
+          <div className="flex items-end gap-3">
+            {visitStats.days.map((day) => {
+              const max = Math.max(1, ...visitStats.days.map((d) => d.unique));
+              const height = Math.round((day.unique / max) * 100);
+              return (
+                <div key={day.label} className="flex flex-1 flex-col items-center gap-1.5">
+                  <span className="figure text-xs text-muted">{day.unique}</span>
+                  <div className="flex h-24 w-full items-end rounded-md bg-white/[0.03]">
+                    <div
+                      className="w-full rounded-md bg-accent/70"
+                      style={{ height: `${Math.max(4, height)}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] text-muted">{day.label}</span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            Bars show unique visitors per day.{" "}
+            <a
+              href="https://vercel.com/almintasv-2246s-projects/getalpha/analytics"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:underline"
+            >
+              Open Vercel Analytics
+            </a>{" "}
+            for a second source.
+          </p>
         </Card>
       </div>
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import VisitTracker from "@/components/landing/VisitTracker";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
 
 /**
@@ -15,6 +16,7 @@ export default function PublicLayout({
 }) {
   return (
     <div className="min-h-full bg-background">
+      <VisitTracker />
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-5">
           <Link href="/" className="text-sm font-semibold tracking-tight">

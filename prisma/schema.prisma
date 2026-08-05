@@ -531,3 +531,19 @@ model Trade {
   @@index([asset])
   @@index([userId, setup])
 }
+
+/// One row per page load on the public marketing site.
+///
+/// `visitorId` is a random id in a first-party cookie, not derived from
+/// anything identifying — it exists only so "unique visitors" can be counted
+/// as distinct cookies rather than distinct requests. No IP address, no user
+/// agent, no query string is stored.
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  visitorId String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([visitorId])
+}

@@ -19,6 +19,9 @@ export const PUBLIC_ROUTES = [
   // reach before deciding to sign up.
   "/",
   "/api/waitlist",
+  // Fired from the public marketing pages only (see VisitTracker). A visitor
+  // reading the landing page has no session to protect this behind.
+  "/api/track-visit",
   "/login(.*)",
   "/register(.*)",
   // Readable before signing up. A policy you can only see after agreeing to it

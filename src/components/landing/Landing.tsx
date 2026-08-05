@@ -16,6 +16,7 @@ import Ticker from "@/components/landing/Ticker";
 import TradeTest from "@/components/landing/TradeTest";
 import Turbo0Badge from "@/components/landing/Turbo0Badge";
 import VerdictCard from "@/components/landing/VerdictCard";
+import VisitTracker from "@/components/landing/VisitTracker";
 import WaitlistForm from "@/components/WaitlistForm";
 import { landingCopy } from "@/lib/i18n/landing";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
@@ -87,6 +88,7 @@ export default function Landing({
 
   return (
     <div className="min-h-screen bg-background">
+      <VisitTracker />
       <Ticker />
 
       <header className="sticky top-0 z-40 border-b border-white/[0.05] bg-background/80 backdrop-blur-md">
