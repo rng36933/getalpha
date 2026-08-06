@@ -19,8 +19,12 @@ Each run:
    `mt5-trading-journal-guide`) and `src/components/BlogPost.tsx`.
 3. Add its metadata entry to `src/lib/blog.ts` (`BLOG_POSTS`), newest first,
    with today's date.
-4. Commit and push to `main`.
-5. Cross out the topic below (strike it or move it to "Published") so the
+4. Run `npm run lint` **and** `npm run build` before committing — `build`
+   alone does not catch ESLint errors like unescaped JSX entities
+   (`react/no-unescaped-entities`), and a lint failure fails CI even though
+   the build succeeds. Fix anything the new post's files trigger.
+5. Commit and push to `main`.
+6. Cross out the topic below (strike it or move it to "Published") so the
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
