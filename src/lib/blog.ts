@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "why-win-rate-doesnt-matter",
+    title: "Why Your Win Rate Doesn't Matter (And What to Track Instead)",
+    description:
+      "A high win rate can hide a broken process, and a low one can hide a sound one. What actually separates a good trading decision from a lucky one.",
+    date: "2026-08-07",
+  },
+  {
     slug: "mt5-trading-journal-guide",
     title: "How to Build a Trading Journal for MetaTrader 5",
     description:
