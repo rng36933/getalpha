@@ -3,7 +3,7 @@ import LegalDocument, { Clause } from "@/components/LegalDocument";
 import { LEGAL_VERSIONS, OPERATOR } from "@/lib/legal/documents";
 
 export const metadata: Metadata = {
-  title: "Risk Disclaimer · getALPHA",
+  title: { absolute: "Risk Disclaimer · getALPHA" },
   description:
     "getALPHA is an educational and informational tool. It does not provide financial advice or trading signals.",
   alternates: { canonical: "/disclaimer" },

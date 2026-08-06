@@ -24,6 +24,9 @@ export default function PublicLayout({
           </Link>
 
           <nav className="flex items-center gap-4 text-xs text-muted">
+            <Link href="/blog" className="hover:text-foreground">
+              Blog
+            </Link>
             <Link href="/changelog" className="font-medium text-accent hover:text-accent/80">
               Changelog
             </Link>

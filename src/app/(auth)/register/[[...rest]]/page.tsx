@@ -1,7 +1,7 @@
 import RegisterConsent from "@/components/RegisterConsent";
 
 export const metadata = {
-  title: "Create account · getALPHA",
+  title: { absolute: "Create account · getALPHA" },
   alternates: { canonical: "/register" },
 };
 

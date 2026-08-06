@@ -3,7 +3,7 @@ import LegalDocument, { Clause } from "@/components/LegalDocument";
 import { LEGAL_VERSIONS, OPERATOR } from "@/lib/legal/documents";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · getALPHA",
+  title: { absolute: "Privacy Policy · getALPHA" },
   description:
     "What getALPHA collects, why, how long it is kept, and how to have it deleted.",
   alternates: { canonical: "/privacy" },

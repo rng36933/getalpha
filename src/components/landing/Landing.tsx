@@ -101,6 +101,9 @@ export default function Landing({
             <Link href="#how" className="hidden text-zinc-400 transition-all duration-300 ease-in-out hover:text-white sm:inline">
               {copy.nav.how}
             </Link>
+            <Link href="/blog" className="hidden text-zinc-400 transition-all duration-300 ease-in-out hover:text-white sm:inline">
+              Blog
+            </Link>
             <Link href="/changelog" className="font-medium text-accent transition-all duration-300 ease-in-out hover:text-accent/80">
               Changelog
             </Link>
@@ -420,6 +423,9 @@ export default function Landing({
             <Turbo0Badge />
           </div>
           <nav className="flex gap-5">
+            <Link href="/blog" className="transition-all duration-300 ease-in-out hover:text-white">
+              Blog
+            </Link>
             <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
               Changelog
             </Link>

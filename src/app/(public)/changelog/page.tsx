@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CHANGELOG } from "@/lib/changelog";
 
 export const metadata: Metadata = {
-  title: "Changelog · getALPHA",
+  title: { absolute: "Changelog · getALPHA" },
   description: "What's shipped on getALPHA, newest first.",
   alternates: { canonical: "/changelog" },
 };

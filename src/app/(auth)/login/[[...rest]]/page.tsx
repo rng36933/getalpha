@@ -1,7 +1,7 @@
 import { SignIn } from "@clerk/nextjs";
 
 export const metadata = {
-  title: "Sign in · getALPHA",
+  title: { absolute: "Sign in · getALPHA" },
   alternates: { canonical: "/login" },
 };
 
