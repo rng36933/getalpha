@@ -35,7 +35,7 @@ export default function Page() {
         the same scale.
       </p>
 
-      <h2>Why P&L doesn't travel</h2>
+      <h2>Why P&L doesn&apos;t travel</h2>
       <p>
         A currency figure only means something next to the risk that produced it, and a raw
         P&amp;L column strips that context out. Two failure modes hide inside it:
