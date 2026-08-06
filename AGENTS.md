@@ -24,7 +24,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] R-Multiple vs P&L
 - [ ] Automatic MT5 journaling
 - [ ] What Is an AI Trading Coach
 - [ ] Trading discipline / habit
@@ -34,6 +33,7 @@ Each run:
 **Published:**
 - [x] How to Build a Trading Journal for MetaTrader 5 (2026-08-06)
 - [x] Why Your Win Rate Doesn't Matter (2026-08-07)
+- [x] R-Multiple vs P&L (2026-08-06)
 
 Once the backlog above is empty, **stop and ask Almintas for more topics**
 rather than inventing new ones — this standing permission covers working

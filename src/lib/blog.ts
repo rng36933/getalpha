@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "r-multiple-vs-pnl",
+    title: "R-Multiple vs. P&L: Why One Number Travels and the Other Doesn't",
+    description:
+      "P&L tells you what a trade was worth in currency. R-multiple tells you what it was worth relative to the risk you took. Only one of those numbers is comparable across trades.",
+    date: "2026-08-06",
+  },
+  {
     slug: "why-win-rate-doesnt-matter",
     title: "Why Your Win Rate Doesn't Matter (And What to Track Instead)",
     description:
