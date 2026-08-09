@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "automatic-mt5-journaling",
+    title: "Automatic MT5 Journaling: What Gets Recorded and How",
+    description:
+      "What actually happens when a trading journal syncs itself from MetaTrader 5 — where the numbers come from, what a script can and can't see, and why the stop-loss field is the one that usually breaks first.",
+    date: "2026-08-09",
+  },
+  {
     slug: "r-multiple-vs-pnl",
     title: "R-Multiple vs. P&L: Why One Number Travels and the Other Doesn't",
     description:
