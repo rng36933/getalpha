@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] What Is an AI Trading Coach
 - [ ] Trading discipline / habit
 - [ ] Economic calendar without overtrading
 - [ ] "5 things a trading journal should show you"
@@ -38,6 +37,7 @@ Each run:
 - [x] Why Your Win Rate Doesn't Matter (2026-08-07)
 - [x] R-Multiple vs P&L (2026-08-06)
 - [x] Automatic MT5 journaling (2026-08-09)
+- [x] What Is an AI Trading Coach (2026-08-10)
 
 Once the backlog above is empty, **stop and ask Almintas for more topics**
 rather than inventing new ones — this standing permission covers working

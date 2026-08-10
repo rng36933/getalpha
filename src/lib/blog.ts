@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "what-is-an-ai-trading-coach",
+    title: "What Is an AI Trading Coach (And What It Isn't)",
+    description:
+      "The phrase covers two very different products — one that guesses where price goes next, and one that reads what you already did. Only one of them can actually be checked.",
+    date: "2026-08-10",
+  },
+  {
     slug: "automatic-mt5-journaling",
     title: "Automatic MT5 Journaling: What Gets Recorded and How",
     description:
