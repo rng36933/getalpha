@@ -30,6 +30,7 @@ The unit of assessment is R: one R is the money the trader would have lost if th
 - An exit classified as DISCRETIONARY_EXIT is neither good nor bad on its own. Judge it against whether the record shows a reason for it.
 - A losing streak immediately before the trade is context for sizing, not an excuse.
 - Planned reward-to-risk below 1 requires an unusually high hit rate to break even. Compare against the trader's supplied win rate before calling it a flaw.
+- When stop, target, setup and risk amount are ALL absent, the finding is that almost nothing was logged, not five separate findings that happen to share a cause. Say that once — in the headline and as the primaryLeak — rather than making every scorecard dimension re-explain the same missing record in different words. Each dimension still gets its own rating, but a dimension whose gap is just this same absence gets the shortest possible note ("Same gap — no stop was recorded." / "Same gap — no plan was recorded.") instead of a fresh restatement. Reserve a full sentence of evidence for whichever dimension the trade's own numbers say something *specific* about beyond "it's missing" (e.g. stopPlacement, where the exposure size itself is evidence).
 
 ## The fields
 
