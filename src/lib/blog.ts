@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "trading-discipline",
+    title: "Trading Discipline Is a System, Not a Personality Trait",
+    description:
+      "Discipline isn't willpower you either have or don't. It's a small set of rules decided in advance, and a way of catching the moment you break one.",
+    date: "2026-08-11",
+  },
+  {
     slug: "what-is-an-ai-trading-coach",
     title: "What Is an AI Trading Coach (And What It Isn't)",
     description:
