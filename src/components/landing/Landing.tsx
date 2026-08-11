@@ -15,6 +15,7 @@ import SocialLinks from "@/components/landing/SocialLinks";
 import Ticker from "@/components/landing/Ticker";
 import TradeTest from "@/components/landing/TradeTest";
 import Turbo0Badge from "@/components/landing/Turbo0Badge";
+import AiToolHuntBadge from "@/components/landing/AiToolHuntBadge";
 import VerdictCard from "@/components/landing/VerdictCard";
 import VisitTracker from "@/components/landing/VisitTracker";
 import WaitlistForm from "@/components/WaitlistForm";
@@ -421,6 +422,7 @@ export default function Landing({
           <div className="flex items-center gap-5">
             <SocialLinks />
             <Turbo0Badge />
+            <AiToolHuntBadge />
           </div>
           <nav className="flex gap-5">
             <Link href="/blog" className="transition-all duration-300 ease-in-out hover:text-white">
