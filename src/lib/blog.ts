@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "economic-calendar-without-overtrading",
+    title: "How to Use an Economic Calendar Without Overtrading It",
+    description:
+      "The calendar tells you when volatility is scheduled, not what to do with it. Most of what it causes isn't good trades — it's more trades.",
+    date: "2026-08-12",
+  },
+  {
     slug: "trading-discipline",
     title: "Trading Discipline Is a System, Not a Personality Trait",
     description:

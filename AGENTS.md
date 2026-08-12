@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Economic calendar without overtrading
 - [ ] "5 things a trading journal should show you"
 
 **Published:**
@@ -38,6 +37,7 @@ Each run:
 - [x] Automatic MT5 journaling (2026-08-09)
 - [x] What Is an AI Trading Coach (2026-08-10)
 - [x] Trading discipline / habit (2026-08-11)
+- [x] Economic calendar without overtrading (2026-08-12)
 
 Once the backlog above is empty, **stop and ask Almintas for more topics**
 rather than inventing new ones — this standing permission covers working
