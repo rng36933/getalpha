@@ -28,3 +28,24 @@ export function notifySupportTicket(kind: string, message: string): void {
     console.error("Could not notify Discord of a new support ticket:", error);
   });
 }
+
+/**
+ * A Discord ping for every new account, same channel and same fire-and-forget
+ * shape as {@link notifySupportTicket} — signups matter to the same person
+ * checking that channel, and a second webhook for one more event type would
+ * just be a second thing to configure for no benefit.
+ */
+export function notifyNewUser(email: string): void {
+  const webhook = process.env.DISCORD_SUPPORT_WEBHOOK_URL;
+  if (!webhook) return;
+
+  fetch(webhook, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      content: `**New signup** — ${email}`,
+    }),
+  }).catch((error) => {
+    console.error("Could not notify Discord of a new signup:", error);
+  });
+}

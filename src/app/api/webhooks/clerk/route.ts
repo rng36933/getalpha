@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import { eraseUserData } from "@/lib/legal/erase";
 import { sendWelcomeEmail } from "@/lib/email/welcome";
+import { notifyNewUser } from "@/lib/support/discord";
 
 type ClerkEventData = {
   id?: string;
@@ -106,6 +107,8 @@ async function handleUserCreated(data: ClerkEventData): Promise<NextResponse> {
   if (!primary || primary.verification?.status !== "verified") {
     return NextResponse.json({ received: true, handled: false });
   }
+
+  notifyNewUser(primary.email_address);
 
   try {
     await sendWelcomeEmail(primary.email_address, data.first_name ?? null);
