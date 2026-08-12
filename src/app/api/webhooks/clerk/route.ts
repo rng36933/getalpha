@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import { eraseUserData } from "@/lib/legal/erase";
+import { sendWelcomeEmail } from "@/lib/email/welcome";
+
+type ClerkEventData = {
+  id?: string;
+  first_name?: string | null;
+  primary_email_address_id?: string | null;
+  email_addresses?: {
+    id: string;
+    email_address: string;
+    verification?: { status?: string } | null;
+  }[];
+};
 
 /**
  * POST /api/webhooks/clerk
@@ -32,15 +44,21 @@ export async function POST(request: Request) {
     "svix-signature": request.headers.get("svix-signature") ?? "",
   };
 
-  let event: { type?: string; data?: { id?: string } };
+  type ClerkEvent = { type?: string; data?: ClerkEventData };
+
+  let event: ClerkEvent;
 
   try {
-    event = new Webhook(secret).verify(payload, headers) as typeof event;
+    event = new Webhook(secret).verify(payload, headers) as ClerkEvent;
   } catch (error) {
     // A bad signature is a misconfigured secret or a forgery. Neither should be
     // retried, so 400 rather than 500.
     console.error("Clerk webhook signature verification failed:", error);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  if (event.type === "user.created") {
+    return handleUserCreated(event.data ?? {});
   }
 
   if (event.type !== "user.deleted") {
@@ -68,5 +86,32 @@ export async function POST(request: Request) {
     // nothing left and deletes nothing — so a retry is safe.
     console.error(`Could not erase data for deleted account ${userId}:`, error);
     return NextResponse.json({ error: "Erasure failed" }, { status: 500 });
+  }
+}
+
+/**
+ * A new Clerk account. Sends the one-time welcome email.
+ *
+ * Failure here is not retried with a 500: a welcome email is not worth Clerk
+ * hammering this endpoint over, and the account itself is already created
+ * regardless of whether the email goes out.
+ */
+async function handleUserCreated(data: ClerkEventData): Promise<NextResponse> {
+  const primary = data.email_addresses?.find(
+    (address) => address.id === data.primary_email_address_id,
+  );
+
+  // An unverified address is one somebody typed, not one they proved they
+  // own. Sending there risks mailing a stranger.
+  if (!primary || primary.verification?.status !== "verified") {
+    return NextResponse.json({ received: true, handled: false });
+  }
+
+  try {
+    await sendWelcomeEmail(primary.email_address, data.first_name ?? null);
+    return NextResponse.json({ received: true, handled: true });
+  } catch (error) {
+    console.error(`Could not send welcome email for ${data.id}:`, error);
+    return NextResponse.json({ received: true, handled: false });
   }
 }

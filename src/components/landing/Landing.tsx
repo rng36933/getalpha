@@ -12,6 +12,7 @@ import Link from "next/link";
 import AmbientCandles from "@/components/landing/AmbientCandles";
 import Features from "@/components/landing/Features";
 import SocialLinks from "@/components/landing/SocialLinks";
+import ProductHuntBadge from "@/components/landing/ProductHuntBadge";
 import Ticker from "@/components/landing/Ticker";
 import TradeTest from "@/components/landing/TradeTest";
 import Turbo0Badge from "@/components/landing/Turbo0Badge";
@@ -421,6 +422,7 @@ export default function Landing({
           <span>© {new Date().getUTCFullYear()} getALPHA</span>
           <div className="flex items-center gap-5">
             <SocialLinks />
+            <ProductHuntBadge />
             <Turbo0Badge />
             <AiToolHuntBadge />
           </div>
