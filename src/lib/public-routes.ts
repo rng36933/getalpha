@@ -55,6 +55,11 @@ export const PUBLIC_ROUTES = [
   // Android TWA package is allowed to open the site full-screen. Google
   // has no Clerk session, same reasoning as the webhooks below.
   "/.well-known/assetlinks.json",
+  // Temporary sideload build for testing the Android package before the
+  // Play Store listing exists. A phone installing it has no Clerk session
+  // either. TODO: remove this route and the file once Play Store testing
+  // starts — it doesn't need to stay public.
+  "/downloads/getALPHA-test.apk",
   // Stripe has no Clerk session. The webhook authenticates itself with a
   // signature over the raw body instead.
   "/api/billing/webhook",
