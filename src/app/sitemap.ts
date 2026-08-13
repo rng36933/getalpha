@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/lib/blog";
+import { FEATURE_PAGES } from "@/lib/features";
 import { LEGAL_VERSIONS } from "@/lib/legal/documents";
 
 const siteUrl = (
@@ -58,6 +59,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.4,
     },
+    {
+      url: `${siteUrl}/features`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    ...FEATURE_PAGES.map((feature) => ({
+      url: `${siteUrl}/features/${feature.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
     {
       url: `${siteUrl}/blog`,
       changeFrequency: "weekly",
