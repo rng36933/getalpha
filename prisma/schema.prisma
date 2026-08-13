@@ -215,10 +215,15 @@ model EmailPreference {
   /// The morning Session Brief, sent before the London open.
   dailyBrief Boolean @default(false)
 
+  /// A separate email ~30 minutes ahead of each HIGH/MEDIUM-impact USD release,
+  /// on top of (not instead of) the morning brief.
+  newsAlerts Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([dailyBrief])
+  @@index([newsAlerts])
 }
 
 /// Which order a user has dragged a page's cards into.
@@ -260,6 +265,22 @@ model DailyBriefEmail {
   sentAt         DateTime @default(now())
   recipientCount Int      @default(0)
   failureCount   Int      @default(0)
+
+  @@index([sentAt])
+}
+
+/// One row per calendar event a news alert has already gone out for.
+///
+/// The economic calendar feed has no stable event id, so the key is built from
+/// the event's own identity (its UTC timestamp, currency and title) — the same
+/// event queried again on a later poll hashes to the same key and is skipped,
+/// which is what makes polling every few minutes safe rather than a duplicate
+/// email per event.
+model SentNewsAlert {
+  /// sha256 of `${at}|${currency}|${title}`.
+  eventKey String @id
+
+  sentAt DateTime @default(now())
 
   @@index([sentAt])
 }

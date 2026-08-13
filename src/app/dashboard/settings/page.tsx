@@ -15,15 +15,25 @@ export const metadata = {
   title: "Settings",
 };
 
-async function loadPreference(userId: string): Promise<boolean> {
+type EmailPreferenceState = { dailyBrief: boolean; newsAlerts: boolean };
+
+const NO_EMAIL_PREFERENCE: EmailPreferenceState = {
+  dailyBrief: false,
+  newsAlerts: false,
+};
+
+async function loadPreference(userId: string): Promise<EmailPreferenceState> {
   try {
     const row = await prisma.emailPreference.findUnique({ where: { userId } });
-    return row?.dailyBrief ?? false;
+    return {
+      dailyBrief: row?.dailyBrief ?? false,
+      newsAlerts: row?.newsAlerts ?? false,
+    };
   } catch (error) {
     // A settings page that fails to load is worse than one that shows the
     // default: the user can still set it, and the save is what matters.
     console.error("Could not read email preferences:", error);
-    return false;
+    return NO_EMAIL_PREFERENCE;
   }
 }
 
@@ -68,8 +78,8 @@ async function loadMt5(userId: string): Promise<Mt5State> {
 export default async function SettingsPage() {
   const { userId } = await auth();
 
-  const [dailyBrief, access, mt5, savedOrder] = await Promise.all([
-    userId ? loadPreference(userId) : Promise.resolve(false),
+  const [emailPreference, access, mt5, savedOrder] = await Promise.all([
+    userId ? loadPreference(userId) : Promise.resolve(NO_EMAIL_PREFERENCE),
     userId ? checkAccess(userId) : Promise.resolve({ allowed: false } as const),
     userId ? loadMt5(userId) : Promise.resolve(NO_MT5),
     userId
@@ -94,7 +104,8 @@ export default async function SettingsPage() {
       children: (
         <Card title="Email">
           <EmailPreferences
-            initialDailyBrief={dailyBrief}
+            initialDailyBrief={emailPreference.dailyBrief}
+            initialNewsAlerts={emailPreference.newsAlerts}
             entitled={access.allowed}
           />
         </Card>

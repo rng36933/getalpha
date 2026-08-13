@@ -24,8 +24,28 @@ export type Recipient = {
 export async function dailyBriefRecipients(
   now: Date = new Date(),
 ): Promise<Recipient[]> {
+  return entitledRecipients("dailyBrief", now);
+}
+
+/**
+ * Everyone who should get a pre-release news alert.
+ *
+ * Same two-filter shape as {@link dailyBriefRecipients} — opted in, and
+ * entitled — because a news alert is part of the same Pro module as the
+ * morning brief, just delivered per-event instead of once a day.
+ */
+export async function newsAlertRecipients(
+  now: Date = new Date(),
+): Promise<Recipient[]> {
+  return entitledRecipients("newsAlerts", now);
+}
+
+async function entitledRecipients(
+  preferenceField: "dailyBrief" | "newsAlerts",
+  now: Date,
+): Promise<Recipient[]> {
   const optedIn = await prisma.emailPreference.findMany({
-    where: { dailyBrief: true },
+    where: { [preferenceField]: true },
     select: { userId: true },
   });
 
