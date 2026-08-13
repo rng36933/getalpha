@@ -28,6 +28,14 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
+- [ ] Trading Journal for Prop Firm Challenges
+- [ ] Why "Cut Losses, Let Winners Run" Is Bad Advice Without Data
+- [ ] The Stop-Loss You Set vs. The Stop-Loss You Moved
+- [ ] How Many Trades Before Your Statistics Mean Anything
+- [ ] Reading an Equity Curve: What a Smooth Line Actually Hides
+- [ ] MT5 vs Manual Spreadsheet Journal: Where the Numbers Diverge
+- [ ] What "Trading the Plan" Actually Means, Measured
+- [ ] The Cost of Revenge Trading, In Real Numbers
 
 **Published:**
 - [x] 5 things a trading journal should show you (2026-08-13)
