@@ -51,6 +51,10 @@ export const PUBLIC_ROUTES = [
   // an installer or launcher reading the manifest has no session either.
   "/icons/192",
   "/icons/512-maskable",
+  // Digital Asset Links — Google's crawler checks this to verify the
+  // Android TWA package is allowed to open the site full-screen. Google
+  // has no Clerk session, same reasoning as the webhooks below.
+  "/.well-known/assetlinks.json",
   // Stripe has no Clerk session. The webhook authenticates itself with a
   // signature over the raw body instead.
   "/api/billing/webhook",

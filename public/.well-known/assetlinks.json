@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "org.getalpha.www.twa",
+        "sha256_cert_fingerprints": ["CD:95:55:15:E1:BC:6A:10:FD:F9:D5:C6:97:52:96:B7:4C:9B:FF:5B:DA:AF:46:1A:2D:86:26:E4:E6:97:DE:B2"]
+      }
+    }]
