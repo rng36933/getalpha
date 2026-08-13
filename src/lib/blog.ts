@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "5-things-a-trading-journal-should-show-you",
+    title: "5 Things a Trading Journal Should Show You",
+    description:
+      "Most journals show you what happened. A useful one shows you what you keep doing — and whether it's working. Five things worth actually looking at.",
+    date: "2026-08-13",
+  },
+  {
     slug: "economic-calendar-without-overtrading",
     title: "How to Use an Economic Calendar Without Overtrading It",
     description:

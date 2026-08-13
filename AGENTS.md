@@ -28,9 +28,9 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] "5 things a trading journal should show you"
 
 **Published:**
+- [x] 5 things a trading journal should show you (2026-08-13)
 - [x] How to Build a Trading Journal for MetaTrader 5 (2026-08-06)
 - [x] Why Your Win Rate Doesn't Matter (2026-08-07)
 - [x] R-Multiple vs P&L (2026-08-06)
