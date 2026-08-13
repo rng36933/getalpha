@@ -45,7 +45,9 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.getalpha.org";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "getALPHA — a trading desk that judges your process",
+    // The brand line stays first — a suffix appended, not a replacement,
+    // so the keyword search engines want sits behind the voice a reader sees.
+    default: "getALPHA — a trading desk that judges your process — Free Trading Journal",
     // Page titles read "Journal · getALPHA" without each page repeating it.
     template: "%s · getALPHA",
   },

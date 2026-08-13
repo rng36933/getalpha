@@ -185,7 +185,9 @@ export type LandingCopy = {
 
 export const landingCopy: LandingCopy = {
   meta: {
-    title: "getALPHA — the trading journal that judges the decision",
+    // The brand line stays first — a keyword suffix appended, not a
+    // replacement, so search terms sit behind the voice a reader sees.
+    title: "getALPHA — the trading journal that judges the decision — free for MetaTrader 5",
     description:
       "Your MetaTrader trades, journalled automatically, with every number computed from your own record. Free journal, charts and calendar; AI process review on Pro.",
   },
