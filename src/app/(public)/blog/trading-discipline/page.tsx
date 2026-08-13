@@ -88,7 +88,7 @@ export default function Page() {
         same problem — you cannot hold yourself to a rule you have no record of following.
       </p>
       <p>
-        <Link href="/">getALPHA</Link> syncs closed trades straight from MT5 and scores sizing,
+        <Link href="/features/trading-journal">getALPHA</Link> syncs closed trades straight from MT5 and scores sizing,
         stop discipline and exit consistency against your own history, so the read on whether a
         habit is slipping doesn&apos;t depend on remembering it happened.
       </p>

@@ -96,7 +96,7 @@ export default function Page() {
         thinking through a trade yourself. It doesn&apos;t know what happens next any better than you
         do — it just knows, precisely, what already happened, and it can say so without the hindsight
         bias that makes reviewing your own trades harder than it sounds.{" "}
-        <Link href="/">getALPHA</Link>&apos;s AI Coach is built to that boundary on purpose: every
+        <Link href="/features/ai-trade-coach">getALPHA</Link>&apos;s AI Coach is built to that boundary on purpose: every
         number above is computed in code first, the model reads the finished figures, and it is
         never asked to guess where price goes next — because that isn&apos;t the job.
       </p>

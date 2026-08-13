@@ -91,7 +91,7 @@ export default function Page() {
       </p>
       <p>
         That is the specific gap{" "}
-        <Link href="/">getALPHA</Link> fills: it connects to MT5 through a small,{" "}
+        <Link href="/features/trading-journal">getALPHA</Link> fills: it connects to MT5 through a small,{" "}
         <Link href="/getALPHA-Sync.mq5">openly readable add-on</Link> that only ever sends closed
         trades outward, computes P&amp;L and risk from your own record, and leaves the stop-loss
         and reward-to-risk fields populated automatically instead of by hand. The free tier covers

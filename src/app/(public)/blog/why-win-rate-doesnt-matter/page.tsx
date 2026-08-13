@@ -79,7 +79,7 @@ export default function Page() {
         Reviewing your own process objectively is difficult precisely because you already know how
         each trade turned out — a losing trade is easy to second-guess even when the decision
         behind it was sound, and a winning trade is easy to wave through even when it was reckless.{" "}
-        <Link href="/">getALPHA</Link>&apos;s process review is built around that specific problem:
+        <Link href="/features/ai-trade-coach">getALPHA</Link>&apos;s process review is built around that specific problem:
         it judges sizing, stop placement and exit discipline against your own trading history,
         computed from the numbers first, so the read on a trade doesn&apos;t depend on knowing how it
         ended before judging how it was taken.

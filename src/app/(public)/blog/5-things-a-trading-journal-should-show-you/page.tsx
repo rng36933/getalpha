@@ -76,7 +76,7 @@ export default function Page() {
         stop-loss rate, and reward-to-risk drift into a spreadsheet by hand — correctly, and kept
         up to date — is real work most traders don&apos;t get around to. It&apos;s also exactly
         what a journal is for, if it&apos;s going to be more than a record of what already
-        happened. <Link href="/">getALPHA</Link> computes all five directly from your synced MT5
+        happened. <Link href="/features/trading-journal">getALPHA</Link> computes all five directly from your synced MT5
         trade history, so the numbers are there without a spreadsheet formula to maintain — sized
         risk, stop discipline, and reward-to-risk drift, broken out by setup, updated as the trades
         close.

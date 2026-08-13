@@ -100,7 +100,7 @@ export default function Page() {
         the same way any other bad habit shows up once there&apos;s a record to check it against.
       </p>
       <p>
-        <Link href="/">getALPHA</Link> pulls closed trades straight from MT5 and can group them by
+        <Link href="/features/trading-journal">getALPHA</Link> pulls closed trades straight from MT5 and can group them by
         time of day and by the size of the move immediately before entry, which is enough to see a
         news-driven cluster without tagging every trade by hand — so the read on whether the
         calendar is actually costing you comes from the trade history, not from memory of the one

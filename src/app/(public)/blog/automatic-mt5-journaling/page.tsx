@@ -86,7 +86,7 @@ export default function Page() {
         Anything that reads a trading terminal and talks to a server is worth being skeptical of by
         default, and the honest answer to &ldquo;can I trust this&rdquo; isn&apos;t &ldquo;trust
         us&rdquo; — it&apos;s being able to read the thing yourself.{" "}
-        <Link href="/">getALPHA</Link>&apos;s MT5{" "}
+        <Link href="/features/trading-journal">getALPHA</Link>&apos;s MT5{" "}
         <Link href="/getALPHA-Sync.mq5">sync script</Link> ships as plain, commented source, not a
         compiled file: it sends open positions and closed trades outward on a timer, and that is the
         entire list of things it does. It never receives instructions back, never places an order,

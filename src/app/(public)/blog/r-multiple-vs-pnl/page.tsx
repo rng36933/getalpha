@@ -90,7 +90,7 @@ export default function Page() {
         is sound and repeatable. A journal that only tracks one is missing half the picture.
       </p>
       <p>
-        This is why <Link href="/">getALPHA</Link> computes R-multiple on every synced trade
+        This is why <Link href="/features/trading-journal">getALPHA</Link> computes R-multiple on every synced trade
         automatically, from the stop-loss and entry the broker actually recorded, rather than
         leaving it as a figure to calculate by hand after the fact — the same gap that makes manual
         risk tracking easy to round in your own favor without meaning to.
