@@ -15,6 +15,11 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-08-13",
+    title: "News Alerts: a heads-up before each high-impact USD release",
+    body: "A separate opt-in from the morning brief, in Settings. About 30 minutes before each high or medium-impact USD release, an email names what's due and how XAUUSD tends to react around it — never what to do about it.",
+  },
+  {
     date: "2026-08-03",
     title: "News headlines are now clickable",
     body: "Each headline in the per-pair news feed links out to the original article instead of sitting there as plain text.",
