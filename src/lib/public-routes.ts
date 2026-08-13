@@ -47,6 +47,10 @@ export const PUBLIC_ROUTES = [
   // The favicon/app icon, same as `/opengraph-image` above — a browser tab
   // has no Clerk session either.
   "/icon",
+  // The manifest's other two icon sizes (192 and the maskable variant) —
+  // an installer or launcher reading the manifest has no session either.
+  "/icons/192",
+  "/icons/512-maskable",
   // Stripe has no Clerk session. The webhook authenticates itself with a
   // signature over the raw body instead.
   "/api/billing/webhook",
