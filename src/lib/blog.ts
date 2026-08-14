@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "trading-journal-for-prop-firm-challenges",
+    title: "Trading Journal for Prop Firm Challenges",
+    description:
+      "A prop firm challenge doesn't fail you for losing trades. It fails you for breaching a rule you weren't tracking in real time. What to log to see a breach coming.",
+    date: "2026-08-14",
+  },
+  {
     slug: "5-things-a-trading-journal-should-show-you",
     title: "5 Things a Trading Journal Should Show You",
     description:

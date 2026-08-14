@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Trading Journal for Prop Firm Challenges
 - [ ] Why "Cut Losses, Let Winners Run" Is Bad Advice Without Data
 - [ ] The Stop-Loss You Set vs. The Stop-Loss You Moved
 - [ ] How Many Trades Before Your Statistics Mean Anything
@@ -38,6 +37,7 @@ Each run:
 - [ ] The Cost of Revenge Trading, In Real Numbers
 
 **Published:**
+- [x] Trading Journal for Prop Firm Challenges (2026-08-14)
 - [x] 5 things a trading journal should show you (2026-08-13)
 - [x] How to Build a Trading Journal for MetaTrader 5 (2026-08-06)
 - [x] Why Your Win Rate Doesn't Matter (2026-08-07)
