@@ -15,7 +15,7 @@
 #property description "Never places or modifies an order."
 
 input string ConnectionToken = "";          // Connection token from Settings
-input int    SyncSeconds     = 120;         // How often to send, in seconds
+input int    SyncSeconds     = 600;         // How often to send, in seconds (keep under the dashboard's 15-min stale-connection threshold — see src/lib/mt5/liveness.ts)
 input int    HistoryDays     = 90;          // How far back to send on first run
 
 const string ENDPOINT = "https://www.getalpha.org/api/mt5/sync";
