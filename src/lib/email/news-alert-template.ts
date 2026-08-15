@@ -1,4 +1,5 @@
 import type { CalendarInput } from "@/lib/ai/types";
+import { goldReactionNote } from "@/lib/market-data/gold-reaction-notes";
 
 /**
  * The pre-release news alert email.
@@ -47,7 +48,7 @@ export function newsAlertText({
     `${event.title} (${event.currency}, ${event.impact} impact) is due at ${timeLabel}.`,
     forecastLine,
     "",
-    "XAUUSD often reacts sharply to USD data like this. Spreads can widen and price can gap through nearby levels in the minutes around the release.",
+    goldReactionNote(event.title),
     "",
     "This is a heads-up, not a signal — it names what's scheduled, not what to do about it.",
     "",
@@ -120,7 +121,7 @@ export function newsAlertHtml({
         <tr>
           <td style="padding:16px 32px 8px 32px;">
             <p style="margin:0;font-size:14px;line-height:1.55;color:#e9ebf0;">
-              XAUUSD often reacts sharply to USD data like this. Spreads can widen and price can gap through nearby levels in the minutes around the release.
+              ${escape(goldReactionNote(event.title))}
             </p>
           </td>
         </tr>
