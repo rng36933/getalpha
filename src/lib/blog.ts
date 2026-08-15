@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "cut-losses-let-winners-run",
+    title: "Why \"Cut Losses, Let Winners Run\" Is Bad Advice Without Data",
+    description:
+      "The rule tells you which direction to lean, not when to act. Without your own numbers behind it, it produces the opposite of what it promises.",
+    date: "2026-08-15",
+  },
+  {
     slug: "trading-journal-for-prop-firm-challenges",
     title: "Trading Journal for Prop Firm Challenges",
     description:

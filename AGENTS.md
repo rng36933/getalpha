@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Why "Cut Losses, Let Winners Run" Is Bad Advice Without Data
 - [ ] The Stop-Loss You Set vs. The Stop-Loss You Moved
 - [ ] How Many Trades Before Your Statistics Mean Anything
 - [ ] Reading an Equity Curve: What a Smooth Line Actually Hides
@@ -37,6 +36,7 @@ Each run:
 - [ ] The Cost of Revenge Trading, In Real Numbers
 
 **Published:**
+- [x] Why "Cut Losses, Let Winners Run" Is Bad Advice Without Data (2026-08-15)
 - [x] Trading Journal for Prop Firm Challenges (2026-08-14)
 - [x] 5 things a trading journal should show you (2026-08-13)
 - [x] How to Build a Trading Journal for MetaTrader 5 (2026-08-06)
