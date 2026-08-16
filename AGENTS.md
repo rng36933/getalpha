@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] The Stop-Loss You Set vs. The Stop-Loss You Moved
 - [ ] How Many Trades Before Your Statistics Mean Anything
 - [ ] Reading an Equity Curve: What a Smooth Line Actually Hides
 - [ ] MT5 vs Manual Spreadsheet Journal: Where the Numbers Diverge
@@ -36,6 +35,7 @@ Each run:
 - [ ] The Cost of Revenge Trading, In Real Numbers
 
 **Published:**
+- [x] The Stop-Loss You Set vs. The Stop-Loss You Moved (2026-08-16)
 - [x] Why "Cut Losses, Let Winners Run" Is Bad Advice Without Data (2026-08-15)
 - [x] Trading Journal for Prop Firm Challenges (2026-08-14)
 - [x] 5 things a trading journal should show you (2026-08-13)

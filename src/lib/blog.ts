@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "stop-loss-you-set-vs-moved",
+    title: "The Stop-Loss You Set vs. The Stop-Loss You Moved",
+    description:
+      "A stop decided before entry and a stop dragged wider mid-trade look identical in a P&L column. They are not the same decision, and only one of them is risk management.",
+    date: "2026-08-16",
+  },
+  {
     slug: "cut-losses-let-winners-run",
     title: "Why \"Cut Losses, Let Winners Run\" Is Bad Advice Without Data",
     description:
