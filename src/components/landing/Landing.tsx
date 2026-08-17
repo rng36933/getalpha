@@ -91,6 +91,15 @@ export default function Landing({
 
   return (
     <div className="min-h-screen bg-background">
+      {/* A faint grain over the whole page, so the flat dark background reads
+          as a surface rather than a perfectly smooth digital void. */}
+      <svg aria-hidden="true" className="pointer-events-none fixed inset-0 z-50 h-full w-full opacity-[0.035] mix-blend-overlay">
+        <filter id="lp-noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves={3} stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#lp-noise)" />
+      </svg>
+
       <VisitTracker />
       <GoogleAnalytics />
       <Ticker />
