@@ -1,6 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import GrainOverlay from "@/components/GrainOverlay";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -89,6 +90,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-background text-foreground">
         {children}
+        <GrainOverlay />
         <Analytics />
       </body>
     </html>

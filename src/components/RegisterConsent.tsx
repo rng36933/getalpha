@@ -3,7 +3,6 @@
 import { SignUp } from "@clerk/nextjs";
 import { useState } from "react";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
-import { clerkAppearance } from "@/lib/clerkAppearance";
 
 /**
  * The sign-up form, behind a required checkbox.
@@ -18,13 +17,7 @@ export default function RegisterConsent() {
   const [agreed, setAgreed] = useState(false);
 
   if (agreed) {
-    return (
-      <SignUp
-        signInUrl="/login"
-        fallbackRedirectUrl="/welcome"
-        appearance={clerkAppearance}
-      />
-    );
+    return <SignUp signInUrl="/login" fallbackRedirectUrl="/welcome" />;
   }
 
   return (

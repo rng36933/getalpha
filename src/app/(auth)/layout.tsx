@@ -29,6 +29,7 @@ export default function AuthLayout({
         </Link>
 
         {children}
+        {/* Grain overlay now lives once in the root layout (GrainOverlay). */}
       </div>
     </ClerkProvider>
   );

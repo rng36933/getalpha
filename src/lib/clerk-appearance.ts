@@ -9,7 +9,9 @@ export const clerkAppearance = {
     colorNeutral: "#525252",
     colorRing: "#f2c94c",
     colorShimmer: "#252935",
-    borderRadius: "0.5rem",
+    // Square corners, matching the public site's move away from
+    // soft/rounded surfaces everywhere else.
+    borderRadius: "0rem",
     spacingUnit: "0.5rem",
   },
   elements: {
@@ -24,5 +26,12 @@ export const clerkAppearance = {
     // exist in this Clerk version, which silently did nothing.
     userButtonPopoverActionButton: { color: "#f2c94c" },
     userButtonPopoverActionButtonIcon: { color: "#f2c94c" },
+
+    // The sign-in/sign-up card's header and primary button, in the same
+    // mono/uppercase voice as the rest of the public site.
+    headerTitle: "font-mono uppercase tracking-tight",
+    formButtonPrimary: "font-mono uppercase tracking-wide",
+    socialButtonsBlockButtonText: "font-mono",
+    formFieldLabel: "font-mono text-xs uppercase tracking-wide",
   },
 };
