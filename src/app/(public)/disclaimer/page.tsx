@@ -109,12 +109,12 @@ export default function DisclaimerPage() {
 
       <Clause heading="6. No liability for trading losses">
         <p>
-          To the fullest extent permitted by applicable law,{" "}
           {OPERATOR.legalName} and its officers, employees and suppliers accept
           no liability for any loss or damage — including trading losses, loss of
           profit, loss of opportunity, loss of data, or indirect or consequential
           loss — arising out of or in connection with the use of, or reliance on,
-          this platform or any content produced by it.
+          this platform or any content produced by it, to the fullest extent
+          permitted by applicable law.
         </p>
         <p>
           Nothing in this disclaimer excludes or limits liability where such

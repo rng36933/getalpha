@@ -45,11 +45,15 @@ export const LEGAL_PAGES = [
  * that also appears on that document: the taxpayer ID is a national personal
  * code, and publishing it on a public page is a materially different kind of
  * exposure than publishing a business certificate number.
+ *
+ * legalName/address deliberately omit the operator's personal name and
+ * street address — the certificate number plus country identifies the
+ * business for legal purposes without publishing home-address-level detail.
  */
 export const OPERATOR = {
-  legalName: "Vaclovas Almintas",
+  legalName: "The operator",
   registrationNumber: "1534465 (individuali veikla)",
-  address: "Gegužių g. 33-17, LT-78320 Šiauliai, Lithuania",
+  address: "Lithuania",
   contactEmail: "support@getalpha.org",
   jurisdiction: "Lithuania",
 } as const;

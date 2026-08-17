@@ -17,8 +17,8 @@ export default function TermsPage() {
     >
       <Clause heading="1. Who you are contracting with">
         <p>
-          getALPHA is operated by {OPERATOR.legalName}, registration number{" "}
-          {OPERATOR.registrationNumber}, {OPERATOR.address} (&ldquo;we&rdquo;).
+          getALPHA (&ldquo;we&rdquo;) is operated under registration number{" "}
+          {OPERATOR.registrationNumber}, {OPERATOR.address}.
         </p>
         <p>
           These terms apply together with the{" "}
