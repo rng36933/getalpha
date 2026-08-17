@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "how-many-trades-before-stats-mean-anything",
+    title: "How Many Trades Before Your Statistics Mean Anything",
+    description:
+      "A win rate or an expectancy number computed from 12 trades is mostly noise. Roughly how much sample size you actually need before it starts describing your edge instead of your luck.",
+    date: "2026-08-17",
+  },
+  {
     slug: "stop-loss-you-set-vs-moved",
     title: "The Stop-Loss You Set vs. The Stop-Loss You Moved",
     description:
