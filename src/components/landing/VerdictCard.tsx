@@ -291,8 +291,8 @@ export default function VerdictCard() {
                 back until the trade has closed, so the visitor gets to enjoy
                 the win for a second first. */}
             <span
-              className={`lp-alarm inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-400 transition-opacity duration-300 ${
-                phase === "typing" || phase === "done" ? "opacity-100" : "opacity-0"
+              className={`inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-400 transition-opacity duration-300 ${
+                phase === "typing" || phase === "done" ? "lp-alarm opacity-100" : "opacity-0"
               }`}
               aria-hidden={phase === "idle" || phase === "filling"}
             >

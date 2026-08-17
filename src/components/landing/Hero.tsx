@@ -7,7 +7,6 @@ import DayTapeReadout from "@/components/DayTapeReadout";
 import AmbientCandles from "@/components/landing/AmbientCandles";
 import VerdictCard from "@/components/landing/VerdictCard";
 import Button from "@/components/ui/Button";
-import Link from "next/link";
 
 interface HeroCopy {
   hero: {
@@ -50,13 +49,13 @@ export default function Hero({
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
-            <Zap className="size-3 shrink-0 text-emerald-400" aria-hidden="true" />
+            <Zap className="size-3 shrink-0 text-accent" aria-hidden="true" />
             {copy.hero.badge}
           </span>
 
           <h1 className="mt-6 max-w-2xl text-[2.2rem] sm:text-[2.8rem] lg:text-[3.5rem] font-semibold leading-tight tracking-tight text-white">
             <span className="block text-zinc-400">{copy.hero.headingMuted}</span>
-            <span className="block bg-gradient-to-b from-white to-zinc-300 bg-clip-text text-transparent">{copy.hero.headingBright}</span>
+            <span className="block text-white">{copy.hero.headingBright}</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-zinc-400">
@@ -75,14 +74,10 @@ export default function Hero({
           </div>
 
           <p className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] leading-relaxed text-zinc-400">
-            <Lock className="mt-0.5 size-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
+            <Lock className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden="true" />
             <span>
               <span className="text-zinc-200">{copy.hero.securityEmphasis}</span> {copy.hero.securityRest}
             </span>
-          </p>
-
-          <p className="mt-5 text-xs text-zinc-600">
-            {copy.hero.waitlistHint} <Link href="#keep-in-touch" className="text-zinc-400 underline-offset-2 hover:text-white hover:underline">{copy.hero.waitlistLink}</Link>.
           </p>
         </div>
 
