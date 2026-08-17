@@ -156,9 +156,7 @@ export default function Landing({
         </script>
 
         <section className="relative overflow-hidden py-14 sm:py-24">
-          <div aria-hidden="true" className="lp-grid pointer-events-none absolute inset-0" />
           <AmbientCandles />
-          <div aria-hidden="true" className="pointer-events-none absolute -top-72 left-1/2 h-[40rem] w-[min(64rem,130vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(242,201,76,0.10),transparent_62%)]" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             {MOTES.map((mote) => (
               <span
@@ -282,10 +280,8 @@ export default function Landing({
           </div>
         </section>
 
-        <section className="relative overflow-hidden border-t border-white/[0.05] py-12 sm:py-16">
-          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-80 w-[min(48rem,120vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(242,201,76,0.08),transparent_65%)]" />
-
-          <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
+        <section className="border-t border-white/[0.05] py-12 sm:py-16">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Eyebrow>{copy.pricing.eyebrow}</Eyebrow>
             <Heading>{copy.pricing.heading}</Heading>
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-zinc-400">{copy.pricing.body}</p>
