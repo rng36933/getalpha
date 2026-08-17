@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 export default function FeaturesIndexPage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Features</h1>
-      <p className="mt-2 text-sm text-muted">
+      <h1 className="font-mono text-2xl font-bold tracking-tight text-white">Features</h1>
+      <p className="mt-2 pb-6 text-sm text-muted">
         What getALPHA actually does, one feature at a time.
       </p>
 

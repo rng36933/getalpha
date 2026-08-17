@@ -27,12 +27,15 @@ export default function BlogIndexPage() {
 
       <ol className="mt-8 space-y-8">
         {BLOG_POSTS.map((post) => (
-          <li key={post.slug} className="border-b border-line pb-8 last:border-0">
-            <p className="font-mono text-xs uppercase tracking-wider text-muted">
+          <li
+            key={post.slug}
+            className="group border-b border-line border-l border-l-transparent pb-8 pl-0 transition-all duration-200 last:border-b-0 hover:border-l-[#f2c94c] hover:pl-2"
+          >
+            <p className="font-mono text-xs uppercase tracking-widest text-[#f2c94c]/80">
               {dateLabel(post.date)}
             </p>
-            <h2 className="mt-1 text-base font-semibold tracking-tight">
-              <Link href={`/blog/${post.slug}`} className="hover:text-accent">
+            <h2 className="mt-1 font-mono text-base font-bold tracking-tight text-white">
+              <Link href={`/blog/${post.slug}`} className="transition-colors group-hover:text-[#f2c94c]">
                 {post.title}
               </Link>
             </h2>
