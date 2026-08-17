@@ -65,7 +65,7 @@ function Heading({
 }) {
   return (
     <h2
-      className={`mt-4 bg-gradient-to-b from-white to-zinc-400 bg-clip-text pb-[0.1em] text-[1.9rem] font-semibold leading-[1.1] tracking-[-0.03em] text-transparent text-balance sm:text-[2.6rem] ${className}`}
+      className={`mt-4 pb-[0.1em] text-[1.9rem] font-semibold leading-[1.1] tracking-[-0.03em] text-white text-balance sm:text-[2.6rem] ${className}`}
     >
       {children}
     </h2>
@@ -185,10 +185,10 @@ export default function Landing({
               </span>
 
               <h1 className="mt-5 pb-[0.1em] text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.04em] text-balance sm:text-[3.5rem] lg:text-[4rem]">
-                <span className="bg-gradient-to-b from-zinc-500 to-zinc-600 bg-clip-text text-transparent">
+                <span className="text-zinc-500">
                   {copy.hero.headingMuted}
                 </span>{" "}
-                <span className="bg-gradient-to-b from-white via-white to-zinc-400 bg-clip-text text-transparent">
+                <span className="text-white">
                   {copy.hero.headingBright}
                 </span>
               </h1>
@@ -216,14 +216,6 @@ export default function Landing({
                   <span className="text-zinc-200">{copy.hero.securityEmphasis}</span>{" "}
                   {copy.hero.securityRest}
                 </span>
-              </p>
-
-              <p className="mt-5 text-xs text-zinc-600">
-                {copy.hero.waitlistHint}{" "}
-                <Link href="#keep-in-touch" className="text-zinc-400 underline-offset-2 transition-all duration-300 ease-in-out hover:text-white hover:underline">
-                  {copy.hero.waitlistLink}
-                </Link>
-                .
               </p>
             </div>
 
