@@ -113,7 +113,7 @@ export default async function JournalPage() {
       />
 
       {reviewsLeft ? (
-        <p className="-mt-4 mb-6 text-xs text-muted">
+        <p className="-mt-4 mb-6 text-xs font-semibold text-foreground">
           {reviewsLeft.remaining} of ~{reviewsLeft.ofEstimate} AI reviews left
           today
         </p>

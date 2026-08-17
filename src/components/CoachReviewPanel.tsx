@@ -100,21 +100,6 @@ export default function CoachReviewPanel({ review }: { review: CoachReview }) {
         </p>
         <p className="mt-1 text-sm leading-relaxed">{review.ruleForNextTime}</p>
       </div>
-
-      {review.missingData.length > 0 ? (
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted">
-            Limited by missing data
-          </p>
-          {/* Named rather than hidden: a reader should be able to tell the
-              difference between "your sizing was fine" and "nobody could
-              tell", and fixing the record is the cheapest way to a better
-              review next time. */}
-          <p className="mt-1 text-xs leading-relaxed text-muted">
-            {review.missingData.join(", ")}
-          </p>
-        </div>
-      ) : null}
     </div>
   );
 }
