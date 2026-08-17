@@ -42,7 +42,7 @@ export default function WaitlistForm({ referralCode }: WaitlistFormProps) {
     return (
       <p
         role="status"
-        className="rounded-lg border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
+        className="rounded-sm border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive"
       >
         You&rsquo;re on the list. We&rsquo;ll write when there is something worth
         writing about.
@@ -52,7 +52,7 @@ export default function WaitlistForm({ referralCode }: WaitlistFormProps) {
 
   return (
     <form onSubmit={submit} className="w-full">
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex w-full flex-col overflow-hidden rounded-sm border border-line sm:flex-row">
         <input
           type="email"
           required
@@ -61,12 +61,12 @@ export default function WaitlistForm({ referralCode }: WaitlistFormProps) {
           placeholder="you@example.com"
           aria-label="Email address"
           disabled={state === "sending"}
-          className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-4 py-2.5 text-[15px] outline-none placeholder:text-muted focus:border-accent"
+          className="min-w-0 flex-1 border-b border-line bg-surface px-4 py-2.5 text-[15px] outline-none placeholder:text-muted focus:border-accent sm:border-b-0 sm:border-r"
         />
         <button
           type="submit"
           disabled={state === "sending"}
-          className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-background transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted disabled:hover:brightness-100"
+          className="bg-accent px-5 py-2.5 text-sm font-semibold text-background transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted disabled:hover:brightness-100"
         >
           {state === "sending" ? "Joining…" : "Join the waitlist"}
         </button>

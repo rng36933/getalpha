@@ -44,13 +44,13 @@ function Wordmark() {
 
 function Eyebrow({
   children,
-  className = "text-zinc-500",
+  className = "text-zinc-300",
 }: {
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <p className={`font-mono text-[11px] uppercase tracking-[0.18em] ${className}`}>
+    <p className={`font-mono text-[10px] uppercase tracking-[0.2em] ${className}`}>
       {children}
     </p>
   );
@@ -65,7 +65,7 @@ function Heading({
 }) {
   return (
     <h2
-      className={`font-display mt-4 pb-[0.1em] text-[1.9rem] font-semibold leading-[1.1] tracking-[-0.03em] text-white text-balance sm:text-[2.6rem] ${className}`}
+      className={`font-display mt-4 pb-[0.1em] text-[1.9rem] font-bold leading-[1.1] tracking-[-0.035em] text-white text-balance sm:text-[2.6rem] ${className}`}
     >
       {children}
     </h2>
@@ -115,7 +115,7 @@ export default function Landing({
             <Link href="/login" className="text-zinc-400 transition-all duration-300 ease-in-out hover:text-white">
               {copy.nav.signIn}
             </Link>
-            <TrackedCtaLink href="/register" location="nav" className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground transition-all duration-300 ease-in-out hover:opacity-90">
+            <TrackedCtaLink href="/register" location="nav" className="rounded-sm bg-accent px-4 py-2 font-medium text-accent-foreground transition-all duration-300 ease-in-out hover:opacity-90">
               {copy.nav.getStarted}
             </TrackedCtaLink>
           </div>
@@ -184,7 +184,7 @@ export default function Landing({
                 {copy.hero.badge}
               </span>
 
-              <h1 className="font-display mt-5 pb-[0.1em] text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.04em] text-balance sm:text-[3.5rem] lg:text-[4rem]">
+              <h1 className="font-display mt-5 pb-[0.1em] text-[2.6rem] font-bold leading-[1.02] tracking-[-0.045em] text-balance sm:text-[3.5rem] lg:text-[4rem]">
                 <span className="text-zinc-500">
                   {copy.hero.headingMuted}
                 </span>{" "}
@@ -199,7 +199,7 @@ export default function Landing({
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <TrackedCtaLink href="/register" location="hero" className="lp-shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-6 py-3.5 font-semibold text-accent-foreground shadow-lg shadow-accent/20">
+                <TrackedCtaLink href="/register" location="hero" className="lp-shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-sm bg-accent px-6 py-3.5 font-semibold text-accent-foreground shadow-lg shadow-accent/20">
                   {copy.hero.cta}
                   <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
                 </TrackedCtaLink>
@@ -292,38 +292,37 @@ export default function Landing({
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-zinc-400">{copy.pricing.body}</p>
 
             <div className="mt-10 grid grid-cols-1 items-start gap-6 sm:mt-14 lg:grid-cols-2 lg:gap-8">
-              <div className="rounded-2xl border border-white/[0.06] p-6 sm:p-7">
+              <div className="rounded-sm border border-white/[0.08] p-6 sm:p-7">
                 <Eyebrow>{copy.pricing.free.label}</Eyebrow>
-                <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">€0</p>
+                <p className="mt-2 font-mono text-4xl font-semibold tabular-nums tracking-tight text-white">€0</p>
                 <p className="mt-2 text-[13px] text-zinc-500">{copy.pricing.free.note}</p>
 
                 <ul className="mt-7 grid gap-3 text-[14px] text-zinc-400">
                   {copy.pricing.free.items.map((item) => (
                     <li key={item} className="flex gap-3">
-                      <Check className="mt-0.5 size-4 shrink-0 text-zinc-500" aria-hidden="true" />
+                      <span className="mt-1 size-1.5 shrink-0 bg-zinc-500" aria-hidden="true" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
 
-                <TrackedCtaLink href="/register" location="pricing_free" className="mt-8 block rounded-xl border border-white/[0.08] px-5 py-3 text-center text-sm font-medium text-white transition-all duration-300 ease-in-out hover:border-zinc-600 hover:bg-white/[0.05]">
+                <TrackedCtaLink href="/register" location="pricing_free" className="mt-8 block rounded-sm border border-white/[0.08] px-5 py-3 text-center text-sm font-medium text-white transition-all duration-300 ease-in-out hover:border-zinc-600 hover:bg-white/[0.05]">
                   {copy.pricing.free.cta}
                 </TrackedCtaLink>
               </div>
 
-              <div className="relative rounded-[1.05rem] bg-gradient-to-b from-accent/60 via-accent/20 to-transparent p-px shadow-2xl shadow-accent/10 lg:-mt-4">
-                <div className="relative h-full rounded-2xl bg-[#0a0b10] p-6 sm:p-7">
+              <div className="relative rounded-sm border border-accent/40 bg-[#0a0b10] p-6 shadow-2xl shadow-accent/10 sm:p-7 lg:-mt-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <Eyebrow className="text-accent">{copy.pricing.pro.label}</Eyebrow>
-                      <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">
+                      <p className="mt-2 font-mono text-4xl font-semibold tabular-nums tracking-tight text-white">
                         €19.99
                         <span className="ml-1.5 text-sm font-normal text-zinc-500">{copy.pricing.pro.per}</span>
                       </p>
                       <p className="mt-2 text-[13px] text-zinc-500">{copy.pricing.pro.note}</p>
                     </div>
 
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent">
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-none border border-accent/30 bg-accent/10 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-widest text-accent">
                       <Sparkles className="size-3 shrink-0" aria-hidden="true" />
                       {copy.pricing.pro.badge}
                     </span>
@@ -332,19 +331,18 @@ export default function Landing({
                   <ul className="mt-7 grid gap-3 text-[14px] text-zinc-300">
                     {copy.pricing.pro.items.map((item) => (
                       <li key={item} className="flex gap-3">
-                        <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
+                        <span className="mt-1 size-1.5 shrink-0 bg-accent" aria-hidden="true" />
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <TrackedCtaLink href="/register" location="pricing_pro" className="lp-shimmer group relative mt-8 flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90">
+                  <TrackedCtaLink href="/register" location="pricing_pro" className="lp-shimmer group relative mt-8 flex items-center justify-center gap-2 overflow-hidden rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90">
                     {copy.pricing.pro.cta}
                     <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
                   </TrackedCtaLink>
 
                   <p className="mt-4 text-center text-[11px] text-zinc-600">{copy.pricing.pro.footnote}</p>
-                </div>
               </div>
             </div>
           </div>
@@ -373,7 +371,7 @@ export default function Landing({
 
             <dl className="mt-10 grid gap-4 lg:grid-cols-2">
               {copy.faq.items.map((item) => (
-                <div key={item.q} className="lp-glass rounded-2xl p-5 sm:p-6">
+                <div key={item.q} className="lp-glass rounded-sm border-l-2 border-l-white/[0.18] p-5 sm:p-6">
                   <dt className="text-[15px] font-semibold tracking-tight text-white">{item.q}</dt>
                   <dd className="mt-2.5 text-[14px] leading-relaxed text-zinc-400">{item.a}</dd>
                 </div>
@@ -414,26 +412,32 @@ export default function Landing({
 
       <footer className="border-t border-white/[0.05]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-7 text-[13px] text-zinc-500 sm:px-8">
-          <span>© {new Date().getUTCFullYear()} getALPHA</span>
           <div className="flex items-center gap-5">
+            <span>© {new Date().getUTCFullYear()} getALPHA</span>
             <SocialLinks />
-            <ProductHuntBadge />
-            <Turbo0Badge />
-            <AiToolHuntBadge />
           </div>
-          <nav className="flex gap-5">
-            <Link href="/blog" className="transition-all duration-300 ease-in-out hover:text-white">
-              Blog
-            </Link>
-            <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
-              Changelog
-            </Link>
-            {LEGAL_PAGES.map((page) => (
-              <Link key={page.href} href={page.href} className="transition-all duration-300 ease-in-out hover:text-white">
-                {page.label}
+
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-5">
+              <ProductHuntBadge />
+              <Turbo0Badge />
+              <AiToolHuntBadge />
+            </div>
+
+            <nav className="flex gap-5">
+              <Link href="/blog" className="transition-all duration-300 ease-in-out hover:text-white">
+                Blog
               </Link>
-            ))}
-          </nav>
+              <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
+                Changelog
+              </Link>
+              {LEGAL_PAGES.map((page) => (
+                <Link key={page.href} href={page.href} className="transition-all duration-300 ease-in-out hover:text-white">
+                  {page.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
       </footer>
     </div>
