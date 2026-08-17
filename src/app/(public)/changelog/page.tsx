@@ -41,19 +41,19 @@ export default async function ChangelogPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Changelog</h1>
+      <h1 className="font-mono text-2xl font-bold tracking-tight text-white">Changelog</h1>
 
       <ol className="mt-8 space-y-8 border-l border-line pl-6">
         {visible.map((entry) => (
           <li key={`${entry.date}-${entry.title}`} className="relative">
             <span
               aria-hidden="true"
-              className="absolute -left-[1.65rem] top-1.5 size-2 rounded-full bg-accent"
+              className="absolute -left-[1.65rem] top-1.5 size-2 rounded-none bg-accent"
             />
-            <p className="font-mono text-xs uppercase tracking-wider text-muted">
+            <p className="font-mono text-xs uppercase tracking-widest text-[#f2c94c]">
               {dateLabel(entry.date)}
             </p>
-            <h2 className="mt-1 text-base font-semibold tracking-tight">
+            <h2 className="mt-1 font-mono text-base font-bold text-white">
               {entry.title}
             </h2>
             {entry.body ? (
