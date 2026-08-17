@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Button from "@/components/ui/Button";
+import { gtagEvent } from "@/lib/analytics/ga-client";
 
 type FeaturePageProps = {
   title: string;
@@ -37,7 +40,7 @@ export default function FeaturePage({ title, tagline, children }: FeaturePagePro
           Free to sync trades from MT5 and see your P&amp;L, risk and calendar. No card required.
         </p>
         <div className="mt-4">
-          <Button href="/register" variant="primary">
+          <Button href="/register" variant="primary" onClick={() => gtagEvent("cta_click", { location: "feature_page" })}>
             Start free
           </Button>
         </div>

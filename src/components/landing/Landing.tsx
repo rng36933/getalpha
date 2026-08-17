@@ -11,6 +11,8 @@ import {
 import Link from "next/link";
 import AmbientCandles from "@/components/landing/AmbientCandles";
 import Features from "@/components/landing/Features";
+import GoogleAnalytics from "@/components/landing/GoogleAnalytics";
+import TrackedCtaLink from "@/components/landing/TrackedCtaLink";
 import SocialLinks from "@/components/landing/SocialLinks";
 import ProductHuntBadge from "@/components/landing/ProductHuntBadge";
 import Ticker from "@/components/landing/Ticker";
@@ -91,6 +93,7 @@ export default function Landing({
   return (
     <div className="min-h-screen bg-background">
       <VisitTracker />
+      <GoogleAnalytics />
       <Ticker />
 
       <header className="sticky top-0 z-40 border-b border-white/[0.05] bg-background/80 backdrop-blur-md">
@@ -112,9 +115,9 @@ export default function Landing({
             <Link href="/login" className="text-zinc-400 transition-all duration-300 ease-in-out hover:text-white">
               {copy.nav.signIn}
             </Link>
-            <Link href="/register" className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground transition-all duration-300 ease-in-out hover:opacity-90">
+            <TrackedCtaLink href="/register" location="nav" className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground transition-all duration-300 ease-in-out hover:opacity-90">
               {copy.nav.getStarted}
-            </Link>
+            </TrackedCtaLink>
           </div>
         </div>
       </header>
@@ -196,10 +199,10 @@ export default function Landing({
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link href="/register" className="lp-shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-6 py-3.5 font-semibold text-accent-foreground shadow-lg shadow-accent/20">
+                <TrackedCtaLink href="/register" location="hero" className="lp-shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-6 py-3.5 font-semibold text-accent-foreground shadow-lg shadow-accent/20">
                   {copy.hero.cta}
                   <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
-                </Link>
+                </TrackedCtaLink>
 
                 <p className="text-sm leading-relaxed text-zinc-500">
                   {copy.hero.ctaNoteLine1}
@@ -311,9 +314,9 @@ export default function Landing({
                   ))}
                 </ul>
 
-                <Link href="/register" className="mt-8 block rounded-xl border border-white/[0.08] px-5 py-3 text-center text-sm font-medium text-white transition-all duration-300 ease-in-out hover:border-zinc-600 hover:bg-white/[0.05]">
+                <TrackedCtaLink href="/register" location="pricing_free" className="mt-8 block rounded-xl border border-white/[0.08] px-5 py-3 text-center text-sm font-medium text-white transition-all duration-300 ease-in-out hover:border-zinc-600 hover:bg-white/[0.05]">
                   {copy.pricing.free.cta}
-                </Link>
+                </TrackedCtaLink>
               </div>
 
               <div className="relative rounded-[1.05rem] bg-gradient-to-b from-accent/60 via-accent/20 to-transparent p-px shadow-2xl shadow-accent/10 lg:-mt-4">
@@ -343,10 +346,10 @@ export default function Landing({
                     ))}
                   </ul>
 
-                  <Link href="/register" className="lp-shimmer group relative mt-8 flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90">
+                  <TrackedCtaLink href="/register" location="pricing_pro" className="lp-shimmer group relative mt-8 flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90">
                     {copy.pricing.pro.cta}
                     <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
-                  </Link>
+                  </TrackedCtaLink>
 
                   <p className="mt-4 text-center text-[11px] text-zinc-600">{copy.pricing.pro.footnote}</p>
                 </div>
