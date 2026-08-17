@@ -68,23 +68,15 @@ function Cell({
 
   return (
     <div
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-300 ease-in-out sm:p-6 ${
+      className={`group relative flex flex-col overflow-hidden rounded-sm border-y border-r border-l-2 p-5 transition-all duration-300 ease-in-out sm:p-6 ${
         isAi
-          ? "border-accent/20 bg-accent/[0.03] hover:border-accent/40"
-          : "border-white/[0.06] bg-white/[0.02] hover:border-zinc-700"
+          ? "border-white/[0.08] border-l-accent bg-accent/[0.03] hover:border-white/[0.16]"
+          : "border-white/[0.08] border-l-white/[0.18] bg-white/[0.02] hover:border-white/[0.16]"
       } ${className}`}
     >
-      {/* The Pro halo. Brightens on hover, always behind the content. */}
-      {isAi ? (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -inset-px -z-10 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(242,201,76,0.18),transparent_65%)] opacity-70 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-        />
-      ) : null}
-
       <div className="flex items-center justify-between gap-3">
         <span
-          className={`grid size-9 shrink-0 place-items-center rounded-lg border transition-all duration-300 ease-in-out group-hover:-translate-y-1 ${
+          className={`grid size-9 shrink-0 place-items-center rounded-sm border transition-all duration-300 ease-in-out group-hover:-translate-y-1 ${
             isAi
               ? "border-accent/25 bg-accent/10 text-accent"
               : "border-white/[0.06] bg-white/[0.03] text-zinc-300"
@@ -94,21 +86,21 @@ function Cell({
         </span>
 
         {isAi ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-accent">
+          <span className="inline-flex items-center gap-1 rounded-sm border border-accent/25 bg-accent/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-accent">
             <Lock className="size-2.5 shrink-0" aria-hidden="true" />
             pro
           </span>
         ) : null}
       </div>
 
-      <h3 className="mt-4 text-[17px] font-semibold tracking-tight text-white">
+      <h3 className="font-mono mt-4 text-[15px] font-semibold uppercase tracking-wide text-white">
         {title}
       </h3>
       <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
         {children}
       </p>
 
-      <div className="mt-5 flex-1 rounded-xl border border-white/[0.05] bg-black/25 p-3.5">
+      <div className="mt-5 flex-1 rounded-sm border border-white/[0.05] bg-black/25 p-3.5">
         {demo}
       </div>
     </div>

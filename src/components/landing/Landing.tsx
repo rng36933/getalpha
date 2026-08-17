@@ -65,7 +65,7 @@ function Heading({
 }) {
   return (
     <h2
-      className={`mt-4 pb-[0.1em] text-[1.9rem] font-semibold leading-[1.1] tracking-[-0.03em] text-white text-balance sm:text-[2.6rem] ${className}`}
+      className={`font-display mt-4 pb-[0.1em] text-[1.9rem] font-semibold leading-[1.1] tracking-[-0.03em] text-white text-balance sm:text-[2.6rem] ${className}`}
     >
       {children}
     </h2>
@@ -184,7 +184,7 @@ export default function Landing({
                 {copy.hero.badge}
               </span>
 
-              <h1 className="mt-5 pb-[0.1em] text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.04em] text-balance sm:text-[3.5rem] lg:text-[4rem]">
+              <h1 className="font-display mt-5 pb-[0.1em] text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.04em] text-balance sm:text-[3.5rem] lg:text-[4rem]">
                 <span className="text-zinc-500">
                   {copy.hero.headingMuted}
                 </span>{" "}

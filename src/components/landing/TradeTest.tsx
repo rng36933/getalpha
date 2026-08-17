@@ -150,7 +150,7 @@ function Toggle({
       <div
         role="group"
         aria-label={label}
-        className="mt-2.5 inline-flex rounded-lg border border-white/[0.08] p-0.5"
+        className="mt-2.5 inline-flex rounded-sm border border-white/[0.1] bg-black/30 p-0.5"
       >
         {[true, false].map((option) => (
           <button
@@ -161,9 +161,9 @@ function Toggle({
             // Tall enough to hit with a thumb. At the size these started they
             // were 28 pixels of target on a phone, which is a control that
             // works on a mouse and fights a finger.
-            className={`min-h-[2.5rem] rounded-md px-5 py-2 text-sm font-medium transition-all duration-300 ease-in-out ${
+            className={`min-h-[2.5rem] rounded-sm px-5 py-2 font-mono text-sm font-medium uppercase tracking-wide transition-all duration-300 ease-in-out ${
               value === option
-                ? "bg-white/[0.08] text-white"
+                ? "bg-accent text-accent-foreground"
                 : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
@@ -194,7 +194,7 @@ export default function TradeTest() {
     : null;
 
   return (
-    <div className="lp-glass rounded-2xl p-5 sm:p-7">
+    <div className="rounded-sm border border-white/[0.1] bg-[#0a0b0f] p-5 sm:p-7">
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
         <div className="space-y-6">
           <div>
@@ -249,7 +249,7 @@ export default function TradeTest() {
           <button
             type="button"
             onClick={() => setVerdict(evaluate(risk, hadStop, nearNews, copy))}
-            className="lp-shimmer relative w-full overflow-hidden rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-lg shadow-accent/20 transition-all duration-300 ease-in-out hover:opacity-90 sm:w-auto"
+            className="lp-shimmer relative w-full overflow-hidden rounded-sm bg-accent px-5 py-3 font-mono text-sm font-semibold uppercase tracking-wide text-accent-foreground shadow-lg shadow-accent/20 transition-all duration-300 ease-in-out hover:opacity-90 sm:w-auto"
           >
             {copy.evaluate}
           </button>
@@ -261,7 +261,7 @@ export default function TradeTest() {
           {verdict && style && Icon ? (
             <div
               aria-live="polite"
-              className={`h-full rounded-xl border p-4 sm:p-5 ${style.ring}`}
+              className={`h-full rounded-sm border p-4 sm:p-5 ${style.ring}`}
             >
               <p
                 className={`flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] ${style.text}`}
@@ -287,7 +287,7 @@ export default function TradeTest() {
 
               <Link
                 href="/register"
-                className="group mt-5 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#030712] transition-all duration-300 ease-in-out hover:bg-zinc-200"
+                className="group mt-5 inline-flex items-center gap-2 rounded-sm bg-white px-4 py-2.5 text-sm font-semibold text-[#030712] transition-all duration-300 ease-in-out hover:bg-zinc-200"
               >
                 {verdict.cta}
                 <ArrowRight
@@ -301,7 +301,7 @@ export default function TradeTest() {
               </p>
             </div>
           ) : (
-            <div className="grid h-full place-items-center rounded-xl border border-dashed border-white/[0.08] p-6 text-center">
+            <div className="grid h-full place-items-center rounded-sm border border-dashed border-white/[0.08] p-6 text-center">
               <p className="max-w-xs text-[13px] leading-relaxed text-zinc-500">
                 {copy.empty}
               </p>

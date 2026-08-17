@@ -229,21 +229,11 @@ export default function VerdictCard() {
 
   return (
     <div className="relative">
-      {/* The card's own light, behind it and never over the content. It only
-          turns red once the verdict is in — before that there is nothing to
-          warn about. */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-6 -z-10 rounded-[2rem] transition-all duration-700 ease-in-out"
-        style={{
-          background:
-            phase === "done" || phase === "typing"
-              ? "radial-gradient(circle at 70% 20%, rgba(239,68,68,0.12), transparent 60%)"
-              : "radial-gradient(circle at 70% 20%, rgba(16,185,129,0.10), transparent 60%)",
-        }}
-      />
-
-      <div className="lp-glass overflow-hidden rounded-2xl shadow-2xl shadow-black/40">
+        className={`lp-glass overflow-hidden rounded-sm border-t-2 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.4)] transition-colors duration-700 ease-in-out ${
+          phase === "done" || phase === "typing" ? "border-t-red-500/50" : "border-t-emerald-500/40"
+        }`}
+      >
         {/* Terminal chrome: the strip that says instrument, not marketing panel. */}
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.05] px-4 py-2.5">
           <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">
