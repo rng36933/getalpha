@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   AlertTriangle,
-  Check,
   LineChart,
   Lock,
   PlugZap,
@@ -204,13 +203,13 @@ export default function Landing({
                   <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
                 </TrackedCtaLink>
 
-                <p className="text-sm leading-relaxed text-zinc-500">
+                <p className="text-sm leading-relaxed text-zinc-500 sm:pl-4">
                   {copy.hero.ctaNoteLine1}
                   <br className="hidden sm:inline" /> {copy.hero.ctaNoteLine2}
                 </p>
               </div>
 
-              <p className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] leading-relaxed text-zinc-400">
+              <p className="mt-6 flex items-start gap-2.5 rounded-sm border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] leading-relaxed text-zinc-400">
                 <Lock className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden="true" />
                 <span>
                   <span className="text-zinc-200">{copy.hero.securityEmphasis}</span>{" "}
@@ -300,7 +299,7 @@ export default function Landing({
                 <ul className="mt-7 grid gap-3 text-[14px] text-zinc-400">
                   {copy.pricing.free.items.map((item) => (
                     <li key={item} className="flex gap-3">
-                      <span className="mt-1 size-1.5 shrink-0 bg-zinc-500" aria-hidden="true" />
+                      <span className="font-mono text-zinc-600" aria-hidden="true">—</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -331,14 +330,14 @@ export default function Landing({
                   <ul className="mt-7 grid gap-3 text-[14px] text-zinc-300">
                     {copy.pricing.pro.items.map((item) => (
                       <li key={item} className="flex gap-3">
-                        <span className="mt-1 size-1.5 shrink-0 bg-accent" aria-hidden="true" />
+                        <span className="font-mono text-accent" aria-hidden="true">—</span>
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <TrackedCtaLink href="/register" location="pricing_pro" className="lp-shimmer group relative mt-8 flex items-center justify-center gap-2 overflow-hidden rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90">
-                    {copy.pricing.pro.cta}
+                  <TrackedCtaLink href="/register" location="pricing_pro" className="lp-shimmer group relative mt-8 flex items-center justify-center overflow-hidden rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90">
+                    <span className="pr-2">{copy.pricing.pro.cta}</span>
                     <ArrowRight className="size-4 shrink-0 transition-all duration-300 ease-in-out group-hover:translate-x-0.5" aria-hidden="true" />
                   </TrackedCtaLink>
 
@@ -417,27 +416,25 @@ export default function Landing({
             <SocialLinks />
           </div>
 
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-5">
-              <ProductHuntBadge />
-              <Turbo0Badge />
-              <AiToolHuntBadge />
-            </div>
-
-            <nav className="flex gap-5">
-              <Link href="/blog" className="transition-all duration-300 ease-in-out hover:text-white">
-                Blog
-              </Link>
-              <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
-                Changelog
-              </Link>
-              {LEGAL_PAGES.map((page) => (
-                <Link key={page.href} href={page.href} className="transition-all duration-300 ease-in-out hover:text-white">
-                  {page.label}
-                </Link>
-              ))}
-            </nav>
+          <div className="flex items-center gap-5">
+            <ProductHuntBadge />
+            <Turbo0Badge />
+            <AiToolHuntBadge />
           </div>
+
+          <nav className="ml-auto flex gap-5">
+            <Link href="/blog" className="transition-all duration-300 ease-in-out hover:text-white">
+              Blog
+            </Link>
+            <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
+              Changelog
+            </Link>
+            {LEGAL_PAGES.map((page) => (
+              <Link key={page.href} href={page.href} className="transition-all duration-300 ease-in-out hover:text-white">
+                {page.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </footer>
     </div>

@@ -100,7 +100,7 @@ function Cell({
         {children}
       </p>
 
-      <div className="mt-5 flex-1 rounded-sm border border-white/[0.05] bg-black/25 p-4 sm:p-5">
+      <div className="mt-5 flex-1 rounded-sm border border-white/[0.05] bg-black/25 p-4 pb-6 sm:p-5 sm:pb-8">
         {demo}
       </div>
     </div>
@@ -215,7 +215,7 @@ export default function Features() {
               <Readout
                 label={readouts.filteredBy}
                 value={
-                  <span className="rounded border border-white/[0.08] px-1.5 py-0.5 transition-all duration-300 ease-in-out group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:text-accent-foreground">
+                  <span className="rounded-none border border-white/[0.08] px-1.5 py-0.5 transition-all duration-300 ease-in-out group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:text-accent-foreground">
                     {readouts.watchlist}
                   </span>
                 }

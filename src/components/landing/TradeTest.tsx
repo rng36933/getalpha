@@ -150,7 +150,7 @@ function Toggle({
       <div
         role="group"
         aria-label={label}
-        className="mt-2.5 inline-flex rounded-sm border border-white/[0.1] bg-black/30 p-0.5"
+        className="mt-2.5 inline-flex rounded-none border border-white/[0.1] bg-black/30 p-0.5"
       >
         {[true, false].map((option) => (
           <button
@@ -161,10 +161,10 @@ function Toggle({
             // Tall enough to hit with a thumb. At the size these started they
             // were 28 pixels of target on a phone, which is a control that
             // works on a mouse and fights a finger.
-            className={`min-h-[2.5rem] rounded-sm px-5 py-2 font-mono text-sm font-medium uppercase tracking-wide transition-all duration-300 ease-in-out ${
+            className={`min-h-[2.5rem] rounded-none px-5 py-2 font-mono text-sm font-medium uppercase tracking-wide transition-all duration-300 ease-in-out ${
               value === option
-                ? "bg-accent text-accent-foreground"
-                : "text-zinc-500 hover:text-zinc-300"
+                ? "border border-accent bg-accent text-accent-foreground"
+                : "border border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
             {option ? yes : no}
@@ -220,7 +220,7 @@ export default function TradeTest() {
                 // `h-2` and `touch-manipulation`: a six-pixel track is a hard
                 // thing to grab on a phone, and without the touch hint a drag
                 // near the slider can be read as a double-tap zoom instead.
-                className="h-2 min-w-0 flex-1 cursor-pointer touch-manipulation appearance-none rounded-full bg-white/[0.08] accent-[#f2c94c]"
+                className="h-1 min-w-0 flex-1 cursor-pointer touch-manipulation appearance-none rounded-none bg-white/[0.08] accent-[#f2c94c] [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-none [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-accent [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-accent"
               />
               <span className="w-16 shrink-0 text-right font-mono text-lg font-semibold tabular-nums text-white">
                 {risk.toFixed(1)}%
@@ -249,7 +249,7 @@ export default function TradeTest() {
           <button
             type="button"
             onClick={() => setVerdict(evaluate(risk, hadStop, nearNews, copy))}
-            className="lp-shimmer relative w-full overflow-hidden rounded-sm bg-accent px-5 py-3 font-mono text-sm font-semibold uppercase tracking-wide text-accent-foreground shadow-lg shadow-accent/20 transition-all duration-300 ease-in-out hover:opacity-90 sm:w-auto"
+            className="lp-shimmer relative mt-2 w-full overflow-hidden rounded-none bg-accent px-6 py-3.5 font-mono text-sm font-semibold uppercase tracking-wide text-accent-foreground shadow-lg shadow-accent/20 transition-all duration-300 ease-in-out hover:opacity-90 sm:w-auto"
           >
             {copy.evaluate}
           </button>
