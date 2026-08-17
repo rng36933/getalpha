@@ -17,10 +17,10 @@ export default function FeaturesIndexPage() {
         What getALPHA actually does, one feature at a time.
       </p>
 
-      <ol className="mt-8 space-y-8">
+      <ol className="mt-8 space-y-10">
         {FEATURE_PAGES.map((feature) => (
-          <li key={feature.slug} className="border-b border-line pb-8 last:border-0">
-            <h2 className="text-base font-semibold tracking-tight">
+          <li key={feature.slug} className="border-b border-line py-8 first:pt-0 last:border-0 last:pb-0">
+            <h2 className="font-mono text-base font-bold text-white">
               <Link href={`/features/${feature.slug}`} className="hover:text-accent">
                 {feature.title}
               </Link>

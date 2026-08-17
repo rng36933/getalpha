@@ -47,9 +47,14 @@ export default function PublicLayout({
       <main className="mx-auto max-w-3xl px-6 py-10">{children}</main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-6 py-8 text-xl font-bold leading-snug sm:text-2xl" style={{ color: "#f2c94c" }}>
-          getALPHA is an educational and informational tool. It does not provide
-          financial advice.
+        <div className="mx-auto max-w-3xl px-6 py-8">
+          <p
+            className="rounded-none border border-zinc-800 p-4 font-mono text-xs leading-relaxed"
+            style={{ color: "#f2c94c" }}
+          >
+            getALPHA is an educational and informational tool. It does not
+            provide financial advice.
+          </p>
         </div>
       </footer>
     </div>
