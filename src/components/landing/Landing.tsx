@@ -237,26 +237,26 @@ export default function Landing({
             <Eyebrow>{copy.steps.eyebrow}</Eyebrow>
             <Heading>{copy.steps.heading}</Heading>
 
-            {/* Animated divider between the heading and the step cards */}
-            <div aria-hidden="true" className="relative mt-8 hidden h-px overflow-visible sm:block">
-              <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
-              <span className="lp-flow absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(242,201,76,0.5)]" />
-            </div>
+            <div className="mt-10">
+              <ol className="relative grid gap-8 border-l border-white/[0.12] pl-8 sm:grid-cols-3 sm:gap-6 sm:border-l-0 sm:pl-0">
+                {/* The timeline itself: one continuous line the numbered nodes sit
+                    on, so the steps read as a sequence rather than three
+                    interchangeable boxes. Vertical on mobile, horizontal at sm+. */}
+                <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 hidden w-full sm:block">
+                  <div className="absolute left-0 right-0 top-[15px] h-px bg-white/[0.12]" />
+                </div>
 
-            <div className="mt-6">
-              <ol className="grid gap-4 sm:grid-cols-3">
                 {copy.steps.items.map((step, index) => {
                   const Icon = STEP_ICONS[index] ?? PlugZap;
                   return (
-                    <li key={step.title} className="lp-glass group rounded-2xl p-5 transition-all duration-300 ease-in-out hover:border-zinc-700 sm:p-6">
-                      <div className="flex items-center gap-3">
-                        <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.03] transition-all duration-300 ease-in-out group-hover:-translate-y-1">
-                          <Icon className="size-4 text-zinc-300" aria-hidden="true" />
-                        </span>
-                        <span className="font-mono text-[11px] tracking-[0.16em] text-positive">0{index + 1}</span>
-                      </div>
+                    <li key={step.title} className="relative -ml-8 pl-8 sm:ml-0 sm:pl-0">
+                      <span className="absolute left-0 top-0 z-10 grid size-[30px] shrink-0 -translate-x-1/2 place-items-center rounded-full border-2 border-accent bg-[#0a0b0f] font-mono text-[11px] font-semibold text-accent sm:static sm:mb-4 sm:translate-x-0">
+                        0{index + 1}
+                      </span>
 
-                      <h3 className="mt-4 text-lg font-semibold tracking-tight text-white">{step.title}</h3>
+                      <Icon className="mt-1 hidden size-4 text-zinc-500 sm:block" aria-hidden="true" />
+
+                      <h3 className="mt-3 text-lg font-semibold tracking-tight text-white">{step.title}</h3>
                       <p className="mt-2 text-[14px] leading-relaxed text-zinc-400">{step.body}</p>
                       <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">{step.note}</p>
                     </li>
