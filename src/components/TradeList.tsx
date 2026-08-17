@@ -1,5 +1,6 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Fragment, useRef, useState } from "react";
 import CoachReviewPanel from "@/components/CoachReviewPanel";
@@ -547,7 +548,8 @@ export default function TradeList({
                     <td colSpan={9} className="pb-6">
                       <div className="rounded-lg border border-line bg-surface-raised p-4">
                         {state.status === "loading" ? (
-                          <p className="text-sm text-muted">
+                          <p className="flex items-center gap-2 text-sm text-muted">
+                            <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden="true" />
                             Reading the trade against your history. This takes
                             about half a minute.
                           </p>

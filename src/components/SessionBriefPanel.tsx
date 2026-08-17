@@ -1,5 +1,6 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { SessionBrief, TradingSession } from "@/lib/ai/types";
@@ -182,7 +183,8 @@ export default function SessionBriefPanel({
         ) : null}
 
         {state.status === "loading" ? (
-          <p className="text-sm text-muted">
+          <p className="flex items-center gap-2 text-sm text-muted">
+            <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden="true" />
             Collecting the calendar, levels and headlines, then writing.
           </p>
         ) : null}
