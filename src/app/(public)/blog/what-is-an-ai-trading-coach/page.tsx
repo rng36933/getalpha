@@ -51,12 +51,8 @@ export default function Page() {
         pipeline — after the numbers exist, not instead of them.
       </p>
 
-      <h2>The five things worth judging on any one trade</h2>
+      <h2>The four things worth judging on any one trade</h2>
       <ul>
-        <li>
-          <strong>Trade selection</strong> — whether the setup matched a pattern in your own
-          history that has actually worked, not just one that felt familiar.
-        </li>
         <li>
           <strong>Position sizing</strong> — risk as a share of equity, checked against your own
           median, not a generic &ldquo;1% rule&rdquo; that ignores what you actually trade.
@@ -75,7 +71,7 @@ export default function Page() {
         </li>
       </ul>
       <p>
-        None of these five need a market forecast. All five need a record of what you actually
+        None of these four need a market forecast. All four need a record of what you actually
         did, which is the part most journals stop at and most &ldquo;AI coaches&rdquo; skip past on
         the way to a signal.
       </p>

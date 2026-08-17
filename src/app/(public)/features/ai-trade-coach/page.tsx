@@ -5,7 +5,7 @@ import FeaturePage from "@/components/FeaturePage";
 export const metadata: Metadata = {
   title: { absolute: "AI Trading Coach — A Written Review of Your Process · getALPHA" },
   description:
-    "Five dimensions of your trading process, judged against your own history — not a signal telling you what to buy next.",
+    "Four dimensions of your trading process, judged against your own history — not a signal telling you what to buy next.",
   alternates: { canonical: "/features/ai-trade-coach" },
 };
 
@@ -23,13 +23,13 @@ export default function Page() {
         the pattern in your own history rather than a generic rule.
       </p>
 
-      <h2>Five dimensions, judged on evidence</h2>
+      <h2>Four dimensions, judged on evidence</h2>
       <p>
-        Every review scores position sizing, stop placement, trade selection, exit discipline and
-        market context — each one marked as strong, weak, or not assessable when there isn&apos;t
-        enough evidence to say. &ldquo;Twice your median risk&rdquo; is a finding, because it comes
-        from a number. &ldquo;Risk should be 1%&rdquo; is a platitude, because it doesn&apos;t know
-        anything about the trade it&apos;s attached to.
+        Every review scores position sizing, stop placement, exit discipline and plan adherence —
+        each one marked as strong, weak, or not assessable when there isn&apos;t enough evidence to
+        say. &ldquo;Twice your median risk&rdquo; is a finding, because it comes from a number.
+        &ldquo;Risk should be 1%&rdquo; is a platitude, because it doesn&apos;t know anything about
+        the trade it&apos;s attached to.
       </p>
 
       <h2>Facts about you, never predictions about the market</h2>

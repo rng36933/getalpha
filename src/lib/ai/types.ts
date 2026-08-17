@@ -92,7 +92,6 @@ export type CoachReview = {
   verdict: "PROCESS_SOUND" | "PROCESS_MIXED" | "PROCESS_BROKEN";
   headline: string;
   scorecard: {
-    tradeSelection: CoachDimension;
     positionSizing: CoachDimension;
     stopPlacement: CoachDimension;
     exitManagement: CoachDimension;

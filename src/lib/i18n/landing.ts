@@ -161,7 +161,6 @@ export type LandingCopy = {
       weak: string;
     };
     dimensions: {
-      selection: string;
       sizing: string;
       stop: string;
       exit: string;
@@ -227,7 +226,7 @@ export const landingCopy: LandingCopy = {
       },
       review: {
         title: "A review of your process",
-        body: "Five dimensions, judged against your own history. “Twice your median risk” is a finding. “Risk should be 1%” is a platitude.",
+        body: "Four dimensions, judged against your own history. “Twice your median risk” is a finding. “Risk should be 1%” is a platitude.",
       },
       calendar: {
         title: "The releases that move your pairs",
@@ -345,7 +344,7 @@ export const landingCopy: LandingCopy = {
       items: [
         "AI Session Brief before every session",
         "AI Coach process review on any trade",
-        "Five dimensions judged against your own history",
+        "Four dimensions judged against your own history",
         "Everything in Free",
       ],
       cta: "Get started",
@@ -372,7 +371,6 @@ export const landingCopy: LandingCopy = {
       weak: "Weak",
     },
     dimensions: {
-      selection: "Trade selection",
       sizing: "Position sizing",
       stop: "Stop placement",
       exit: "Exit management",

@@ -26,18 +26,17 @@ The unit of assessment is R: one R is the money the trader would have lost if th
 ## How to weight the evidence
 
 - A trade with no stop recorded has undefined risk. That alone caps the verdict at PROCESS_MIXED at best, and stopPlacement is WEAK, not NOT_ASSESSABLE — the failure is that no stop existed.
-- A trade with no setup tag and no market-context note is a different kind of gap: nobody enters a trade for literally no reason, the record just does not say what it was. That is missing documentation, not a bad decision — rate tradeSelection NOT_ASSESSABLE in that case, never WEAK, unless the trade's own numbers independently show a specific flaw (risk far above the trader's median with no defined edge, an entry chasing a move already well underway). The absence of a note is not itself the flaw.
 - Risk materially above the trader's own median matters more than the result of this trade.
 - An exit classified as DISCRETIONARY_EXIT is neither good nor bad on its own. Judge it against whether the record shows a reason for it. If the record shows none, say so as a plain fact about the trader's own action ("closed by hand well short of the target, no reason given") — not as a records-management complaint ("no rationale on file").
 - A losing streak immediately before the trade is context for sizing, not an excuse.
 - Planned reward-to-risk below 1 requires an unusually high hit rate to break even. Compare against the trader's supplied win rate before calling it a flaw.
-- When stop, target, setup and risk amount are ALL absent, the finding is that almost nothing was logged, not five separate findings that happen to share a cause. Say that once — in the headline and as the primaryLeak — rather than making every scorecard dimension re-explain the same missing record in different words. Each dimension still gets its own rating, but a dimension whose gap is just this same absence gets the shortest possible note ("Same gap — no stop was recorded." / "Same gap — no plan was recorded.") instead of a fresh restatement. Reserve a full sentence of evidence for whichever dimension the trade's own numbers say something *specific* about beyond "it's missing" (e.g. stopPlacement, where the exposure size itself is evidence).
+- When stop, target and risk amount are ALL absent, the finding is that almost nothing was logged, not four separate findings that happen to share a cause. Say that once — in the headline and as the primaryLeak — rather than making every scorecard dimension re-explain the same missing record in different words. Each dimension still gets its own rating, but a dimension whose gap is just this same absence gets the shortest possible note ("Same gap — no stop was recorded." / "Same gap — no plan was recorded.") instead of a fresh restatement. Reserve a full sentence of evidence for whichever dimension the trade's own numbers say something *specific* about beyond "it's missing" (e.g. stopPlacement, where the exposure size itself is evidence).
 
 ## The fields
 
 - verdict: PROCESS_SOUND, PROCESS_MIXED or PROCESS_BROKEN, on process alone.
 - headline: one sentence a risk manager could read in isolation and know what happened. Lead with the finding, not the result.
-- scorecard: five dimensions, each a rating plus one sentence of evidence. Rate against this trader's history where the data allows it.
+- scorecard: four dimensions, each a rating plus one sentence of evidence. Rate against this trader's history where the data allows it.
 - primaryLeak: the single most expensive recurring behaviour this trade is evidence of, with the evidence and why it compounds over a sample. Null if the trade shows no leak.
 - strengths: at most three, each tied to a supplied number or note. Empty array if there are none — an empty array is a valid and useful answer.
 - ruleForNextTime: one rule the trader can check before the next entry, phrased so that compliance is objectively verifiable. "Size so that risk is at or below 1.2% of equity" is checkable; "manage risk better" is not.
@@ -77,9 +76,6 @@ const SCHEMA: Record<string, unknown> = {
     scorecard: {
       type: "object",
       properties: {
-        tradeSelection: dimension(
-          "Was there a stated reason to be in this trade at all?",
-        ),
         positionSizing: dimension(
           "Risk taken versus this trader's own median risk and equity.",
         ),
@@ -94,7 +90,6 @@ const SCHEMA: Record<string, unknown> = {
         ),
       },
       required: [
-        "tradeSelection",
         "positionSizing",
         "stopPlacement",
         "exitManagement",

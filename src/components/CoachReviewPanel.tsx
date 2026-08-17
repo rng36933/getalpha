@@ -19,7 +19,6 @@ const RATING: Record<CoachRating, { label: string; className: string }> = {
 };
 
 const DIMENSIONS: { key: keyof CoachReview["scorecard"]; label: string }[] = [
-  { key: "tradeSelection", label: "Trade selection" },
   { key: "positionSizing", label: "Position sizing" },
   { key: "stopPlacement", label: "Stop placement" },
   { key: "exitManagement", label: "Exit management" },

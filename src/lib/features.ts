@@ -23,7 +23,7 @@ export const FEATURE_PAGES: FeaturePageMeta[] = [
     slug: "ai-trade-coach",
     title: "AI Trading Coach",
     description:
-      "A written review of how you traded, judged across five dimensions against your own history. Findings, not platitudes.",
+      "A written review of how you traded, judged across four dimensions against your own history. Findings, not platitudes.",
   },
   {
     slug: "session-brief",

@@ -115,7 +115,6 @@ export default function VerdictCard() {
   const verdictLength = verdict.length;
 
   const scorecard: { dimension: string; rating: Rating; label: string }[] = [
-    { dimension: copy.dimensions.selection, rating: "ADEQUATE", label: copy.ratings.adequate },
     { dimension: copy.dimensions.sizing, rating: "WEAK", label: copy.ratings.weak },
     { dimension: copy.dimensions.stop, rating: "WEAK", label: copy.ratings.weak },
     { dimension: copy.dimensions.exit, rating: "ADEQUATE", label: copy.ratings.adequate },
