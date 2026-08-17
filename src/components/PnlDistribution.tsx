@@ -36,35 +36,30 @@ export default function PnlDistribution({
       : null;
 
   return (
-    <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-8">
+    <div className="flex flex-col gap-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="flex items-baseline gap-2">
+          <span className="figure font-mono text-3xl text-positive">{winPercent}%</span>
+          <span className="text-[11px] uppercase tracking-wider text-muted">won</span>
+        </span>
+        <span className="font-mono text-xs tabular-nums text-muted">
+          {wins} / {losses}
+        </span>
+      </div>
+
       <div
         role="img"
         aria-label={`${wins} winning trades, ${losses} losing trades`}
-        className="relative size-32 shrink-0 rounded-full"
-        style={{
-          background: `conic-gradient(var(--positive) 0deg ${
-            winPercent * 3.6
-          }deg, var(--negative) ${winPercent * 3.6}deg 360deg)`,
-        }}
+        className="flex h-2 w-full overflow-hidden bg-negative"
       >
-        <div className="absolute inset-3 grid place-items-center rounded-full bg-surface">
-          <span className="figure text-2xl">{winPercent}%</span>
-          <span className="text-[10px] text-muted">won</span>
-        </div>
+        <div
+          className="h-full bg-positive"
+          style={{ width: `${winPercent}%` }}
+        />
       </div>
 
       <div className="w-full space-y-3">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
-          <span className="flex items-center gap-2">
-            <span className="size-2 shrink-0 rounded-full bg-positive" />
-            {wins} won
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="size-2 shrink-0 rounded-full bg-negative" />
-            {losses} lost
-          </span>
-          <span className="text-muted">{scored} closed trades</span>
-        </div>
+        <p className="font-mono text-xs text-muted">{scored} closed trades</p>
 
         <p className="text-xs leading-relaxed text-muted">
           {outlierFactor !== null && outlierFactor >= 3 ? (
