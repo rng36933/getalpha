@@ -14,9 +14,11 @@ export default function LegalDocument({
   children,
 }: LegalDocumentProps) {
   return (
-    <article>
+    <article className="pb-16 md:pb-20">
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      <p className="mt-1 text-xs text-muted">Version {version}</p>
+      <p className="mt-2 inline-block rounded-none border border-zinc-800 bg-zinc-900 px-2 py-0.5 font-mono text-xs text-[#f2c94c]">
+        Version {version}
+      </p>
       <p className="mt-4 text-sm leading-relaxed text-muted">{summary}</p>
 
       <div className="mt-8 space-y-8">{children}</div>
@@ -33,7 +35,9 @@ export function Clause({
 }) {
   return (
     <section>
-      <h2 className="text-sm font-medium">{heading}</h2>
+      <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white md:text-base">
+        {heading}
+      </h2>
       {/* Every emphasised sentence across Terms, Privacy and Disclaimer reads
           gold from this one place, rather than each clause colouring its own
           <strong> — the parts worth stopping to read (who bears the risk,

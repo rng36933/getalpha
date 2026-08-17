@@ -43,7 +43,8 @@ export default function PrivacyPage() {
           asked for the morning email.
         </p>
         <p>
-          <strong>Billing data.</strong> If you subscribe, our payment processor
+          <strong>Billing data.</strong>{" "}
+          If you subscribe, our payment processor
           holds your payment details; we never see or store a card number. We
           store the processor&rsquo;s customer and subscription identifiers, the
           plan and its status.

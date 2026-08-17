@@ -22,8 +22,8 @@ export default function TermsPage() {
         </p>
         <p>
           These terms apply together with the{" "}
-          <a href="/privacy" className="text-accent">Privacy Policy</a> and the{" "}
-          <a href="/disclaimer" className="text-accent">Risk Disclaimer</a>. The
+          <a href="/privacy" className="text-accent underline decoration-[#f2c94c] underline-offset-4 transition-colors hover:text-[#f2c94c]">Privacy Policy</a> and the{" "}
+          <a href="/disclaimer" className="text-accent underline decoration-[#f2c94c] underline-offset-4 transition-colors hover:text-[#f2c94c]">Risk Disclaimer</a>. The
           Risk Disclaimer governs in the event of any conflict about the nature
           of the service.
         </p>
@@ -58,20 +58,14 @@ export default function TermsPage() {
 
       <Clause heading="5. Acceptable use">
         <p>You agree not to:</p>
-        <p>
-          — access the service by any automated means, or at a rate that
-          interferes with it for others;
-          <br />— attempt to circumvent authentication, rate limits, usage limits
-          or payment;
-          <br />— resell, redistribute or publish the output of the service as
-          your own product or as a signal service;
-          <br />— submit content designed to manipulate the automated components
-          into behaving outside their intended purpose;
-          <br />— upload unlawful content, or anyone&rsquo;s personal data other
-          than your own;
-          <br />— reverse engineer, scrape or copy the service other than as
-          permitted by law.
-        </p>
+        <ul className="space-y-1.5 pl-6 font-mono text-sm text-zinc-400">
+          <li>— access the service by any automated means, or at a rate that interferes with it for others;</li>
+          <li>— attempt to circumvent authentication, rate limits, usage limits or payment;</li>
+          <li>— resell, redistribute or publish the output of the service as your own product or as a signal service;</li>
+          <li>— submit content designed to manipulate the automated components into behaving outside their intended purpose;</li>
+          <li>— upload unlawful content, or anyone&rsquo;s personal data other than your own;</li>
+          <li>— reverse engineer, scrape or copy the service other than as permitted by law.</li>
+        </ul>
       </Clause>
 
       <Clause heading="6. Subscriptions, payment and cancellation">
