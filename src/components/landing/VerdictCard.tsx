@@ -319,7 +319,7 @@ export default function VerdictCard() {
               <button
                 type="button"
                 onClick={run}
-                className="lp-shimmer relative w-full overflow-hidden rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-[#030712] transition-all duration-300 ease-in-out hover:bg-emerald-400"
+                className="lp-shimmer relative w-full overflow-hidden rounded-none bg-emerald-500 px-4 py-3 text-sm font-semibold text-[#030712] transition-all duration-300 ease-in-out hover:bg-emerald-400"
               >
                 {copy.take}
               </button>

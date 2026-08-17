@@ -86,7 +86,7 @@ function Cell({
         </span>
 
         {isAi ? (
-          <span className="inline-flex items-center gap-1 rounded-sm border border-accent/25 bg-accent/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-accent">
+          <span className="inline-flex items-center gap-1 rounded-none border border-accent/25 bg-accent/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-widest text-accent">
             <Lock className="size-2.5 shrink-0" aria-hidden="true" />
             pro
           </span>
@@ -100,7 +100,7 @@ function Cell({
         {children}
       </p>
 
-      <div className="mt-5 flex-1 rounded-sm border border-white/[0.05] bg-black/25 p-3.5">
+      <div className="mt-5 flex-1 rounded-sm border border-white/[0.05] bg-black/25 p-4 sm:p-5">
         {demo}
       </div>
     </div>
