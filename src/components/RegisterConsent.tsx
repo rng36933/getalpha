@@ -3,6 +3,7 @@
 import { SignUp } from "@clerk/nextjs";
 import { useState } from "react";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
+import { clerkAppearance } from "@/lib/clerkAppearance";
 
 /**
  * The sign-up form, behind a required checkbox.
@@ -17,14 +18,20 @@ export default function RegisterConsent() {
   const [agreed, setAgreed] = useState(false);
 
   if (agreed) {
-    return <SignUp signInUrl="/login" fallbackRedirectUrl="/welcome" />;
+    return (
+      <SignUp
+        signInUrl="/login"
+        fallbackRedirectUrl="/welcome"
+        appearance={clerkAppearance}
+      />
+    );
   }
 
   return (
-    <div className="surface-lit w-full max-w-md rounded-xl border border-line p-6">
-      <h1 className="text-lg font-semibold tracking-tight">Create your account</h1>
+    <div className="surface-lit w-full max-w-md rounded-none border border-zinc-800 p-6">
+      <h1 className="font-mono text-lg font-semibold uppercase tracking-tight">Create your account</h1>
 
-      <p className="mt-3 rounded-lg border border-warning/30 bg-warning/10 px-3.5 py-3 text-sm font-medium leading-relaxed text-warning">
+      <p className="mt-3 rounded-none border border-warning/30 bg-warning/10 px-3.5 py-3 text-sm font-medium leading-relaxed text-warning">
         getALPHA is an educational and informational tool. It does not provide
         financial advice or trading signals, and every financial decision you
         make using it is yours alone.

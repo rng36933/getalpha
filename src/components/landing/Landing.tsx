@@ -436,13 +436,20 @@ export default function Landing({
 
       {/* A faint grain over the whole page, last so it sits on top of every
           card and chart beneath it and reads as one shared surface texture
-          rather than a perfectly smooth digital void. */}
-      <svg aria-hidden="true" className="pointer-events-none fixed inset-0 z-50 h-full w-full opacity-15 mix-blend-screen">
-        <filter id="lp-noise">
-          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves={3} stitchTiles="stitch" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#lp-noise)" />
-      </svg>
+          rather than a perfectly smooth digital void.
+          A static repeating tile rather than a live SVG filter: a
+          `feTurbulence` filter the size of the viewport has to be rasterised
+          by the browser on every paint, where a background-image tile is
+          decoded once and repeated for free. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-50 opacity-15 mix-blend-screen"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "200px 200px",
+        }}
+      />
     </div>
   );
 }

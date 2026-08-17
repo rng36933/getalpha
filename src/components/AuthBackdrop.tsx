@@ -8,11 +8,13 @@ import AmbientCandles from "@/components/landing/AmbientCandles";
  * is the screen where somebody decides whether this product is real.
  *
  * Deliberately the *same* backdrop as the landing page rather than something
- * new: grid, candles, glow, motes, all reusing the `lp-` utilities that page
- * already defines. A visitor arrives here by pressing a button on the landing
- * page, and meeting a different visual language at that exact moment is the
- * seam this project has worried about before. Continuity is the whole point;
- * inventing a second decorative style for one screen would undo it.
+ * new: candles and drifting motes, reusing the components that page already
+ * defines — flat and free of grid lines or glow, matching the landing page's
+ * own de-slopped background. A visitor arrives here by pressing a button on
+ * the landing page, and meeting a different visual language at that exact
+ * moment is the seam this project has worried about before. Continuity is
+ * the whole point; inventing a second decorative style for one screen would
+ * undo it.
  *
  * Quieter than the hero, though, and that is not laziness. The hero's job is to
  * be looked at. This screen's job is a form with two fields in it, so the
@@ -41,20 +43,11 @@ export default function AuthBackdrop() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
     >
-      <div className="lp-grid absolute inset-0" />
-
       {/* Dimmed to a little over half what the hero shows. Enough to read as
           the same product, not enough to sit behind the type. */}
       <div className="absolute inset-0 opacity-60">
         <AmbientCandles />
       </div>
-
-      <div className="absolute -top-64 left-1/2 h-[36rem] w-[min(56rem,120vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.14),transparent_62%)]" />
-
-      {/* A second, violet wash low on the screen. Violet means "AI module"
-          everywhere else in this app, so it is kept faint here — atmosphere
-          rather than the signal it carries on a pricing card. */}
-      <div className="absolute -bottom-56 left-1/2 h-[28rem] w-[min(44rem,110vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.10),transparent_65%)]" />
 
       {MOTES.map((mote) => (
         <span

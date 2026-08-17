@@ -1,4 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
+import { clerkAppearance } from "@/lib/clerkAppearance";
 
 export const metadata = {
   title: { absolute: "Sign in · getALPHA" },
@@ -10,5 +11,11 @@ export const metadata = {
  * sub-routes (verification, factor two, reset) underneath this path.
  */
 export default function LoginPage() {
-  return <SignIn signUpUrl="/register" fallbackRedirectUrl="/dashboard" />;
+  return (
+    <SignIn
+      signUpUrl="/register"
+      fallbackRedirectUrl="/dashboard"
+      appearance={clerkAppearance}
+    />
+  );
 }
