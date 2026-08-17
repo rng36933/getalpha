@@ -155,7 +155,7 @@ export function RecentTrades({
           <span className="min-w-0 flex-1 truncate text-sm">{trade.asset}</span>
 
           <span
-            className={`shrink-0 font-mono text-xs tabular-nums ${tone(trade.pnl)}`}
+            className={`w-20 shrink-0 text-right font-mono text-xs tabular-nums ${tone(trade.pnl)}`}
           >
             {pnl(trade.pnl, currency)}
           </span>
@@ -181,8 +181,8 @@ function Stat({
   return (
     <div>
       <p className="eyebrow">{label}</p>
-      <p className={`figure mt-1.5 text-[1.5rem] ${tone}`}>{value}</p>
-      {hint ? <p className="mt-1 text-[11px] text-muted">{hint}</p> : null}
+      <p className={`figure mt-1.5 font-mono text-[1.5rem] ${tone}`}>{value}</p>
+      {hint ? <p className="mt-1 font-mono text-[11px] text-muted">{hint}</p> : null}
     </div>
   );
 }

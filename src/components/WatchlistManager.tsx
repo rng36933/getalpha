@@ -183,7 +183,7 @@ export default function WatchlistManager({
           disabled={busy || full}
           placeholder={full ? `The list holds ${max} instruments` : "Add an instrument…"}
           aria-label="Search instruments"
-          className="w-full rounded-lg border border-line bg-surface-raised px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-accent disabled:cursor-not-allowed"
+          className="w-full rounded-none border border-zinc-800 bg-[#0a0b0f] px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-[#f2c94c] focus:ring-0 disabled:cursor-not-allowed"
         />
 
         {results.length > 0 ? (

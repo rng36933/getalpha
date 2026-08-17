@@ -73,12 +73,12 @@ export default function PairNews({
                   href={headline.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm leading-snug hover:text-accent hover:underline"
+                  className="font-mono text-sm leading-snug hover:text-accent hover:underline"
                 >
                   {headline.title}
                 </a>
               ) : (
-                <p className="text-sm leading-snug">{headline.title}</p>
+                <p className="font-mono text-sm leading-snug">{headline.title}</p>
               )}
               <p className="mt-0.5 text-[11px] text-muted">{headline.source}</p>
             </div>
