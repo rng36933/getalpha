@@ -437,7 +437,7 @@ export default function Landing({
       {/* A faint grain over the whole page, last so it sits on top of every
           card and chart beneath it and reads as one shared surface texture
           rather than a perfectly smooth digital void. */}
-      <svg aria-hidden="true" className="pointer-events-none fixed inset-0 z-50 h-full w-full opacity-5 mix-blend-screen">
+      <svg aria-hidden="true" className="pointer-events-none fixed inset-0 z-50 h-full w-full opacity-15 mix-blend-screen">
         <filter id="lp-noise">
           <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves={3} stitchTiles="stitch" />
         </filter>
