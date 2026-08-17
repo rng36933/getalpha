@@ -9,62 +9,30 @@ import { GOLD_RELATIONSHIP } from "@/lib/market-data/gold-relationship";
  * of the card. Daily yields and monthly CPI sit side by side, and a reader
  * needs to see that one is from yesterday and the other from three weeks ago.
  */
-/** Geometry for a reading's range dial. Smaller than the positioning rings —
- *  up to four of these stack in one card, against six across a whole row for
- *  positioning. */
-const RANGE_R = 20;
-const RANGE_STROKE = 5;
-const RANGE_CIRCUMFERENCE = 2 * Math.PI * RANGE_R;
-
 /**
- * Where a print sits in its own twelve-month range, as a ring.
+ * Where a print sits in its own twelve-month range, as a bar.
  *
- * Was a horizontal bar with a dot on it. The ring reads the way the
- * positioning dials below it do — one glance, no prior knowledge of what a
- * "normal" ten-year yield is needed — and keeping the two shapes consistent
- * on one page means a reader only has to learn the convention once.
+ * A thin fill bar rather than a ring: the same one-glance reading, in the
+ * terminal-flat vocabulary the rest of the desk uses instead of a circular
+ * gauge.
  */
 function RangeDial({ reading }: { reading: MacroReading }) {
   if (reading.rangePercent === null) return null;
 
-  const arc = (reading.rangePercent / 100) * RANGE_CIRCUMFERENCE;
-
   return (
-    <span className="relative inline-grid shrink-0 place-items-center">
-      <svg
-        viewBox="0 0 48 48"
-        className="size-10"
+    <span className="flex w-16 shrink-0 flex-col items-end gap-1">
+      <span className="figure font-mono text-[11px] text-muted">
+        {reading.rangePercent}%
+      </span>
+      <span
         role="img"
         aria-label={`${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`}
+        className="h-1 w-full bg-line"
       >
-        {/* Rotated so the arc starts at twelve o'clock, matching the
-            positioning dials. */}
-        <g transform="rotate(-90 24 24)">
-          <circle
-            cx={24}
-            cy={24}
-            r={RANGE_R}
-            fill="none"
-            stroke="var(--line)"
-            strokeWidth={RANGE_STROKE}
-          />
-          <circle
-            cx={24}
-            cy={24}
-            r={RANGE_R}
-            fill="none"
-            stroke="var(--accent)"
-            strokeWidth={RANGE_STROKE}
-            strokeLinecap="round"
-            strokeDasharray={`${arc} ${RANGE_CIRCUMFERENCE - arc}`}
-          />
-        </g>
-      </svg>
-
-      <span className="pointer-events-none absolute inset-0 grid place-items-center">
-        <span className="figure text-[0.6rem] text-muted">
-          {reading.rangePercent}%
-        </span>
+        <span
+          className="block h-full bg-accent"
+          style={{ width: `${reading.rangePercent}%` }}
+        />
       </span>
     </span>
   );
@@ -133,76 +101,45 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
   );
 }
 
-/** Geometry for one positioning dial. A ring rather than a filled circle: the
- *  hole is where the figure goes, and a solid pie has nowhere to put it.
- *  Sized to read clearly on its own — this card usually holds one or two of
- *  these, not a full row, since it only shows markets on the user's own
- *  watchlist. */
-const R = 52;
-const STROKE = 15;
-const CIRCUMFERENCE = 2 * Math.PI * R;
-
 /**
- * One market's long/short split as a ring.
+ * One market's long/short split as a bar.
  *
- * The two sides are drawn as shares of the whole, so the picture is the balance
- * itself rather than a tilt away from a centre line. The net figure sits in the
- * hole, printed — green and red cannot carry the meaning on their own, and this
- * card is read at a glance by people who may not separate the two hues.
+ * The two sides are drawn as shares of the whole, so the picture is the
+ * balance itself rather than a tilt away from a centre line — the same
+ * reading the ring gave, as a flat terminal-style ratio bar instead of a
+ * circular gauge. The net figure is printed beside it: green and red
+ * cannot carry the meaning on their own.
  */
 function CotDial({ row }: { row: CotRow }) {
   const total = row.long + row.short;
   const longShare = total > 0 ? (row.long / total) * 100 : 50;
 
   const isLong = row.skew > 0;
-  const longArc = (longShare / 100) * CIRCUMFERENCE;
 
   return (
-    <li className="flex flex-col items-center gap-2.5 text-center">
-      <span className="relative">
-        <svg
-          viewBox="0 0 128 128"
-          className="size-32"
-          role="img"
-          aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
+    <li className="flex w-40 flex-col gap-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm font-medium">{row.label}</span>
+        <span
+          className={`figure font-mono text-lg ${
+            isLong ? "text-positive" : "text-negative"
+          }`}
         >
-          {/* Rotated so both arcs start at twelve o'clock, which is where the
-              eye starts reading a dial. */}
-          <g transform="rotate(-90 64 64)">
-            <circle
-              cx={64}
-              cy={64}
-              r={R}
-              fill="none"
-              stroke="var(--negative)"
-              strokeWidth={STROKE}
-              opacity={0.75}
-            />
-            <circle
-              cx={64}
-              cy={64}
-              r={R}
-              fill="none"
-              stroke="var(--positive)"
-              strokeWidth={STROKE}
-              strokeDasharray={`${longArc} ${CIRCUMFERENCE - longArc}`}
-              opacity={0.85}
-            />
-          </g>
-        </svg>
-
-        <span className="pointer-events-none absolute inset-0 grid place-items-center">
-          <span
-            className={`figure text-xl ${
-              isLong ? "text-positive" : "text-negative"
-            }`}
-          >
-            {Math.abs(row.skew)}%
-          </span>
+          {Math.abs(row.skew)}%
         </span>
-      </span>
+      </div>
 
-      <span className="text-sm font-medium">{row.label}</span>
+      <div
+        role="img"
+        aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
+        className="flex h-2 w-full overflow-hidden bg-negative/75"
+      >
+        <div
+          className="h-full bg-positive/85"
+          style={{ width: `${longShare}%` }}
+        />
+      </div>
+
       <span
         className={`font-mono text-[11px] uppercase tracking-wider ${
           isLong ? "text-positive" : "text-negative"
@@ -253,11 +190,11 @@ export function CotList({ rows }: { rows: CotRow[] }) {
 
       <p className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-positive" aria-hidden="true" />
+          <span className="size-2 bg-positive" aria-hidden="true" />
           long
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-negative" aria-hidden="true" />
+          <span className="size-2 bg-negative" aria-hidden="true" />
           short
         </span>
         <span>
