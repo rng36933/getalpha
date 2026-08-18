@@ -92,22 +92,19 @@ export default function PnlDistribution({
 
         <p className="font-mono text-xs text-muted">{scored} closed trades</p>
 
-        <p className="text-xs leading-relaxed text-muted">
+        <p className="font-mono text-xs text-muted">
           {outlierFactor !== null && outlierFactor >= 3 ? (
             <>
-              Worst single loss{" "}
+              Worst loss{" "}
               <span className="text-warning">
                 {formatMoney(worstLoss!, currency)}
               </span>{" "}
-              is {outlierFactor.toFixed(1)}× the typical one (
-              {formatMoney(medianLoss!, currency)}). A loss that far outside
-              the usual is a stop that was moved, widened, or never really
-              there.
+              — {outlierFactor.toFixed(1)}× typical ({formatMoney(medianLoss!, currency)})
             </>
           ) : worstLoss !== null && medianLoss !== null ? (
             <>
-              Worst single loss {formatMoney(worstLoss, currency)}, typical
-              loss {formatMoney(medianLoss, currency)}.
+              Worst loss {formatMoney(worstLoss, currency)}, typical{" "}
+              {formatMoney(medianLoss, currency)}
             </>
           ) : null}
         </p>
