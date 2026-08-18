@@ -62,6 +62,21 @@ function Arrow({
 }
 
 /**
+ * The real arithmetic behind each reading, shown on hover next to its value.
+ *
+ * Matches `computeDayTape` in `tape.ts` exactly — this is documentation of
+ * what already ran, not a new claim, so it has to stay in lockstep with that
+ * file rather than describe the computation in looser words.
+ */
+const FORMULA: Record<string, string> = {
+  VS_OPEN: "(price − open) / open × 100",
+  VS_PRIOR_CLOSE: "price − prior close",
+  RANGE_POSITION: "(price − low) / (high − low) × 100",
+  INTRADAY_BARS: "count(close > open) vs count(close < open), last 12 bars",
+  VS_AVERAGE: "price − mean(last 20 closes)",
+};
+
+/**
  * Reading keys whose detail sentence only restates a number shown elsewhere on
  * the card — the open/now pair above, the low/high under the range bar, or a
  * boilerplate line with no data in it. Cut here rather than in the copy files,
@@ -90,15 +105,26 @@ function ReadingRow({
   const [open, setOpen] = useState(false);
   const expandable = !DETAIL_REDUNDANT.has(reading.key);
   const tone = TONE[reading.direction];
+  const formula = FORMULA[reading.key];
 
   const row = (
-    <div className="flex items-start gap-3 px-3 py-2.5">
+    <div className="group flex items-start gap-3 px-3 py-2.5">
       <Arrow direction={reading.direction} copy={copy} className="mt-0.5 size-4 shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-baseline justify-between gap-x-3">
           <span className={`text-sm ${tone.text}`}>{reading.label}</span>
-          <span className={`font-mono text-xs font-semibold ${tone.text}`}>
-            {reading.value}
+          <span className="flex items-baseline gap-2">
+            {/* Hidden until the row is hovered — the formula is a footnote
+                for someone checking the arithmetic, not something every
+                reader needs to see by default. */}
+            {formula ? (
+              <span className="hidden font-mono text-[10px] text-muted/60 group-hover:inline">
+                [{formula}]
+              </span>
+            ) : null}
+            <span className={`font-mono text-xs font-semibold ${tone.text}`}>
+              {reading.value}
+            </span>
           </span>
         </p>
       </div>
@@ -306,22 +332,30 @@ export default function DayTapeReadout({
         ))}
       </ul>
 
-      <div className="space-y-1 text-xs text-muted">
-        <p className="text-foreground">{agreementLine(tape, copy)}</p>
+      {/* A status strip, not a paragraph: the same facts as before, laid out
+          as label/value rows so the card ends on something that reads as a
+          system readout rather than a wall of grey prose. */}
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-t border-line pt-4 font-mono text-[10px] leading-relaxed">
+        <dt className="text-muted/70">STATUS</dt>
+        <dd className="text-foreground">{agreementLine(tape, copy)}</dd>
 
         {tape.rangeVsAverage !== null ? (
-          <p>
-            {tape.rangeVsAverage < 0.05
-              ? copy.rangeTiny
-              : tape.rangeVsAverage >= 1.3
-                ? copy.rangeWide(tape.rangeVsAverage)
-                : tape.rangeVsAverage <= 0.7
-                  ? copy.rangeQuiet(tape.rangeVsAverage)
-                  : copy.rangeNormal(tape.rangeVsAverage)}
-          </p>
+          <>
+            <dt className="text-muted/70">RANGE</dt>
+            <dd className="text-muted">
+              {tape.rangeVsAverage < 0.05
+                ? copy.rangeTiny
+                : tape.rangeVsAverage >= 1.3
+                  ? copy.rangeWide(tape.rangeVsAverage)
+                  : tape.rangeVsAverage <= 0.7
+                    ? copy.rangeQuiet(tape.rangeVsAverage)
+                    : copy.rangeNormal(tape.rangeVsAverage)}
+            </dd>
+          </>
         ) : null}
 
-        <p>
+        <dt className="text-muted/70">SESSION</dt>
+        <dd className="text-muted">
           {copy.sessionOf(tape.sessionDate)}
           {fetchedAt ? (
             <>
@@ -330,10 +364,15 @@ export default function DayTapeReadout({
             </>
           ) : null}
           {copy.refreshNote}
-        </p>
+        </dd>
 
-        {stale ? <p className="text-warning">{copy.staleNote}</p> : null}
-      </div>
+        {stale ? (
+          <>
+            <dt className="text-warning/70">WARN</dt>
+            <dd className="text-warning">{copy.staleNote}</dd>
+          </>
+        ) : null}
+      </dl>
 
       {/* Skipped when the market-closed warning already ran: both sentences
           make the same "not a forecast" point, and saying it twice on one
