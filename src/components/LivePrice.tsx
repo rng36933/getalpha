@@ -87,6 +87,10 @@ export default function LivePrice({
       }
     }
 
+    // Runs once immediately rather than waiting out the first interval —
+    // otherwise the activity log sits on "waiting for the first poll" for up
+    // to 30s after every page load, which reads as broken rather than idle.
+    poll();
     const timer = setInterval(poll, 30_000);
 
     return () => {
