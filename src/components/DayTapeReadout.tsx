@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
+import LivePrice from "@/components/LivePrice";
 import LocalTime from "@/components/LocalTime";
 import type { Locale } from "@/lib/i18n/locales";
 import { tapeCopy, type TapeCopy } from "@/lib/market-data/tape-copy";
-import type { DayTape, Direction } from "@/lib/market-data/tape";
+import type { DayTape, Direction, Reading } from "@/lib/market-data/tape";
 
 /**
  * The day's tape, drawn so it can be read in a glance.
@@ -68,6 +72,69 @@ const DETAIL_REDUNDANT: ReadonlySet<string> = new Set([
   "RANGE_POSITION",
   "INTRADAY_BARS",
 ]);
+
+/**
+ * One reading, collapsed to its label and value until pressed.
+ *
+ * Rows whose detail sentence is cut as redundant (see `DETAIL_REDUNDANT`)
+ * have nothing to expand into, so they render as plain, unclickable rows
+ * rather than a toggle that always opens onto nothing.
+ */
+function ReadingRow({
+  reading,
+  copy,
+}: {
+  reading: Reading;
+  copy: TapeCopy["readout"];
+}) {
+  const [open, setOpen] = useState(false);
+  const expandable = !DETAIL_REDUNDANT.has(reading.key);
+  const tone = TONE[reading.direction];
+
+  const row = (
+    <div className="flex items-start gap-3 px-3 py-2.5">
+      <Arrow direction={reading.direction} copy={copy} className="mt-0.5 size-4 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-baseline justify-between gap-x-3">
+          <span className={`text-sm ${tone.text}`}>{reading.label}</span>
+          <span className={`font-mono text-xs font-semibold ${tone.text}`}>
+            {reading.value}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
+
+  return (
+    <li className={tone.bg}>
+      {expandable ? (
+        <button
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={open}
+          className="w-full cursor-pointer text-left transition-colors hover:bg-white/[0.03]"
+        >
+          {row}
+        </button>
+      ) : (
+        row
+      )}
+
+      {expandable ? (
+        <div
+          className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+          style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+        >
+          <div className="overflow-hidden">
+            <p className="px-3 pb-2.5 pl-10 text-[11px] leading-relaxed text-muted">
+              {reading.detail}
+            </p>
+          </div>
+        </div>
+      ) : null}
+    </li>
+  );
+}
 
 /** Where price sits between the day's low and its high. */
 function RangeBar({ tape, copy }: { tape: DayTape; copy: TapeCopy["readout"] }) {
@@ -172,9 +239,12 @@ export default function DayTapeReadout({
         </p>
 
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
-          <span className="figure text-[2.75rem] sm:text-[3.5rem]">
-            {tape.lastPrice}
-          </span>
+          <LivePrice
+            symbol={tape.symbol}
+            timeframe="M15"
+            initialPrice={tape.lastPrice}
+            className="figure text-[2.75rem] sm:text-[3.5rem]"
+          />
 
           <span
             className={`mb-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold tabular-nums ${tone.bg} ${tone.text}`}
@@ -213,29 +283,7 @@ export default function DayTapeReadout({
 
       <ul className="divide-y divide-line border-y border-line">
         {tape.readings.map((reading) => (
-          <li
-            key={reading.key}
-            className={`flex items-start gap-3 px-3 py-2.5 ${TONE[reading.direction].bg}`}
-          >
-            <Arrow direction={reading.direction} copy={copy} className="mt-0.5 size-4 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="flex flex-wrap items-baseline justify-between gap-x-3">
-                <span className={`text-sm ${TONE[reading.direction].text}`}>
-                  {reading.label}
-                </span>
-                <span
-                  className={`font-mono text-xs font-semibold ${TONE[reading.direction].text}`}
-                >
-                  {reading.value}
-                </span>
-              </p>
-              {DETAIL_REDUNDANT.has(reading.key) ? null : (
-                <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
-                  {reading.detail}
-                </p>
-              )}
-            </div>
-          </li>
+          <ReadingRow key={reading.key} reading={reading} copy={copy} />
         ))}
       </ul>
 
