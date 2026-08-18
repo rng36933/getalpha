@@ -105,7 +105,11 @@ function ReadingTile({
 
   return (
     <div
-      className={`group flex min-h-24 flex-col justify-between p-5 ${reading.direction === "FLAT" ? "" : tone.bg}`}
+      className={`group flex min-h-24 flex-col justify-between rounded-2xl border p-5 transition-colors ${
+        reading.direction === "FLAT"
+          ? "border-line bg-surface-raised/40"
+          : `border-transparent ${tone.bg} hover:border-current`
+      }`}
     >
       <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
       <span className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
@@ -143,9 +147,9 @@ function RangeBar({ tape, copy }: { tape: DayTape; copy: TapeCopy["readout"] }) 
         </span>
         <span>{tape.dayHigh}</span>
       </div>
-      <div className="relative h-1.5 border border-line bg-surface-raised">
+      <div className="relative h-2 rounded-full bg-surface-raised">
         <div
-          className="absolute top-1/2 h-3 w-1.5 -translate-x-1/2 -translate-y-1/2 bg-accent"
+          className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-accent shadow-[0_0_12px_rgba(242,201,76,0.7)]"
           style={{ left: `${tape.rangePosition}%` }}
         />
       </div>
@@ -207,7 +211,7 @@ export default function DayTapeReadout({
   return (
     <div className="space-y-5">
       {tape.barelyTraded ? (
-        <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2.5 text-xs leading-relaxed text-warning">
+        <p className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-xs leading-relaxed text-warning">
           {copy.barelyTraded}
         </p>
       ) : null}
@@ -232,16 +236,20 @@ export default function DayTapeReadout({
           {tape.barelyTraded ? copy.marketClosed : copy.tradingNow}
         </p>
 
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
+        <div className="relative flex flex-wrap items-end gap-x-4 gap-y-1">
+          {/* A soft bloom behind the headline number — the one figure per
+              card that earns looking lit from within. */}
+          <div className="glow-bloom pointer-events-none absolute -inset-x-6 -inset-y-8 -z-10" />
+
           <LivePrice
             symbol={tape.symbol}
             timeframe="M15"
             initialPrice={tape.lastPrice}
-            className="figure text-[2.75rem] sm:text-[3.5rem]"
+            className="figure glow-text text-[2.75rem] sm:text-[3.5rem]"
           />
 
           <span
-            className={`mb-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold tabular-nums ${tone.bg} ${tone.text}`}
+            className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-semibold tabular-nums ${tone.bg} ${tone.text}`}
           >
             <Arrow direction={tape.direction} copy={copy} className="size-3" />
             {tape.changeAbsolute > 0 ? "+" : ""}
@@ -275,21 +283,21 @@ export default function DayTapeReadout({
 
       <RangeBar tape={tape} copy={copy} />
 
-      <div className="grid grid-cols-2 divide-x divide-y divide-line border border-line bg-surface-raised/10 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {tape.readings.map((reading) => (
           <ReadingTile key={reading.key} reading={reading} copy={copy} />
         ))}
       </div>
 
-      {/* A status console: the same facts as before, laid out as a band of
-          labelled columns plus a couple of terminal-style log lines, in one
-          bordered box, so the card ends on something that reads as a system
-          readout rather than a wall of grey prose. */}
-      <div className="border border-line bg-surface-raised/40 p-4 font-mono text-[10px] leading-relaxed">
-        <dl className="grid grid-cols-1 gap-4 divide-y divide-line border-b border-line pb-4 md:grid-cols-3 md:divide-x md:divide-y-0">
-          <div className="flex flex-col gap-1 md:pr-4">
-            <dt className="text-[9px] font-bold tracking-widest text-muted/70 uppercase">
-              {"// "}Status
+      {/* The same facts as before, laid out as a band of labelled columns
+          plus a couple of footnotes, in one rounded glass panel. */}
+      <div className="rounded-2xl border border-line bg-surface-raised/40 p-5">
+        <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="flex flex-col gap-1.5">
+            <dt>
+              <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-bold tracking-widest text-muted uppercase">
+                Status
+              </span>
             </dt>
             <dd className={`text-xs font-black uppercase ${tone.text}`}>
               {agreementLine(tape, copy)}
@@ -297,9 +305,11 @@ export default function DayTapeReadout({
           </div>
 
           {tape.rangeVsAverage !== null ? (
-            <div className="flex flex-col gap-1 pt-4 md:pt-0 md:px-4">
-              <dt className="text-[9px] font-bold tracking-widest text-muted/70 uppercase">
-                {"// "}Range
+            <div className="flex flex-col gap-1.5">
+              <dt>
+                <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-bold tracking-widest text-muted uppercase">
+                  Range
+                </span>
               </dt>
               <dd className="text-xs font-semibold text-foreground">
                 {tape.rangeVsAverage < 0.05
@@ -313,9 +323,11 @@ export default function DayTapeReadout({
             </div>
           ) : null}
 
-          <div className="flex flex-col gap-1 pt-4 md:pt-0 md:pl-4">
-            <dt className="text-[9px] font-bold tracking-widest text-muted/70 uppercase">
-              {"// "}Session
+          <div className="flex flex-col gap-1.5">
+            <dt>
+              <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-bold tracking-widest text-muted uppercase">
+                Session
+              </span>
             </dt>
             <dd className="text-xs text-muted">
               {copy.sessionOf(tape.sessionDate)}
@@ -329,29 +341,18 @@ export default function DayTapeReadout({
           </div>
         </dl>
 
-        <div className="mt-4 space-y-1.5 text-muted">
-          <p className="flex items-start gap-2 text-[11px]">
-            <span className="shrink-0 font-bold text-accent">➜ [NET_LOG]:</span>
-            {/* refreshNote is written to continue a sentence (leading ". "),
-                so it's trimmed to stand on its own here. */}
-            <span>{copy.refreshNote.replace(/^\.\s*/, "")}</span>
-          </p>
+        <div className="mt-4 space-y-2 border-t border-line pt-4 text-[11px] leading-relaxed text-muted">
+          {/* refreshNote is written to continue a sentence (leading ". "),
+              so it's trimmed to stand on its own here. */}
+          <p>{copy.refreshNote.replace(/^\.\s*/, "")}</p>
 
-          {stale ? (
-            <p className="flex items-start gap-2 text-[11px]">
-              <span className="shrink-0 font-bold text-warning">➜ [WARN]:</span>
-              <span className="text-warning">{copy.staleNote}</span>
-            </p>
-          ) : null}
+          {stale ? <p className="text-warning">{copy.staleNote}</p> : null}
 
           {/* Skipped when the market-closed warning already ran: both
               sentences make the same "not a forecast" point, and saying it
               twice on one card reads as noise rather than caution. */}
           {tape.barelyTraded ? null : (
-            <p className="flex items-start gap-2 text-[10px]">
-              <span className="shrink-0 font-bold text-muted/70">➜ [DISCLAIMER]:</span>
-              <span className="tracking-tight text-muted/70 uppercase">{copy.footnote}</span>
-            </p>
+            <p className="text-[10px] text-muted/70">{copy.footnote}</p>
           )}
         </div>
       </div>

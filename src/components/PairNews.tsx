@@ -59,7 +59,7 @@ export default function PairNews({
   }
 
   return (
-    <ul className="divide-y divide-line">
+    <ul className="flex flex-col gap-1">
       {headlines.map((headline) => {
         const when =
           (asOf ? age(headline.publishedAt, asOf) : null) ??
@@ -67,21 +67,21 @@ export default function PairNews({
 
         return (
           <li key={`${headline.source}-${headline.publishedAt}-${headline.title}`}>
-            <div className="px-1 py-2.5 transition-colors hover:bg-white/[0.03]">
-              <span className="font-mono text-[10px] text-muted uppercase">
-                [{when}]
+            <div className="rounded-xl px-3 py-2.5 transition-colors hover:bg-surface-raised">
+              <span className="inline-block rounded-full bg-surface-raised px-2 py-0.5 font-mono text-[10px] text-muted">
+                {when}
               </span>
               {headline.url ? (
                 <a
                   href={headline.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-0.5 block font-mono text-sm leading-snug font-bold hover:text-accent hover:underline"
+                  className="mt-1 block text-sm leading-snug font-semibold hover:text-accent hover:underline"
                 >
                   {headline.title}
                 </a>
               ) : (
-                <p className="mt-0.5 font-mono text-sm leading-snug font-bold">
+                <p className="mt-1 text-sm leading-snug font-semibold">
                   {headline.title}
                 </p>
               )}
