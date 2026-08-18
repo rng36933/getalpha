@@ -1,6 +1,21 @@
 import type { NewsInput } from "@/lib/ai/types";
 
 /**
+ * A monogram standing in for a source's logo — no favicon fetch, so no
+ * third-party request per headline and nothing to break when a source
+ * doesn't have one. Colour is picked deterministically from the source
+ * name, from the same tokens used everywhere else, so a repeat source
+ * (most of this feed is a handful of the same few outlets) reads as the
+ * same badge every time rather than reshuffling on each render.
+ */
+const SOURCE_TONES = ["text-accent", "text-positive", "text-warning", "text-muted"] as const;
+
+function sourceTone(source: string): (typeof SOURCE_TONES)[number] {
+  const hash = [...source].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return SOURCE_TONES[hash % SOURCE_TONES.length];
+}
+
+/**
  * Headlines that name this instrument, newest first.
  *
  * Shown, not scored. The list is filtered for relevance and left alone
@@ -65,6 +80,8 @@ export default function PairNews({
           (asOf ? age(headline.publishedAt, asOf) : null) ??
           headline.publishedAt.slice(11, 16);
 
+        const tone = sourceTone(headline.source);
+
         return (
           <li key={`${headline.source}-${headline.publishedAt}-${headline.title}`}>
             <div className="px-1 py-2.5 transition-colors hover:bg-white/[0.03]">
@@ -85,7 +102,15 @@ export default function PairNews({
                   {headline.title}
                 </p>
               )}
-              <p className="mt-0.5 text-[11px] text-muted">{headline.source}</p>
+              <p className="mt-1 flex items-center gap-1.5 text-[11px] text-muted">
+                <span
+                  aria-hidden="true"
+                  className={`grid size-3.5 shrink-0 place-items-center bg-surface-raised font-mono text-[9px] font-bold ${tone}`}
+                >
+                  {headline.source.charAt(0).toUpperCase()}
+                </span>
+                {headline.source}
+              </p>
             </div>
           </li>
         );

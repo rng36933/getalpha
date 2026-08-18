@@ -202,18 +202,31 @@ function Stat({
  * floating on its own.
  */
 function WinRateMeter({ percent }: { percent: number }) {
+  const clamped = Math.min(Math.max(percent, 0), 100);
+
   return (
-    <div className="mt-2">
-      <div className="relative h-1.5 overflow-hidden bg-surface-raised">
+    <div className="mt-3">
+      <div className="relative h-3 overflow-hidden bg-surface-raised">
         <span
           className={`absolute inset-y-0 left-0 ${
             percent >= 50 ? "bg-positive/80" : "bg-negative/80"
           }`}
-          style={{ width: `${Math.min(Math.max(percent, 0), 100)}%` }}
+          style={{ width: `${clamped}%` }}
         />
         <span className="absolute inset-y-0 left-1/2 w-px bg-line" />
       </div>
-      <p className="mt-1 text-[11px] text-muted">
+      {/* The figure above is the primary readout; this tick ties it to the
+          exact point on the bar it describes, rather than leaving the two
+          to be matched up by eye. */}
+      <div className="relative mt-1 h-3">
+        <span
+          className="absolute -translate-x-1/2 font-mono text-[10px] tabular-nums text-muted"
+          style={{ left: `${clamped}%` }}
+        >
+          {percent}%
+        </span>
+      </div>
+      <p className="mt-2.5 text-[11px] text-muted">
         {percent >= 50 ? "above" : "below"} an even split
       </p>
     </div>
@@ -233,7 +246,7 @@ function ProfitFactorBar({ factor }: { factor: number }) {
 
   return (
     <div className="mt-2">
-      <div className="flex h-1.5 gap-0.5 overflow-hidden">
+      <div className="flex h-3 gap-0.5 overflow-hidden">
         <span
           className="bg-positive/80"
           style={{ width: `${wonShare}%` }}
