@@ -102,6 +102,22 @@ function ReadingRow({
           </span>
         </p>
       </div>
+      {/* The only visible difference between a row that opens onto more detail
+          and one that doesn't — without it every row looks identical, and a
+          reader has no way to tell which are worth pressing short of trying
+          each one and finding some do nothing. */}
+      {expandable ? (
+        <svg
+          viewBox="0 0 24 24"
+          className={`mt-0.5 size-3.5 shrink-0 transition-transform duration-300 ${tone.text} ${
+            open ? "rotate-180" : ""
+          }`}
+          aria-hidden="true"
+          fill="currentColor"
+        >
+          <path d="M7 10l5 5 5-5z" />
+        </svg>
+      ) : null}
     </div>
   );
 
@@ -122,8 +138,11 @@ function ReadingRow({
 
       {expandable ? (
         <div
-          className="grid transition-[grid-template-rows] duration-300 ease-in-out"
-          style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+          className="grid"
+          style={{
+            gridTemplateRows: open ? "1fr" : "0fr",
+            transition: "grid-template-rows 300ms ease-in-out",
+          }}
         >
           <div className="overflow-hidden">
             <p className="px-3 pb-2.5 pl-10 text-[11px] leading-relaxed text-muted">
