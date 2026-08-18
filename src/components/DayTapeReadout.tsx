@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import LivePrice from "@/components/LivePrice";
 import LocalTime from "@/components/LocalTime";
 import type { Locale } from "@/lib/i18n/locales";
@@ -84,11 +85,27 @@ const FORMULA: Record<string, string> = {
 };
 
 /**
+ * Reading keys whose detail sentence only restates a number shown elsewhere
+ * on the card — the open/now pair above, the low/high under the range bar,
+ * or a boilerplate line with no data in it. Those tiles aren't clickable:
+ * a tap that opens onto a sentence saying nothing new is worse than no tap
+ * at all.
+ */
+const DETAIL_REDUNDANT: ReadonlySet<string> = new Set([
+  "VS_OPEN",
+  "RANGE_POSITION",
+  "INTRADAY_BARS",
+]);
+
+/**
  * One reading, as a stat tile in the grid rather than a row in a list.
  *
  * Only tinted when it actually points somewhere — a flat reading sitting on
  * the same wash as an up or down one would blur the one signal the tint
- * exists to carry.
+ * exists to carry. Tiles with a real detail sentence (see
+ * `DETAIL_REDUNDANT`) are buttons that expand it in place — the formula on
+ * hover answers "how was this computed", the detail sentence on click
+ * answers "what does that number actually mean".
  */
 function ReadingTile({
   reading,
@@ -97,23 +114,39 @@ function ReadingTile({
   reading: Reading;
   copy: TapeCopy["readout"];
 }) {
+  const [open, setOpen] = useState(false);
   const tone = TONE[reading.direction];
   const formula = FORMULA[reading.key];
+  const expandable = !DETAIL_REDUNDANT.has(reading.key);
   // "3 up / 9 down" is a phrase, not a figure — set at the same size as the
   // others it would run past the tile's edge.
   const long = reading.value.length > 8;
 
-  return (
-    <div
-      className={`group flex min-h-24 flex-col justify-between rounded-2xl border p-5 transition-colors ${
-        reading.direction === "FLAT"
-          ? "border-line bg-surface-raised/40"
-          : `border-transparent ${tone.bg} hover:border-current`
-      }`}
-    >
+  const toneClasses = `group flex min-h-24 w-full flex-col justify-between rounded-2xl border p-5 text-left transition-colors ${
+    reading.direction === "FLAT"
+      ? "border-line bg-surface-raised/40"
+      : `border-transparent ${tone.bg} hover:border-current`
+  }`;
+
+  const body = (
+    <>
       <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
-      <span className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
-        {reading.label}
+      <span className="flex items-center justify-between gap-2">
+        <span className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
+          {reading.label}
+        </span>
+        {expandable ? (
+          <svg
+            viewBox="0 0 24 24"
+            className={`size-3 shrink-0 transition-transform duration-300 ${tone.text} ${
+              open ? "rotate-180" : ""
+            }`}
+            aria-hidden="true"
+            fill="currentColor"
+          >
+            <path d="M7 10l5 5 5-5z" />
+          </svg>
+        ) : null}
       </span>
       <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
         <span
@@ -130,7 +163,38 @@ function ReadingTile({
           </span>
         ) : null}
       </div>
-    </div>
+
+      {expandable ? (
+        <div
+          className="grid"
+          style={{
+            gridTemplateRows: open ? "1fr" : "0fr",
+            transition: "grid-template-rows 300ms ease-in-out",
+          }}
+        >
+          <div className="overflow-hidden">
+            <p className="mt-3 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
+              {reading.detail}
+            </p>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+
+  if (!expandable) {
+    return <div className={toneClasses}>{body}</div>;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen((current) => !current)}
+      aria-expanded={open}
+      className={`${toneClasses} cursor-pointer`}
+    >
+      {body}
+    </button>
   );
 }
 
