@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import AssetBadge from "@/components/AssetBadge";
 import type { CotRow } from "@/lib/market-data/cot";
 import type { MacroReading } from "@/lib/market-data/fred";
@@ -120,51 +123,69 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
  * cannot carry the meaning on their own.
  */
 function CotDial({ row }: { row: CotRow }) {
+  const [open, setOpen] = useState(false);
   const total = row.long + row.short;
   const longShare = total > 0 ? (row.long / total) * 100 : 50;
 
   const isLong = row.skew > 0;
 
+  // Hover works for a mouse; a phone has none, so the tap toggle is what
+  // actually reveals the raw counts on the device most of this app's
+  // traffic comes from. Both wire to the same `open` state so a mouse user
+  // can also click to pin the tooltip open instead of having to hold still.
   return (
     <li className="group relative flex w-44 flex-col gap-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2">
-          <AssetBadge label={row.label} />
-          <span className="text-sm font-medium">{row.label}</span>
-        </span>
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        onMouseLeave={() => setOpen(false)}
+        aria-expanded={open}
+        aria-label={`${row.label} positioning detail`}
+        className="flex cursor-pointer flex-col gap-2.5 text-left"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-2">
+            <AssetBadge label={row.label} />
+            <span className="text-sm font-medium">{row.label}</span>
+          </span>
+          <span
+            className={`figure glow-text font-mono text-2xl font-black transition-transform group-hover:scale-105 ${
+              isLong ? "text-positive" : "text-negative"
+            }`}
+          >
+            {Math.abs(row.skew)}%
+          </span>
+        </div>
+
+        <div
+          role="img"
+          aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
+          className="flex h-2.5 w-full overflow-hidden rounded-full bg-negative/75 transition-transform group-hover:scale-y-125"
+        >
+          <div
+            className="h-full bg-positive/85"
+            style={{ width: `${longShare}%` }}
+          />
+        </div>
+
         <span
-          className={`figure glow-text font-mono text-2xl font-black ${
+          className={`font-mono text-[11px] uppercase tracking-wider ${
             isLong ? "text-positive" : "text-negative"
           }`}
         >
-          {Math.abs(row.skew)}%
+          net {isLong ? "long" : "short"}
         </span>
-      </div>
-
-      <div
-        role="img"
-        aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
-        className="flex h-2.5 w-full overflow-hidden rounded-full bg-negative/75"
-      >
-        <div
-          className="h-full bg-positive/85"
-          style={{ width: `${longShare}%` }}
-        />
-      </div>
-
-      <span
-        className={`font-mono text-[11px] uppercase tracking-wider ${
-          isLong ? "text-positive" : "text-negative"
-        }`}
-      >
-        net {isLong ? "long" : "short"}
-      </span>
+      </button>
 
       {/* The raw contract counts behind the bar — the percentage above is
-          the headline, this is the arithmetic for anyone checking it. */}
+          the headline, this is the arithmetic for anyone checking it.
+          Shown on hover (desktop) or tap (touch), via the same `open`
+          state a keyboard Enter/Space press on the button also sets. */}
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-md border border-line bg-surface-raised px-2 py-1.5 font-mono text-[11px] whitespace-nowrap text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+        className={`pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-md border border-line bg-surface-raised px-2 py-1.5 font-mono text-[11px] whitespace-nowrap text-foreground shadow-lg transition-opacity ${
+          open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+        }`}
       >
         {row.long.toLocaleString()} long / {row.short.toLocaleString()} short
       </span>
