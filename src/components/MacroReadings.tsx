@@ -65,7 +65,7 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
               </span>
 
               <span className="shrink-0 text-right">
-                <span className="block font-mono text-sm tabular-nums">
+                <span className="figure block font-mono text-xl font-semibold tabular-nums">
                   {reading.value ?? "—"}
                 </span>
                 {reading.change ? (
