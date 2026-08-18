@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AssetBadge from "@/components/AssetBadge";
 import { formatMoney, formatSignedMoney } from "@/lib/format/money";
 import type {
   ClosedTrade,
@@ -56,6 +57,8 @@ export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
     <ul className="divide-y divide-line">
       {positions.map((position) => (
         <li key={position.id} className="flex items-center gap-3 py-2.5">
+          <AssetBadge label={position.asset} />
+
           <span
             className={`w-10 shrink-0 font-mono text-[11px] ${
               position.direction === "BUY" ? "text-positive" : "text-negative"
@@ -148,6 +151,8 @@ export function RecentTrades({
     <ul className="divide-y divide-line">
       {trades.map((trade) => (
         <li key={trade.id} className="flex items-center gap-3 py-2.5">
+          <AssetBadge label={trade.asset} />
+
           <span className="w-16 shrink-0 font-mono text-[11px] text-muted">
             {trade.closedAt.slice(5, 10)}
           </span>

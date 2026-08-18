@@ -18,9 +18,9 @@ import type { DayTape, Direction, Reading } from "@/lib/market-data/tape";
 
 /** Colour only. The word beside the arrow comes from the dictionary. */
 const TONE: Record<Direction, { text: string; bg: string }> = {
-  UP: { text: "text-positive", bg: "bg-positive/[0.06]" },
-  DOWN: { text: "text-negative", bg: "bg-negative/[0.06]" },
-  FLAT: { text: "text-muted", bg: "bg-muted/[0.06]" },
+  UP: { text: "text-positive", bg: "bg-positive/[0.12]" },
+  DOWN: { text: "text-negative", bg: "bg-negative/[0.12]" },
+  FLAT: { text: "text-muted", bg: "bg-muted/[0.12]" },
 };
 
 function toneWord(direction: Direction, copy: TapeCopy["readout"]): string {
@@ -100,10 +100,10 @@ function ReadingTile({
   // others it would run past the tile's edge.
   const long = reading.value.length > 8;
 
-  const toneClasses = `group flex min-h-20 w-full flex-col justify-between rounded-xl border p-4 text-left transition-colors ${
+  const toneClasses = `group flex min-h-24 w-full flex-col justify-between rounded-xl border p-5 text-left transition-colors ${
     reading.direction === "FLAT" || agreesWithMajority
       ? "border-line bg-white/[0.015] hover:border-[#383d4d]"
-      : `border-line ${tone.bg} hover:border-[#383d4d]`
+      : `border-transparent ${tone.bg} hover:border-current`
   }`;
 
   const body = (
@@ -128,7 +128,7 @@ function ReadingTile({
       </span>
       <div className="relative mt-2">
         <span
-          className={`font-mono tracking-tight ${long ? "text-base font-semibold" : "text-2xl font-semibold"} ${tone.text}`}
+          className={`font-mono tracking-tight ${long ? "text-2xl font-black" : "text-4xl font-black"} ${tone.text}`}
         >
           {reading.value}
         </span>

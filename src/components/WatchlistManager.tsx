@@ -19,6 +19,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import AssetBadge from "@/components/AssetBadge";
 
 export type WatchlistEntry = {
   symbol: string;
@@ -87,15 +88,18 @@ function SortableRow({
         </svg>
       </button>
 
-      <button type="button" onClick={onSelect} className="min-w-0 flex-1 text-left">
-        <span
-          className={`block text-sm ${
-            selected ? "font-medium text-accent" : "text-foreground"
-          }`}
-        >
-          {entry.label}
+      <button type="button" onClick={onSelect} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+        <AssetBadge label={entry.label} />
+        <span className="min-w-0">
+          <span
+            className={`block text-sm ${
+              selected ? "font-medium text-accent" : "text-foreground"
+            }`}
+          >
+            {entry.label}
+          </span>
+          <span className="block truncate text-xs text-muted">{entry.name}</span>
         </span>
-        <span className="block truncate text-xs text-muted">{entry.name}</span>
       </button>
 
       <button
