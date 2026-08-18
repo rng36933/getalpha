@@ -44,9 +44,13 @@ export default function LivePrice({
   useEffect(() => {
     let cancelled = false;
 
-    async function poll() {
-      // A tab nobody is looking at is not worth the request.
-      if (document.visibilityState !== "visible") return;
+    async function poll(force = false) {
+      // A tab nobody is looking at is not worth the request — except the
+      // very first poll, which has to run unconditionally or a dashboard
+      // opened in a background tab never seeds the log at all, not even
+      // once it's brought to the front (nothing re-triggers a poll on a
+      // visibility change, only the next 30s tick).
+      if (!force && document.visibilityState !== "visible") return;
 
       try {
         publishLog(`Fetching ${symbol} tick data…`, "muted");
@@ -87,11 +91,11 @@ export default function LivePrice({
       }
     }
 
-    // Runs once immediately rather than waiting out the first interval —
-    // otherwise the activity log sits on "waiting for the first poll" for up
-    // to 30s after every page load, which reads as broken rather than idle.
-    poll();
-    const timer = setInterval(poll, 30_000);
+    // Runs once immediately, ignoring the visibility gate — otherwise the
+    // activity log can sit on "waiting for the first poll" indefinitely,
+    // not just for up to 30s, whenever the tab wasn't focused at mount.
+    poll(true);
+    const timer = setInterval(() => poll(), 30_000);
 
     return () => {
       cancelled = true;
