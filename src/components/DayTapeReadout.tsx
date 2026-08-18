@@ -213,13 +213,18 @@ export default function DayTapeReadout({
 
       <ul className="divide-y divide-line border-y border-line">
         {tape.readings.map((reading) => (
-          <li key={reading.key} className="flex items-start gap-3 py-2.5">
+          <li
+            key={reading.key}
+            className={`flex items-start gap-3 px-3 py-2.5 ${TONE[reading.direction].bg}`}
+          >
             <Arrow direction={reading.direction} copy={copy} className="mt-0.5 size-4 shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-baseline justify-between gap-x-3">
-                <span className="text-sm">{reading.label}</span>
+                <span className={`text-sm ${TONE[reading.direction].text}`}>
+                  {reading.label}
+                </span>
                 <span
-                  className={`font-mono text-xs ${TONE[reading.direction].text}`}
+                  className={`font-mono text-xs font-semibold ${TONE[reading.direction].text}`}
                 >
                   {reading.value}
                 </span>

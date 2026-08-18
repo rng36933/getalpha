@@ -322,61 +322,72 @@ export default async function DashboardPage({
         <FirstRun />
       ) : null}
 
-      <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card
-          title={`${tapeInstrument.label} — this session`}
-          className="xl:col-span-2"
-        >
-          {choices.length > 1 ? (
-            <nav className="mb-4 flex flex-wrap gap-2">
-              {choices.map((choice) => {
-                const active = choice.symbol === tapeInstrument.symbol;
+      {/* One shared frame with an internal divider instead of two separate
+          cards with a gap between them — the session readout and its news
+          are one desk, not two boxes that happen to sit side by side. */}
+      <div className="surface-lit mb-4 grid grid-cols-1 divide-y divide-zinc-800 border border-zinc-800 bg-surface xl:grid-cols-3 xl:divide-x xl:divide-y-0">
+        <div className="p-4 sm:p-5 xl:col-span-2">
+          <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+            {tapeInstrument.label} — this session
+          </h2>
 
-                return (
-                  <Link
-                    key={choice.symbol}
-                    href={`/dashboard?tape=${encodeURIComponent(choice.symbol)}`}
-                    aria-current={active ? "page" : undefined}
-                    className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
-                      active
-                        ? "border-accent bg-accent-soft text-accent"
-                        : "border-line text-muted hover:text-foreground"
-                    }`}
-                  >
-                    {choice.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          ) : null}
+          <div className="mt-4">
+            {choices.length > 1 ? (
+              <nav className="mb-4 flex flex-wrap gap-2">
+                {choices.map((choice) => {
+                  const active = choice.symbol === tapeInstrument.symbol;
 
-          {dayTape ? (
-            <DayTapeReadout
-              tape={dayTape}
-              fetchedAt={tapeDaily.fetchedAt}
-              stale={tapeDaily.status === "CACHED"}
+                  return (
+                    <Link
+                      key={choice.symbol}
+                      href={`/dashboard?tape=${encodeURIComponent(choice.symbol)}`}
+                      aria-current={active ? "page" : undefined}
+                      className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                        active
+                          ? "border-accent bg-accent-soft text-accent"
+                          : "border-line text-muted hover:text-foreground"
+                      }`}
+                    >
+                      {choice.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            ) : null}
+
+            {dayTape ? (
+              <DayTapeReadout
+                tape={dayTape}
+                fetchedAt={tapeDaily.fetchedAt}
+                stale={tapeDaily.status === "CACHED"}
+              />
+            ) : (
+              <p className="py-8 text-center text-sm text-muted">
+                {tapeDaily.status === "UNAVAILABLE"
+                  ? `The price feed has nothing stored for ${tapeInstrument.label} yet, so there is nothing true to draw. It fills in on the next successful fetch.`
+                  : `Not enough completed bars for ${tapeInstrument.label} to measure a session against. An arrow drawn from one candle would be a guess wearing a measurement's clothes.`}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+            News naming {tapeInstrument.label}
+          </h2>
+          <div className="mt-4">
+            <PairNews
+              headlines={pairHeadlines}
+              label={tapeInstrument.label}
+              asOf={news.fetchedAt}
+              emptyReason={
+                news.status === "UNAVAILABLE"
+                  ? "The news feeds could not be reached just now. Nothing is stored to fall back on."
+                  : undefined
+              }
             />
-          ) : (
-            <p className="py-8 text-center text-sm text-muted">
-              {tapeDaily.status === "UNAVAILABLE"
-                ? `The price feed has nothing stored for ${tapeInstrument.label} yet, so there is nothing true to draw. It fills in on the next successful fetch.`
-                : `Not enough completed bars for ${tapeInstrument.label} to measure a session against. An arrow drawn from one candle would be a guess wearing a measurement's clothes.`}
-            </p>
-          )}
-        </Card>
-
-        <Card title={`News naming ${tapeInstrument.label}`}>
-          <PairNews
-            headlines={pairHeadlines}
-            label={tapeInstrument.label}
-            asOf={news.fetchedAt}
-            emptyReason={
-              news.status === "UNAVAILABLE"
-                ? "The news feeds could not be reached just now. Nothing is stored to fall back on."
-                : undefined
-            }
-          />
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Under the session readout, not above it: the gold card is what this

@@ -180,8 +180,12 @@ function Stat({
 }) {
   return (
     <div>
-      <p className="eyebrow">{label}</p>
-      <p className={`figure mt-1.5 font-mono text-[1.5rem] ${tone}`}>{value}</p>
+      <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-600">
+        // {label}
+      </p>
+      <p className={`figure mt-1 font-mono text-4xl font-black tracking-tighter ${tone}`}>
+        {value}
+      </p>
       {hint ? <p className="mt-1 font-mono text-[11px] text-muted">{hint}</p> : null}
     </div>
   );
@@ -199,9 +203,9 @@ function Stat({
 function WinRateMeter({ percent }: { percent: number }) {
   return (
     <div className="mt-2">
-      <div className="relative h-1.5 overflow-hidden rounded-full bg-surface-raised">
+      <div className="relative h-1.5 overflow-hidden bg-surface-raised">
         <span
-          className={`absolute inset-y-0 left-0 rounded-full ${
+          className={`absolute inset-y-0 left-0 ${
             percent >= 50 ? "bg-positive/80" : "bg-negative/80"
           }`}
           style={{ width: `${Math.min(Math.max(percent, 0), 100)}%` }}
@@ -228,12 +232,12 @@ function ProfitFactorBar({ factor }: { factor: number }) {
 
   return (
     <div className="mt-2">
-      <div className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
+      <div className="flex h-1.5 gap-0.5 overflow-hidden">
         <span
-          className="rounded-l-full bg-positive/80"
+          className="bg-positive/80"
           style={{ width: `${wonShare}%` }}
         />
-        <span className="flex-1 rounded-r-full bg-negative/80" />
+        <span className="flex-1 bg-negative/80" />
       </div>
       <p className="mt-1 text-[11px] text-muted">
         {factor >= 1
