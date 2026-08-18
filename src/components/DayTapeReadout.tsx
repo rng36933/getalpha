@@ -100,7 +100,7 @@ function ReadingTile({
   // others it would run past the tile's edge.
   const long = reading.value.length > 8;
 
-  const toneClasses = `group flex min-h-20 w-full flex-col justify-between rounded-lg border p-4 text-left transition-colors ${
+  const toneClasses = `group flex min-h-20 w-full flex-col justify-between rounded-xl border p-4 text-left transition-colors ${
     reading.direction === "FLAT" || agreesWithMajority
       ? "border-line bg-white/[0.015] hover:border-[#383d4d]"
       : `border-line ${tone.bg} hover:border-[#383d4d]`
@@ -245,7 +245,7 @@ export default function DayTapeReadout({
   return (
     <div className="space-y-5">
       {tape.barelyTraded ? (
-        <p className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-xs leading-relaxed text-warning">
+        <p className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-xs leading-relaxed text-warning">
           {copy.barelyTraded}
         </p>
       ) : null}
@@ -275,7 +275,9 @@ export default function DayTapeReadout({
             symbol={tape.symbol}
             timeframe="M15"
             initialPrice={tape.lastPrice}
-            className="figure text-[2.75rem] sm:text-[3.5rem]"
+            className={`figure text-[2.75rem] sm:text-[3.5rem] ${
+              tape.barelyTraded ? "glow-text" : "glow-text-live"
+            }`}
           />
 
           <span
@@ -319,11 +321,11 @@ export default function DayTapeReadout({
 
       {/* The same facts as before, laid out as a band of labelled columns
           plus a couple of footnotes, in one rounded glass panel. */}
-      <div className="rounded-lg border border-line bg-surface-raised/40 p-5">
+      <div className="rounded-2xl border border-line bg-surface-raised/40 p-5">
         <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
             <dt>
-              <span className="rounded-md bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
+              <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
                 Status
               </span>
             </dt>
@@ -335,7 +337,7 @@ export default function DayTapeReadout({
           {tape.rangeVsAverage !== null ? (
             <div className="flex flex-col gap-1.5">
               <dt>
-                <span className="rounded-md bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
+                <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
                   Range
                 </span>
               </dt>
@@ -353,7 +355,7 @@ export default function DayTapeReadout({
 
           <div className="flex flex-col gap-1.5">
             <dt>
-              <span className="rounded-md bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
+              <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
                 Session
               </span>
             </dt>
