@@ -372,10 +372,6 @@ export default function DayTapeReadout({
         </dl>
 
         <div className="mt-4 space-y-2 border-t border-line pt-4 text-[11px] leading-relaxed text-muted">
-          {/* refreshNote is written to continue a sentence (leading ". "),
-              so it's trimmed to stand on its own here. */}
-          <p>{copy.refreshNote.replace(/^\.\s*/, "")}</p>
-
           {stale ? <p className="text-warning">{copy.staleNote}</p> : null}
 
           {/* Skipped when the market-closed warning already ran: both

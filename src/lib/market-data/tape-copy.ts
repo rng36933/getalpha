@@ -119,7 +119,7 @@ const en: TapeCopy = {
     staleNote:
       "The price feed did not answer just now, so this is the last series we stored. The arrows describe that moment, not this one.",
     footnote:
-      "Every arrow above is a measurement of the session that has already happened — where price sits against its open, its range and its own average. None of it is a forecast, and none of it is a suggestion to buy or sell anything.",
+      "What already happened, not a forecast or a suggestion to trade.",
   },
 };
 
@@ -193,7 +193,7 @@ const lt: TapeCopy = {
     staleNote:
       "Kainų šaltinis ką tik neatsakė, tad tai paskutinė mūsų išsaugota serija. Rodyklės apibūdina tą, o ne šią akimirką.",
     footnote:
-      "Kiekviena rodyklė aukščiau matuoja jau įvykusią sesiją — kur kaina stovi prieš savo atidarymą, savo ruožą ir savo pačios vidurkį. Nė vienas iš šių skaičių nėra prognozė ir nė vienas nėra siūlymas pirkti ar parduoti.",
+      "Kas jau įvyko — ne prognozė ir ne siūlymas prekiauti.",
   },
 };
 
