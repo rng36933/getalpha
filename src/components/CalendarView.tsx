@@ -30,7 +30,7 @@ export default function CalendarView({ events, currencies }: CalendarViewProps) 
             type="button"
             onClick={() => setMineOnly(true)}
             aria-pressed={mineOnly}
-            className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
               mineOnly
                 ? "border-accent bg-accent-soft text-accent"
                 : "border-line text-muted hover:text-foreground"
@@ -43,7 +43,7 @@ export default function CalendarView({ events, currencies }: CalendarViewProps) 
             type="button"
             onClick={() => setMineOnly(false)}
             aria-pressed={!mineOnly}
-            className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
               mineOnly
                 ? "border-line text-muted hover:text-foreground"
                 : "border-accent bg-accent-soft text-accent"

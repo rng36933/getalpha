@@ -40,7 +40,7 @@ function Stat({
   compact?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-line bg-surface-raised px-3 py-2.5">
+    <div className="rounded-xl border border-line bg-surface-raised px-3 py-2.5">
       <p className="eyebrow">{label}</p>
       <p
         className={`figure mt-1.5 break-words ${
@@ -107,7 +107,7 @@ function BucketRow({
             <span className="absolute left-1/2 top-0 h-full w-px bg-line" />
             {width > 0 ? (
               <span
-                className={`absolute top-0 h-full rounded-sm ${
+                className={`absolute top-0 h-full rounded-full ${
                   total > 0 ? "bg-positive/70" : "bg-negative/70"
                 }`}
                 style={
