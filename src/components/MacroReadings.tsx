@@ -19,20 +19,28 @@ import { GOLD_RELATIONSHIP } from "@/lib/market-data/gold-relationship";
 function RangeDial({ reading }: { reading: MacroReading }) {
   if (reading.rangePercent === null) return null;
 
+  const label = `${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`;
+
   return (
-    <span className="flex w-16 shrink-0 flex-col items-end gap-1">
+    <span className="group relative flex w-16 shrink-0 flex-col items-end gap-1">
       <span className="figure font-mono text-[11px] text-muted">
         {reading.rangePercent}%
       </span>
-      <span
-        role="img"
-        aria-label={`${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`}
-        className="h-1 w-full bg-line"
-      >
+      <span role="img" aria-label={label} className="h-1 w-full bg-line">
         <span
           className="block h-full bg-accent"
           style={{ width: `${reading.rangePercent}%` }}
         />
+      </span>
+
+      {/* Out of flow and opacity-revealed, same as the session card's
+          formula tooltip — a bar that grew on hover would push its own
+          neighbours in the row. */}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute right-0 bottom-full z-10 mb-2 w-max max-w-40 rounded-md border border-line bg-surface-raised px-2 py-1.5 text-[11px] leading-snug whitespace-normal text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+      >
+        {reading.rangeLow} — {reading.rangeHigh} over the last 12 months
       </span>
     </span>
   );
@@ -117,7 +125,7 @@ function CotDial({ row }: { row: CotRow }) {
   const isLong = row.skew > 0;
 
   return (
-    <li className="flex w-40 flex-col gap-2">
+    <li className="group relative flex w-40 flex-col gap-2">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm font-medium">{row.label}</span>
         <span
@@ -146,6 +154,15 @@ function CotDial({ row }: { row: CotRow }) {
         }`}
       >
         net {isLong ? "long" : "short"}
+      </span>
+
+      {/* The raw contract counts behind the bar — the percentage above is
+          the headline, this is the arithmetic for anyone checking it. */}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-md border border-line bg-surface-raised px-2 py-1.5 font-mono text-[11px] whitespace-nowrap text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+      >
+        {row.long.toLocaleString()} long / {row.short.toLocaleString()} short
       </span>
     </li>
   );

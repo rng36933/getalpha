@@ -141,3 +141,33 @@ export async function removeFromWatchlist(
 
   return { removed: count > 0, entries: await readWatchlist(userId) };
 }
+
+/**
+ * Applies a new drag order, writing `sortOrder` from the position each
+ * symbol now sits at.
+ *
+ * Symbols not belonging to this user are silently dropped rather than
+ * rejected outright — the list a client drags is whatever it rendered, and
+ * a stale render (a second tab that already removed something) should not
+ * turn a reorder into a hard error over an item that is simply gone now.
+ */
+export async function reorderWatchlist(
+  userId: string,
+  order: string[],
+): Promise<WatchlistEntry[]> {
+  const current = await readWatchlist(userId);
+  const owned = new Set(current.map((entry) => entry.symbol));
+
+  const updates = order
+    .filter((symbol) => owned.has(symbol))
+    .map((symbol, index) =>
+      prisma.watchlistItem.updateMany({
+        where: { userId, symbol },
+        data: { sortOrder: index },
+      }),
+    );
+
+  if (updates.length > 0) await prisma.$transaction(updates);
+
+  return readWatchlist(userId);
+}

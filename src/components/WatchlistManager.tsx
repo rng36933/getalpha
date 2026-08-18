@@ -1,5 +1,22 @@
 "use client";
 
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -20,6 +37,79 @@ type WatchlistManagerProps = {
 
 /** Long enough to stop firing per keystroke, short enough to feel immediate. */
 const SEARCH_DELAY_MS = 200;
+
+/**
+ * One draggable row. A dedicated handle rather than the whole row, the same
+ * reasoning as the dashboard's card grid: the row already has a select
+ * button and a remove button of its own, and a drag listener on the whole
+ * surface would swallow clicks meant for either.
+ */
+function SortableRow({
+  entry,
+  selected,
+  busy,
+  onSelect,
+  onRemove,
+}: {
+  entry: WatchlistEntry;
+  selected: boolean;
+  busy: boolean;
+  onSelect: () => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: entry.symbol });
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+      }}
+      className="flex items-center gap-1 py-2"
+    >
+      <button
+        type="button"
+        aria-label={`Drag to reorder ${entry.label}`}
+        {...attributes}
+        {...listeners}
+        className="shrink-0 touch-none cursor-grab p-1 text-muted transition-colors hover:text-foreground active:cursor-grabbing"
+      >
+        <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden="true">
+          <circle cx="9" cy="6" r="1.4" />
+          <circle cx="15" cy="6" r="1.4" />
+          <circle cx="9" cy="12" r="1.4" />
+          <circle cx="15" cy="12" r="1.4" />
+          <circle cx="9" cy="18" r="1.4" />
+          <circle cx="15" cy="18" r="1.4" />
+        </svg>
+      </button>
+
+      <button type="button" onClick={onSelect} className="min-w-0 flex-1 text-left">
+        <span
+          className={`block text-sm ${
+            selected ? "font-medium text-accent" : "text-foreground"
+          }`}
+        >
+          {entry.label}
+        </span>
+        <span className="block truncate text-xs text-muted">{entry.name}</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={onRemove}
+        disabled={busy}
+        aria-label={`Remove ${entry.label}`}
+        className="shrink-0 rounded-md px-2 py-1 text-xs text-muted transition-colors hover:text-negative disabled:opacity-50"
+      >
+        Remove
+      </button>
+    </li>
+  );
+}
 
 export default function WatchlistManager({
   initialEntries,
@@ -122,50 +212,77 @@ export default function WatchlistManager({
     }
   }
 
+  /**
+   * Fire-and-forget, same as the dashboard's card grid: the row already
+   * moved on screen, so a failed or slow write should not undo it under the
+   * visitor. `router.refresh()` on success because the top entry doubles as
+   * the main chart's default instrument server-side — a reorder that moved
+   * a new symbol to the top has to reach that render too, not just this list.
+   */
+  async function persistOrder(order: string[]) {
+    try {
+      const response = await fetch("/api/watchlist", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ order }),
+      });
+      if (response.ok) router.refresh();
+    } catch {
+      // Next load reflects whatever was last saved successfully.
+    }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setEntries((current) => {
+      const from = current.findIndex((e) => e.symbol === active.id);
+      const to = current.findIndex((e) => e.symbol === over.id);
+      if (from === -1 || to === -1) return current;
+
+      const next = arrayMove(current, from, to);
+      persistOrder(next.map((e) => e.symbol));
+      return next;
+    });
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
   const full = entries.length >= max;
 
   return (
     <div>
-      <ul className="divide-y divide-line">
-        {entries.map((entry) => {
-          const selected = entry.symbol === selectedSymbol;
-
-          return (
-            <li key={entry.symbol} className="flex items-center gap-3 py-2">
-              <button
-                type="button"
-                onClick={() =>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={entries.map((e) => e.symbol)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul className="divide-y divide-line">
+            {entries.map((entry) => (
+              <SortableRow
+                key={entry.symbol}
+                entry={entry}
+                selected={entry.symbol === selectedSymbol}
+                busy={busy}
+                onSelect={() =>
                   router.push(
                     `/dashboard?symbol=${encodeURIComponent(entry.symbol)}`,
                   )
                 }
-                className="min-w-0 flex-1 text-left"
-              >
-                <span
-                  className={`block text-sm ${
-                    selected ? "font-medium text-accent" : "text-foreground"
-                  }`}
-                >
-                  {entry.label}
-                </span>
-                <span className="block truncate text-xs text-muted">
-                  {entry.name}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => remove(entry.symbol)}
-                disabled={busy}
-                aria-label={`Remove ${entry.label}`}
-                className="shrink-0 rounded-md px-2 py-1 text-xs text-muted transition-colors hover:text-negative disabled:opacity-50"
-              >
-                Remove
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                onRemove={() => remove(entry.symbol)}
+              />
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
 
       {entries.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">

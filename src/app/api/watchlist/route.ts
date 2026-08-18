@@ -7,6 +7,7 @@ import {
   addToWatchlist,
   getWatchlist,
   removeFromWatchlist,
+  reorderWatchlist,
 } from "@/lib/watchlist";
 
 function unauthorized() {
@@ -85,6 +86,47 @@ export async function POST(request: Request) {
     console.error("POST /api/watchlist failed:", error);
     return NextResponse.json(
       { error: "Failed to update the watchlist" },
+      { status: 500 },
+    );
+  }
+}
+
+/** PUT /api/watchlist — body { order: string[] } — new drag order, top first. */
+export async function PUT(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return unauthorized();
+
+  const limited = enforceRateLimit(`watchlist:${userId}`, LIMITS.write);
+  if (limited) return limited;
+
+  const wrongType = requireJsonRequest(request);
+  if (wrongType) return wrongType;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Request body must be valid JSON" },
+      { status: 400 },
+    );
+  }
+
+  const order = (body as { order?: unknown })?.order;
+  if (!Array.isArray(order) || !order.every((s) => typeof s === "string")) {
+    return NextResponse.json(
+      { error: "order: required, must be an array of symbols" },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const entries = await reorderWatchlist(userId, order);
+    return NextResponse.json({ entries });
+  } catch (error) {
+    console.error("PUT /api/watchlist failed:", error);
+    return NextResponse.json(
+      { error: "Failed to reorder the watchlist" },
       { status: 500 },
     );
   }

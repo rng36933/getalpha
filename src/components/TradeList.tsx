@@ -173,6 +173,62 @@ function ResultBar({ value, scale }: { value: number | null; scale: number }) {
   );
 }
 
+/**
+ * A `<th>` that sorts the table when clicked, in addition to the "Sort by"
+ * dropdown that already controls the same state — the dropdown covers every
+ * order including ones with no column of their own (biggest risk first has
+ * no ascending column to click), the header click is the fast path for the
+ * two orders that do.
+ */
+function SortableHeader({
+  label,
+  align = "left",
+  ascKey,
+  descKey,
+  sortKey,
+  onSort,
+}: {
+  label: string;
+  align?: "left" | "right";
+  /** Null when this column has no ascending order to toggle into. */
+  ascKey: SortKey | null;
+  descKey: SortKey;
+  sortKey: SortKey;
+  onSort: (key: SortKey) => void;
+}) {
+  const active = sortKey === ascKey || sortKey === descKey;
+  const ascending = sortKey === ascKey;
+
+  function toggle() {
+    if (sortKey === descKey && ascKey) onSort(ascKey);
+    else onSort(descKey);
+  }
+
+  return (
+    <th className={`py-2 pr-3 font-normal ${align === "right" ? "text-right" : "text-left"}`}>
+      <button
+        type="button"
+        onClick={toggle}
+        className={`inline-flex items-center gap-1 transition-colors hover:text-foreground ${
+          active ? "text-foreground" : ""
+        } ${align === "right" ? "flex-row-reverse" : ""}`}
+      >
+        {label}
+        <svg
+          viewBox="0 0 24 24"
+          className={`size-3 shrink-0 transition-opacity ${active ? "opacity-100" : "opacity-30"} ${
+            ascending ? "rotate-180" : ""
+          }`}
+          aria-hidden="true"
+          fill="currentColor"
+        >
+          <path d="M7 10l5 5 5-5z" />
+        </svg>
+      </button>
+    </th>
+  );
+}
+
 export default function TradeList({
   trades,
   currency,
@@ -438,14 +494,34 @@ export default function TradeList({
       <table className="w-full min-w-[900px] text-sm">
         <thead>
           <tr className="border-b border-line text-[11px] uppercase tracking-wider text-muted">
-            <th className="py-2 pr-3 text-left font-normal">Date</th>
+            <SortableHeader
+              label="Date"
+              ascKey="DATE_ASC"
+              descKey="DATE_DESC"
+              sortKey={sortKey}
+              onSort={setSortKey}
+            />
             <th className="py-2 pr-3 text-left font-normal">Instrument</th>
             <th className="py-2 pr-3 text-left font-normal">Side</th>
             <th className="py-2 pr-3 text-left font-normal">Setup</th>
-            <th className="py-2 pr-3 text-right font-normal">Risk</th>
+            <SortableHeader
+              label="Risk"
+              align="right"
+              ascKey={null}
+              descKey="RISK_DESC"
+              sortKey={sortKey}
+              onSort={setSortKey}
+            />
             <th className="py-2 pr-3 text-right font-normal">Planned RR</th>
             <th className="py-2 pr-3 text-left font-normal">Exit</th>
-            <th className="py-2 pr-3 text-right font-normal">Result</th>
+            <SortableHeader
+              label="Result"
+              align="right"
+              ascKey="RESULT_ASC"
+              descKey="RESULT_DESC"
+              sortKey={sortKey}
+              onSort={setSortKey}
+            />
             <th className="py-2 text-right font-normal">Review</th>
           </tr>
         </thead>
