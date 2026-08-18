@@ -160,7 +160,7 @@ function ResultBar({ value, scale }: { value: number | null; scale: number }) {
     >
       <span className="absolute left-1/2 top-0 h-full w-px bg-line" />
       <span
-        className={`absolute top-0 h-full rounded-sm ${
+        className={`absolute top-0 h-full rounded-full ${
           value > 0 ? "bg-positive/70" : "bg-negative/70"
         }`}
         style={
@@ -352,7 +352,7 @@ export default function TradeList({
                 type="button"
                 onClick={() => setOutcome(option.value)}
                 aria-pressed={active}
-                className={`rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${
+                className={`rounded-full border px-2.5 py-1.5 text-xs transition-colors ${
                   active
                     ? "border-accent bg-accent-soft text-accent"
                     : "border-line text-muted hover:text-foreground"

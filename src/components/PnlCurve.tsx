@@ -124,6 +124,17 @@ export default function PnlCurve({
             <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
             <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.02" />
           </linearGradient>
+
+          {/* A soft bloom under the line itself — the one series on this
+              chart earns looking lit, the same treatment the headline price
+              gets on the dashboard's session card. */}
+          <filter id="pnlcurve-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         {/* Recessive grid: only the extremes and break-even are labelled. A line
@@ -164,6 +175,7 @@ export default function PnlCurve({
           strokeLinecap="round"
           strokeLinejoin="round"
           className="draw-line"
+          filter="url(#pnlcurve-glow)"
           style={
             {
               strokeDasharray: lineLength,
@@ -181,6 +193,7 @@ export default function PnlCurve({
           fill="var(--accent)"
           stroke="var(--background)"
           strokeWidth={2}
+          filter="url(#pnlcurve-glow)"
           className="fade-in"
         />
 
