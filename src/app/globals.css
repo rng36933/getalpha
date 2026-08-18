@@ -163,6 +163,18 @@ body {
   text-shadow: 0 0 24px rgba(242, 201, 76, 0.35);
 }
 
+/* Same glow, breathing — for a number that is actually live right now, not
+   just important. The pulse is what says "still updating" at a glance,
+   the same job the session dot's pulse already does beside it. */
+@keyframes glow-text-pulse-anim {
+  0%, 100% { text-shadow: 0 0 16px rgba(242, 201, 76, 0.25); }
+  50%       { text-shadow: 0 0 32px rgba(242, 201, 76, 0.55); }
+}
+
+.glow-text-live {
+  animation: glow-text-pulse-anim 2.4s ease-in-out infinite;
+}
+
 /* ---------------------------------------------------------------------------
    App shell background.
 
@@ -314,6 +326,7 @@ body {
   .lp-flow,
   .lp-alarm,
   .live-dot,
+  .glow-text-live,
   .lp-shimmer:hover::after {
     animation: none !important;
   }

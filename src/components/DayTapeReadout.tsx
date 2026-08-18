@@ -132,7 +132,7 @@ function ReadingTile({
   // others it would run past the tile's edge.
   const long = reading.value.length > 8;
 
-  const toneClasses = `group flex min-h-24 w-full flex-col justify-between rounded-none border p-5 text-left transition-colors ${
+  const toneClasses = `group flex min-h-20 w-full flex-col justify-between rounded-none border p-4 text-left transition-colors ${
     reading.direction === "FLAT" || agreesWithMajority
       ? "border-line bg-surface-raised/40"
       : `border-transparent ${tone.bg} hover:border-current`
@@ -160,7 +160,7 @@ function ReadingTile({
       </span>
       <div className="relative mt-2">
         <span
-          className={`font-mono tracking-tight ${long ? "text-2xl font-black" : "text-4xl font-black"} ${tone.text}`}
+          className={`font-mono tracking-tight ${long ? "text-lg font-black" : "text-3xl font-black"} ${tone.text}`}
         >
           {reading.value}
         </span>
@@ -383,7 +383,9 @@ export default function DayTapeReadout({
             symbol={tape.symbol}
             timeframe="M15"
             initialPrice={tape.lastPrice}
-            className="figure glow-text text-[2.75rem] sm:text-[3.5rem]"
+            className={`figure text-[2.75rem] sm:text-[3.5rem] ${
+              tape.barelyTraded ? "glow-text" : "glow-text-live"
+            }`}
           />
 
           <span
