@@ -246,9 +246,9 @@ export default async function AdminPage() {
               return (
                 <div key={day.label} className="flex flex-1 flex-col items-center gap-1.5">
                   <span className="figure text-xs text-muted">{day.unique}</span>
-                  <div className="flex h-24 w-full items-end rounded-md bg-white/[0.03]">
+                  <div className="flex h-24 w-full items-end rounded-full bg-white/[0.03]">
                     <div
-                      className="w-full rounded-md bg-accent/70"
+                      className="w-full rounded-full bg-accent/70 shadow-[0_0_10px_rgba(242,201,76,0.5)]"
                       style={{ height: `${Math.max(4, height)}%` }}
                     />
                   </div>
