@@ -542,7 +542,13 @@ export default async function DashboardPage({
             // more once cards are draggable: any card can end up next to a
             // 2- or 3-wide one now, not just the ones originally laid out
             // that way.
-            className="grid grid-flow-dense grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+            //
+            // `gap-px` on a `bg-zinc-800` container rather than `gap-4`: the
+            // background shows through as a single hairline between cards
+            // instead of an open gap, so the row reads as one frame — without
+            // touching each card's own DOM node, which is what drag-to-reorder
+            // is attached to.
+            className="grid grid-flow-dense grid-cols-1 gap-px bg-zinc-800 md:grid-cols-2 xl:grid-cols-3"
           />
         );
       })()}
