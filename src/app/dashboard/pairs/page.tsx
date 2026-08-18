@@ -148,7 +148,7 @@ export default async function PairsPage({
               key={p.asset}
               href={`/dashboard/pairs?pair=${encodeURIComponent(p.asset)}`}
               aria-current={active ? "page" : undefined}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+              className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
                 active
                   ? "border-accent bg-accent-soft text-accent"
                   : "border-line text-muted hover:text-foreground"

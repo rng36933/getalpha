@@ -27,10 +27,10 @@ function RangeDial({ reading }: { reading: MacroReading }) {
       <span
         role="img"
         aria-label={`${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`}
-        className="h-1.5 w-full rounded-full bg-line"
+        className="h-1 w-full bg-line"
       >
         <span
-          className="block h-full rounded-full bg-accent shadow-[0_0_8px_rgba(242,201,76,0.6)]"
+          className="block h-full bg-accent"
           style={{ width: `${reading.rangePercent}%` }}
         />
       </span>
@@ -132,7 +132,7 @@ function CotDial({ row }: { row: CotRow }) {
       <div
         role="img"
         aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
-        className="flex h-2 w-full overflow-hidden rounded-full bg-negative/75"
+        className="flex h-2 w-full overflow-hidden bg-negative/75"
       >
         <div
           className="h-full bg-positive/85"
@@ -190,11 +190,11 @@ export function CotList({ rows }: { rows: CotRow[] }) {
 
       <p className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-positive" aria-hidden="true" />
+          <span className="size-2 bg-positive" aria-hidden="true" />
           long
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-negative" aria-hidden="true" />
+          <span className="size-2 bg-negative" aria-hidden="true" />
           short
         </span>
         <span>

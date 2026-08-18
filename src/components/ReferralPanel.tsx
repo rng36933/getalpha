@@ -55,12 +55,12 @@ export default function ReferralPanel({
             value={inviteUrl}
             onFocus={(event) => event.currentTarget.select()}
             aria-label="Your referral link"
-            className="min-w-0 flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 font-mono text-xs text-muted outline-none"
+            className="min-w-0 flex-1 rounded-lg border border-line bg-surface-raised px-3 py-2 font-mono text-xs text-muted outline-none"
           />
           <button
             type="button"
             onClick={copy}
-            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-background shadow-[0_4px_20px_-4px_rgba(242,201,76,0.5)] transition-colors hover:bg-accent/90"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent/90"
           >
             {copied ? "Copied" : "Copy"}
           </button>
@@ -108,13 +108,13 @@ export default function ReferralPanel({
       </div>
 
       <dl className="grid grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-line bg-surface-raised p-4">
+        <div className="rounded-lg border border-line bg-surface-raised p-4">
           <dt className="text-xs text-muted">Counted</dt>
           <dd className="figure mt-1 text-2xl">
             {qualifiedInvites}
           </dd>
         </div>
-        <div className="rounded-2xl border border-line bg-surface-raised p-4">
+        <div className="rounded-lg border border-line bg-surface-raised p-4">
           <dt className="text-xs text-muted">Not counting yet</dt>
           <dd className="figure mt-1 text-2xl text-muted">
             {pendingInvites}

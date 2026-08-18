@@ -163,7 +163,7 @@ export default function Mt5Connect({
           now states the problem and names its most common cause. */}
       {connected ? (
         <div
-          className={`rounded-2xl border px-4 py-3 ${
+          className={`rounded-lg border px-4 py-3 ${
             lastSeenAt && hasGoneQuiet(lastSeenAt)
               ? "border-warning/30 bg-warning/10"
               : "border-positive/30 bg-positive/10"
@@ -202,7 +202,7 @@ export default function Mt5Connect({
       ) : null}
 
       {token ? (
-        <div className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3">
           <p className="text-sm font-medium text-warning">
             Copy this now — it is not shown again
           </p>
@@ -212,12 +212,12 @@ export default function Mt5Connect({
               value={token}
               onFocus={(event) => event.currentTarget.select()}
               aria-label="Your connection key"
-              className="min-w-0 flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 font-mono text-xs outline-none"
+              className="min-w-0 flex-1 rounded-lg border border-line bg-surface-raised px-3 py-2 font-mono text-xs outline-none"
             />
             <button
               type="button"
               onClick={copy}
-              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-background shadow-[0_4px_20px_-4px_rgba(242,201,76,0.5)] transition-[filter] hover:brightness-110"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-[filter] hover:brightness-110"
             >
               {copied ? "Copied" : "Copy"}
             </button>
@@ -228,7 +228,7 @@ export default function Mt5Connect({
       <ol className="space-y-4">
         {STEPS.map((step, index) => (
           <li key={step.title} className="grid grid-cols-[1.5rem_1fr] gap-3">
-            <span className="mt-0.5 grid size-6 place-items-center rounded-full bg-surface-raised font-mono text-xs text-muted">
+            <span className="mt-0.5 grid size-6 place-items-center rounded-md bg-surface-raised font-mono text-xs text-muted">
               {index + 1}
             </span>
             <div>
@@ -244,7 +244,7 @@ export default function Mt5Connect({
       {error ? (
         <p
           role="alert"
-          className="rounded-xl border border-negative/30 bg-negative/10 px-3 py-2 text-xs text-negative"
+          className="rounded-lg border border-negative/30 bg-negative/10 px-3 py-2 text-xs text-negative"
         >
           {error}
         </p>
@@ -255,7 +255,7 @@ export default function Mt5Connect({
           type="button"
           onClick={generate}
           disabled={busy}
-          className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background shadow-[0_4px_20px_-4px_rgba(242,201,76,0.5)] transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted disabled:shadow-none"
+          className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-background transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
         >
           {busy ? "Working…" : connected ? "Generate a new key" : "Generate my key"}
         </button>
@@ -263,7 +263,7 @@ export default function Mt5Connect({
         <a
           href="/getALPHA-Sync.mq5"
           download
-          className="rounded-full border border-line px-5 py-2.5 text-sm text-muted transition-colors hover:border-accent hover:text-accent"
+          className="rounded-lg border border-line px-5 py-2.5 text-sm text-muted transition-colors hover:border-accent hover:text-accent"
         >
           Download the file
         </a>

@@ -79,7 +79,7 @@ export default async function MacroDeskPage() {
           instead of a repeated grid of identical boxes. "Yields and the
           dollar" gets double width since it carries two series (real yields,
           the dollar) against one each for the other two panels. */}
-      <div className="surface-lit grid grid-cols-1 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
+      <div className="surface-static grid grid-cols-1 divide-y divide-line overflow-hidden rounded-none border border-line bg-surface sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
         <div className="p-4 sm:col-span-2 sm:p-5 xl:col-span-2">
           <h2 className="text-[0.9375rem] font-semibold tracking-tight">
             Yields and the dollar

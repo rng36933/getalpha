@@ -326,7 +326,7 @@ export default async function DashboardPage({
       {/* One shared frame with an internal divider instead of two separate
           cards with a gap between them — the session readout and its news
           are one desk, not two boxes that happen to sit side by side. */}
-      <div className="surface-lit mb-4 grid grid-cols-1 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface xl:grid-cols-3 xl:divide-x xl:divide-y-0">
+      <div className="surface-static mb-4 grid grid-cols-1 divide-y divide-line overflow-hidden rounded-none border border-line bg-surface xl:grid-cols-3 xl:divide-x xl:divide-y-0">
         <div className="p-4 sm:p-5 xl:col-span-2">
           <h2 className="text-[0.9375rem] font-semibold tracking-tight">
             {tapeInstrument.label} — this session
@@ -343,7 +343,7 @@ export default async function DashboardPage({
                       key={choice.symbol}
                       href={`/dashboard?tape=${encodeURIComponent(choice.symbol)}`}
                       aria-current={active ? "page" : undefined}
-                      className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                      className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
                         active
                           ? "border-accent bg-accent-soft text-accent"
                           : "border-line text-muted hover:text-foreground"

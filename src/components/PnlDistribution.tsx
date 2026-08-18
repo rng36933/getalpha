@@ -50,7 +50,7 @@ export default function PnlDistribution({
       <div
         role="img"
         aria-label={`${wins} winning trades, ${losses} losing trades`}
-        className="flex h-2 w-full overflow-hidden rounded-full bg-negative"
+        className="flex h-2 w-full overflow-hidden bg-negative"
       >
         <div
           className="h-full bg-positive"

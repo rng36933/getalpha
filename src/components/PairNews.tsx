@@ -67,8 +67,8 @@ export default function PairNews({
 
         return (
           <li key={`${headline.source}-${headline.publishedAt}-${headline.title}`}>
-            <div className="rounded-xl px-3 py-2.5 transition-colors hover:bg-surface-raised">
-              <span className="inline-block rounded-full bg-surface-raised px-2 py-0.5 font-mono text-[10px] text-muted">
+            <div className="px-1 py-2.5 transition-colors hover:bg-white/[0.03]">
+              <span className="font-mono text-[10px] text-muted uppercase">
                 {when}
               </span>
               {headline.url ? (

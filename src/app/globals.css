@@ -107,6 +107,19 @@ body {
   }
 }
 
+/* Same resting glow as `.surface-lit`, without the hover lift.
+ *
+ * `.surface-lit`'s translateY(-2px)-on-hover reads fine on a small, single-
+ * purpose card — the whole thing is one hoverable unit. It reads as
+ * constant jitter on a large multi-column frame that holds several
+ * independently-interactive children (tabs, tiles, links): the frame lifts
+ * and drops every time the pointer crosses between two things inside it,
+ * on top of whatever hover state those inner elements have of their own.
+ */
+.surface-static {
+  box-shadow: 0 12px 32px -16px rgba(242, 201, 76, 0.12);
+}
+
 /* ---------------------------------------------------------------------------
    Glow primitives — shared building blocks for the dashboard's modern-SaaS
    redesign, so each page reaches for the same handful of effects instead of

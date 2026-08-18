@@ -77,7 +77,7 @@ export default function SupportForm() {
           {KINDS.map((option) => (
             <label
               key={option.value}
-              className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm transition-colors ${
+              className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm transition-colors ${
                 kind === option.value
                   ? "border-accent bg-accent-soft text-accent"
                   : "border-line text-muted hover:text-foreground"
@@ -138,7 +138,7 @@ export default function SupportForm() {
 
         <button
           type="submit"
-          className="mt-4 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background shadow-[0_4px_20px_-4px_rgba(242,201,76,0.5)] transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted disabled:shadow-none"
+          className="mt-4 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
         >
           {state === "sending" ? "Sending…" : "Send"}
         </button>
