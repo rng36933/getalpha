@@ -6,6 +6,7 @@ import DataQualityNotice from "@/components/DataQualityNotice";
 import DayTapeReadout from "@/components/DayTapeReadout";
 import Mt5Prompt from "@/components/Mt5Prompt";
 import PageHeader from "@/components/PageHeader";
+import LiveLogPanel from "@/components/LiveLogPanel";
 import PairNews from "@/components/PairNews";
 import PnlCurve from "@/components/PnlCurve";
 import PnlDistribution from "@/components/PnlDistribution";
@@ -386,6 +387,10 @@ export default async function DashboardPage({
                   : undefined
               }
             />
+          </div>
+
+          <div className="mt-5">
+            <LiveLogPanel />
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { publishLog } from "@/lib/liveLog";
 
 /**
  * The session price, re-polled so it can flash when it actually moves.
@@ -48,19 +49,33 @@ export default function LivePrice({
       if (document.visibilityState !== "visible") return;
 
       try {
+        publishLog(`Fetching ${symbol} tick data…`, "muted");
+
         const params = new URLSearchParams({ symbol, tf: timeframe });
         const response = await fetch(`/api/candles?${params}`);
-        if (!response.ok) return;
+        if (!response.ok) {
+          publishLog(`${symbol} poll refused (HTTP ${response.status})`, "negative");
+          return;
+        }
 
         const body: { candles?: { close: number }[] } = await response.json();
         if (cancelled || !Array.isArray(body.candles) || body.candles.length === 0) {
+          publishLog(`${symbol} poll returned no bars`, "muted");
           return;
         }
 
         const latest = body.candles[body.candles.length - 1].close;
-        if (latest === lastPrice.current) return;
+        if (latest === lastPrice.current) {
+          publishLog(`${symbol} unchanged at ${latest}`, "muted");
+          return;
+        }
 
-        setFlash(latest > lastPrice.current ? "up" : "down");
+        const direction = latest > lastPrice.current ? "up" : "down";
+        setFlash(direction);
+        publishLog(
+          `${symbol} ticked ${direction === "up" ? "up" : "down"} to ${latest}`,
+          direction === "up" ? "positive" : "negative",
+        );
         lastPrice.current = latest;
         setPrice(latest);
 
@@ -68,6 +83,7 @@ export default function LivePrice({
         flashTimer.current = setTimeout(() => setFlash(null), 700);
       } catch {
         // Last known price stays on screen; see the module comment.
+        publishLog(`${symbol} poll failed — network error`, "negative");
       }
     }
 
