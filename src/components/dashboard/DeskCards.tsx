@@ -181,7 +181,8 @@ function Stat({
   return (
     <div>
       <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-600">
-        // {label}
+        {"// "}
+        {label}
       </p>
       <p className={`figure mt-1 font-mono text-4xl font-black tracking-tighter ${tone}`}>
         {value}
