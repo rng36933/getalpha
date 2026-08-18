@@ -74,23 +74,43 @@ export default async function MacroDeskPage() {
         ]}
       />
 
-      <div className="grid grid-flow-dense grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card title="Yields and the dollar">
-          <ReadingList readings={readingsFor(macro.data, YIELD_SERIES)} />
-        </Card>
+      {/* One bordered block sharing internal divider lines rather than three
+          separate cards with gaps between them — a single technical frame
+          instead of a repeated grid of identical boxes. "Yields and the
+          dollar" gets double width since it carries two series (real yields,
+          the dollar) against one each for the other two panels. */}
+      <div className="surface-lit grid grid-cols-1 divide-y divide-zinc-800 border border-zinc-800 bg-surface sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
+        <div className="p-4 sm:col-span-2 sm:p-5 xl:col-span-2">
+          <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+            Yields and the dollar
+          </h2>
+          <div className="mt-4">
+            <ReadingList readings={readingsFor(macro.data, YIELD_SERIES)} />
+          </div>
+        </div>
 
-        <Card title="Inflation">
-          <ReadingList readings={readingsFor(macro.data, INFLATION_SERIES)} />
-        </Card>
+        <div className="p-4 sm:p-5">
+          <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+            Inflation
+          </h2>
+          <div className="mt-4">
+            <ReadingList readings={readingsFor(macro.data, INFLATION_SERIES)} />
+          </div>
+        </div>
 
-        <Card title="Policy rates">
-          <ReadingList readings={readingsFor(macro.data, POLICY_SERIES)} />
-        </Card>
-
-        <Card title="Positioning" className="md:col-span-2 xl:col-span-3">
-          <CotList rows={cotRows} />
-        </Card>
+        <div className="p-4 sm:p-5">
+          <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+            Policy rates
+          </h2>
+          <div className="mt-4">
+            <ReadingList readings={readingsFor(macro.data, POLICY_SERIES)} />
+          </div>
+        </div>
       </div>
+
+      <Card title="Positioning" className="mt-4">
+        <CotList rows={cotRows} />
+      </Card>
     </>
   );
 }
