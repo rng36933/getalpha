@@ -83,44 +83,30 @@ body {
    hover treatment. Fixed here, once, for everywhere it's used.
    --------------------------------------------------------------------------- */
 
+/* Restrained on purpose — checked against Linear and Vercel's own dashboards,
+ * both of which sit at near-zero decoration: a hairline border, almost no
+ * shadow, and a hover state so quiet it barely registers. A card that
+ * glows and lifts every time it's looked at reads as a demo, not a tool
+ * somebody uses for eight hours. */
 .surface-lit {
-  transition:
-    transform 0.15s ease-out,
-    border-color 0.15s ease-out,
-    box-shadow 0.15s ease-out;
-  /* A faint gold glow sits under every card at rest — the "modern SaaS"
-     direction reads as glowing even on cards nobody's pointer is near,
-     not only as a hover reveal. */
-  box-shadow: 0 12px 32px -16px rgba(242, 201, 76, 0.12);
+  transition: border-color 0.15s ease-out;
 }
 
 .surface-lit:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
-  box-shadow: 0 12px 32px -8px rgba(242, 201, 76, 0.32);
+  border-color: #383d4d;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .surface-lit {
-    transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
-  }
-
-  .surface-lit:hover {
-    transform: none;
+    transition: none;
   }
 }
 
-/* Same resting glow as `.surface-lit`, without the hover lift.
- *
- * `.surface-lit`'s translateY(-2px)-on-hover reads fine on a small, single-
- * purpose card — the whole thing is one hoverable unit. It reads as
- * constant jitter on a large multi-column frame that holds several
- * independently-interactive children (tabs, tiles, links): the frame lifts
- * and drops every time the pointer crosses between two things inside it,
- * on top of whatever hover state those inner elements have of their own.
- */
+/* Identical at rest; kept as a separate name because callers reach for
+ * `surface-static` specifically to say "this frame holds several
+ * independently-interactive children, don't add a hover state to the
+ * whole thing" — see the git history for the jitter that caused. */
 .surface-static {
-  box-shadow: 0 12px 32px -16px rgba(242, 201, 76, 0.12);
 }
 
 /* ---------------------------------------------------------------------------
@@ -143,36 +129,6 @@ body {
 .glow-ai:hover {
   border-color: rgba(167, 139, 250, 0.55);
   box-shadow: 0 12px 32px -6px rgba(167, 139, 250, 0.45);
-}
-
-/* A soft radial gold bloom, meant to sit behind a headline number or chart
-   via a positioned pseudo-element or an absolutely-placed sibling div. */
-.glow-bloom {
-  background: radial-gradient(
-    circle at 30% 20%,
-    rgba(242, 201, 76, 0.16),
-    transparent 60%
-  );
-  pointer-events: none;
-}
-
-/* Text glow for the one or two numbers per page that should look lit from
-   within — the session price, a headline stat. Not for every number: a page
-   where everything glows reads as nothing glowing. */
-.glow-text {
-  text-shadow: 0 0 24px rgba(242, 201, 76, 0.35);
-}
-
-/* Same glow, breathing — for a number that is actually live right now, not
-   just important. The pulse is what says "still updating" at a glance,
-   the same job the session dot's pulse already does beside it. */
-@keyframes glow-text-pulse-anim {
-  0%, 100% { text-shadow: 0 0 16px rgba(242, 201, 76, 0.25); }
-  50%       { text-shadow: 0 0 32px rgba(242, 201, 76, 0.55); }
-}
-
-.glow-text-live {
-  animation: glow-text-pulse-anim 2.4s ease-in-out infinite;
 }
 
 /* ---------------------------------------------------------------------------
@@ -326,7 +282,6 @@ body {
   .lp-flow,
   .lp-alarm,
   .live-dot,
-  .glow-text-live,
   .lp-shimmer:hover::after {
     animation: none !important;
   }
