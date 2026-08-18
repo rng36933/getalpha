@@ -189,7 +189,7 @@ function Stat({
         {"// "}
         {label}
       </p>
-      <p className={`figure mt-1 font-mono text-4xl font-black tracking-tighter ${tone}`}>
+      <p className={`figure mt-1 font-mono text-2xl font-bold tracking-tight ${tone}`}>
         {value}
       </p>
       {hint ? <p className="mt-1 font-mono text-[11px] text-muted">{hint}</p> : null}
