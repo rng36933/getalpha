@@ -79,9 +79,11 @@ export default async function AppLayout({
     <ClerkProvider appearance={clerkAppearance}>
       {/* A column on a phone, so the top bar can be sticky and the content can
           run the full width; a row from `sm` up, where the sidebar returns.
-          `app-grid` lays the same faint grid the landing page uses behind the
-          desk. `isolate` keeps its fixed pseudo-element from being painted over
-          the cards, which sit in the normal flow above it. */}
+          `app-grid` no longer draws a visible grid line pattern (removed
+          alongside the same decoration on the landing/auth backdrops), but
+          the class stays for the `position: relative` it gives this
+          ancestor, which `isolate` relies on to keep AmbientCandles' fixed
+          layer from painting over the cards above it. */}
       <div className="app-grid isolate flex min-h-screen flex-col sm:flex-row">
         <AmbientCandles />
         <MobileNav pro={access.allowed} admin={admin} />

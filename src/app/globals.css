@@ -106,30 +106,17 @@ body {
 /* ---------------------------------------------------------------------------
    App shell background.
 
-   `app-grid` is applied by the dashboard layout and was, like `.surface-lit`
-   above, referenced in markup with no rule defining it anywhere — the desk
-   has been sitting on a flat background this whole time instead of the faint
-   ruled grid the comment beside it describes. A fixed `::before` behind a
-   `position: relative, z-10` main content area, same shape as the landing
-   page's own backdrop: the grid never scrolls with the page, and `isolate`
-   on the parent stops it from being painted over cards that create their own
-   stacking context.
+   `app-grid` is applied by the dashboard layout, purely for the
+   `position: relative` it gives the shell — `isolate` on that same element
+   relies on it to stop AmbientCandles' fixed layer from painting over cards
+   that create their own stacking context. It used to also draw a faint ruled
+   grid via a `::before` pseudo-element, the same decoration the landing page
+   and auth backdrop carried; removed from all three at once as part of
+   dropping every purely-decorative grid-line/glow effect on the site.
    --------------------------------------------------------------------------- */
 
 .app-grid {
   position: relative;
-}
-
-.app-grid::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 40px 40px;
 }
 
 /* The dashboard's ambient candlestick strip — drawn once as two identical
