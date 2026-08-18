@@ -328,7 +328,8 @@ export default async function DashboardPage({
           are one desk, not two boxes that happen to sit side by side. */}
       <div className="surface-lit mb-4 grid grid-cols-1 divide-y divide-zinc-800 border border-zinc-800 bg-surface xl:grid-cols-3 xl:divide-x xl:divide-y-0">
         <div className="p-4 sm:p-5 xl:col-span-2">
-          <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+          <h2 className="font-mono text-[10px] tracking-widest text-muted uppercase">
+            {"// "}
             {tapeInstrument.label} — this session
           </h2>
 
@@ -373,8 +374,8 @@ export default async function DashboardPage({
         </div>
 
         <div className="p-4 sm:p-5">
-          <h2 className="text-[0.9375rem] font-semibold tracking-tight">
-            News naming {tapeInstrument.label}
+          <h2 className="font-mono text-[10px] tracking-widest text-muted uppercase">
+            {"// "}News naming {tapeInstrument.label}
           </h2>
           <div className="mt-4">
             <PairNews

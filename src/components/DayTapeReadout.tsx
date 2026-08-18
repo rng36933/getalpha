@@ -105,7 +105,7 @@ function ReadingTile({
 
   return (
     <div
-      className={`group flex min-h-24 flex-col justify-between p-4 ${reading.direction === "FLAT" ? "" : tone.bg}`}
+      className={`group flex min-h-24 flex-col justify-between p-5 ${reading.direction === "FLAT" ? "" : tone.bg}`}
     >
       <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
       <span className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
@@ -113,7 +113,7 @@ function ReadingTile({
       </span>
       <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
         <span
-          className={`font-mono tracking-tight ${long ? "text-lg font-bold" : "text-3xl font-black"} ${tone.text}`}
+          className={`font-mono tracking-tight ${long ? "text-2xl font-black" : "text-4xl font-black"} ${tone.text}`}
         >
           {reading.value}
         </span>
@@ -143,9 +143,9 @@ function RangeBar({ tape, copy }: { tape: DayTape; copy: TapeCopy["readout"] }) 
         </span>
         <span>{tape.dayHigh}</span>
       </div>
-      <div className="relative h-2 border border-line bg-surface-raised">
+      <div className="relative h-1.5 border border-line bg-surface-raised">
         <div
-          className="absolute top-1/2 h-4 w-2 -translate-x-1/2 -translate-y-1/2 border border-background bg-accent"
+          className="absolute top-1/2 h-3 w-1.5 -translate-x-1/2 -translate-y-1/2 bg-accent"
           style={{ left: `${tape.rangePosition}%` }}
         />
       </div>

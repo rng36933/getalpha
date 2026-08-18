@@ -60,31 +60,36 @@ export default function PairNews({
 
   return (
     <ul className="divide-y divide-line">
-      {headlines.map((headline) => (
-        <li key={`${headline.source}-${headline.publishedAt}-${headline.title}`}>
-          <div className="flex items-baseline gap-3 py-2.5">
-            <span className="w-16 shrink-0 font-mono text-[11px] text-muted">
-              {(asOf ? age(headline.publishedAt, asOf) : null) ??
-                headline.publishedAt.slice(11, 16)}
-            </span>
-            <div className="min-w-0 flex-1">
+      {headlines.map((headline) => {
+        const when =
+          (asOf ? age(headline.publishedAt, asOf) : null) ??
+          headline.publishedAt.slice(11, 16);
+
+        return (
+          <li key={`${headline.source}-${headline.publishedAt}-${headline.title}`}>
+            <div className="px-1 py-2.5 transition-colors hover:bg-white/[0.03]">
+              <span className="font-mono text-[10px] text-muted uppercase">
+                [{when}]
+              </span>
               {headline.url ? (
                 <a
                   href={headline.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-sm leading-snug hover:text-accent hover:underline"
+                  className="mt-0.5 block font-mono text-sm leading-snug font-bold hover:text-accent hover:underline"
                 >
                   {headline.title}
                 </a>
               ) : (
-                <p className="font-mono text-sm leading-snug">{headline.title}</p>
+                <p className="mt-0.5 font-mono text-sm leading-snug font-bold">
+                  {headline.title}
+                </p>
               )}
               <p className="mt-0.5 text-[11px] text-muted">{headline.source}</p>
             </div>
-          </div>
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </ul>
   );
 }
