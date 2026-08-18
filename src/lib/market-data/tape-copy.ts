@@ -69,18 +69,18 @@ export type TapeCopy = {
 };
 
 const en: TapeCopy = {
-  vsOpen: "Against today's open",
+  vsOpen: "Since today's open",
   vsOpenDetail: (open, now) => `Opened at ${open}, now ${now}.`,
-  vsPriorClose: "Against yesterday's close",
+  vsPriorClose: "Since yesterday's close",
   vsPriorCloseDetail: (close) => `Previous session closed at ${close}.`,
-  rangePosition: "Position in today's range",
+  rangePosition: "Today's range",
   rangeDetail: (low, high) => `Range ${low} to ${high}.`,
-  intradayBars: (count) => `Last ${count} bars`,
+  intradayBars: (count) => `Last ${count} candles`,
   intradayValue: (up, down) => `${up} up / ${down} down`,
-  intradayDetail: "Bars that closed above their own open, most recent first.",
-  vsAverage: (count) => `Against its ${count}-bar average`,
+  intradayDetail: "Candles that closed higher than they opened, most recent first.",
+  vsAverage: (count) => `Vs. ${count}-candle average`,
   vsAverageDetail: (count, average) =>
-    `Average of the last ${count} bars is ${average}.`,
+    `Average of the last ${count} candles is ${average}.`,
   readout: {
     up: "Up",
     down: "Down",
@@ -124,11 +124,11 @@ const en: TapeCopy = {
 };
 
 const lt: TapeCopy = {
-  vsOpen: "Prieš šiandienos atidarymą",
+  vsOpen: "Nuo šiandienos atidarymo",
   vsOpenDetail: (open, now) => `Atidarė ties ${open}, dabar ${now}.`,
-  vsPriorClose: "Prieš vakarykštį uždarymą",
+  vsPriorClose: "Nuo vakarykščio uždarymo",
   vsPriorCloseDetail: (close) => `Praėjusi sesija užsidarė ties ${close}.`,
-  rangePosition: "Vieta šiandienos svyravimo ruože",
+  rangePosition: "Šiandienos ruožas",
   rangeDetail: (low, high) => `Ruožas nuo ${low} iki ${high}.`,
   // The adjective agrees with the numeral too, which is why this is a function
   // and not a template with a hole in it: `paskutinės 5 žvakės`, but
