@@ -110,20 +110,30 @@ const DETAIL_REDUNDANT: ReadonlySet<string> = new Set([
 function ReadingTile({
   reading,
   copy,
+  majority,
 }: {
   reading: Reading;
   copy: TapeCopy["readout"];
+  /**
+   * The direction most readings share, or null when there is no clear
+   * majority. A tile that agrees with the room stays quiet — the STATUS
+   * line already says "all 5 point down" once; five red tiles saying it
+   * again each is the same fact shouting five times instead of one tile
+   * standing out because it's the one that disagrees.
+   */
+  majority: Direction | null;
 }) {
   const [open, setOpen] = useState(false);
   const tone = TONE[reading.direction];
   const formula = FORMULA[reading.key];
   const expandable = !DETAIL_REDUNDANT.has(reading.key);
+  const agreesWithMajority = majority !== null && reading.direction === majority;
   // "3 up / 9 down" is a phrase, not a figure — set at the same size as the
   // others it would run past the tile's edge.
   const long = reading.value.length > 8;
 
   const toneClasses = `group flex min-h-24 w-full flex-col justify-between rounded-none border p-5 text-left transition-colors ${
-    reading.direction === "FLAT"
+    reading.direction === "FLAT" || agreesWithMajority
       ? "border-line bg-surface-raised/40"
       : `border-transparent ${tone.bg} hover:border-current`
   }`;
@@ -322,6 +332,20 @@ export default function DayTapeReadout({
   const copy = tapeCopy(locale).readout;
   const tone = TONE[tape.direction];
 
+  // Which direction most readings share, for the tiles below — null when
+  // there's a genuine split (e.g. 2 up, 2 down, 1 flat), since there's no
+  // consensus to go quiet about in that case.
+  const { up, down, flat } = tape.agreeing;
+  const topCount = Math.max(up, down, flat);
+  const leaders = (
+    [
+      ["UP", up],
+      ["DOWN", down],
+      ["FLAT", flat],
+    ] as [Direction, number][]
+  ).filter(([, count]) => count === topCount);
+  const majority: Direction | null = leaders.length === 1 ? leaders[0][0] : null;
+
   return (
     <div className="space-y-5">
       {tape.barelyTraded ? (
@@ -401,7 +425,7 @@ export default function DayTapeReadout({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {tape.readings.map((reading) => (
-          <ReadingTile key={reading.key} reading={reading} copy={copy} />
+          <ReadingTile key={reading.key} reading={reading} copy={copy} majority={majority} />
         ))}
       </div>
 
