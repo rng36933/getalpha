@@ -28,12 +28,12 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Reading an Equity Curve: What a Smooth Line Actually Hides
 - [ ] MT5 vs Manual Spreadsheet Journal: Where the Numbers Diverge
 - [ ] What "Trading the Plan" Actually Means, Measured
 - [ ] The Cost of Revenge Trading, In Real Numbers
 
 **Published:**
+- [x] Reading an Equity Curve: What a Smooth Line Actually Hides (2026-08-18)
 - [x] How Many Trades Before Your Statistics Mean Anything (2026-08-17)
 - [x] The Stop-Loss You Set vs. The Stop-Loss You Moved (2026-08-16)
 - [x] Why "Cut Losses, Let Winners Run" Is Bad Advice Without Data (2026-08-15)

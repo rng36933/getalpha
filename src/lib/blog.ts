@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "reading-an-equity-curve",
+    title: "Reading an Equity Curve: What a Smooth Line Actually Hides",
+    description:
+      "A rising, smooth equity curve is the image every trader wants to show. It is also one of the easiest charts to be misled by — here is what it does and doesn't tell you.",
+    date: "2026-08-18",
+  },
+  {
     slug: "how-many-trades-before-stats-mean-anything",
     title: "How Many Trades Before Your Statistics Mean Anything",
     description:
