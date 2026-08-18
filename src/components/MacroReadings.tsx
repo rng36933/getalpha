@@ -1,3 +1,4 @@
+import AssetBadge from "@/components/AssetBadge";
 import type { CotRow } from "@/lib/market-data/cot";
 import type { MacroReading } from "@/lib/market-data/fred";
 import { GOLD_RELATIONSHIP } from "@/lib/market-data/gold-relationship";
@@ -125,11 +126,14 @@ function CotDial({ row }: { row: CotRow }) {
   const isLong = row.skew > 0;
 
   return (
-    <li className="group relative flex w-40 flex-col gap-2">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium">{row.label}</span>
+    <li className="group relative flex w-44 flex-col gap-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2">
+          <AssetBadge label={row.label} />
+          <span className="text-sm font-medium">{row.label}</span>
+        </span>
         <span
-          className={`figure font-mono text-lg ${
+          className={`figure glow-text font-mono text-2xl font-black ${
             isLong ? "text-positive" : "text-negative"
           }`}
         >
@@ -140,7 +144,7 @@ function CotDial({ row }: { row: CotRow }) {
       <div
         role="img"
         aria-label={`${row.label}: ${Math.round(longShare)} percent of speculative positions are long, ${Math.abs(row.skew)} percent net ${isLong ? "long" : "short"}.`}
-        className="flex h-2 w-full overflow-hidden bg-negative/75"
+        className="flex h-2.5 w-full overflow-hidden rounded-full bg-negative/75"
       >
         <div
           className="h-full bg-positive/85"
