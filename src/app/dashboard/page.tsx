@@ -431,8 +431,8 @@ export default async function DashboardPage({
               />
             ),
           },
-          // The one card on the desk allowed to glow. Violet is the same
-          // signal the landing page's Pro column uses, and it says "this one
+          // Every card glows gold now, so this one is deliberately violet
+          // instead — the signal isn't "glowing" anymore, it's "this one
           // costs money to run" rather than "get excited".
           brief: {
             key: "brief",

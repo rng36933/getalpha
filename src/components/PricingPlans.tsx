@@ -214,7 +214,7 @@ export default function PricingPlans({
               disabled={
                 sellingClosed || !pro.purchasable || proIsCurrent || pending !== null
               }
-              className="mt-6 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
+              className="mt-6 rounded-full bg-accent px-4 py-3 text-sm font-semibold text-white shadow-[0_4px_20px_-4px_rgba(242,201,76,0.5)] transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted disabled:shadow-none"
             >
               {proIsCurrent
                 ? "Current plan"
