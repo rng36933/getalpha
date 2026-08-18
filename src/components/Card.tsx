@@ -39,14 +39,14 @@ export default function Card({
       // its cells to the tallest one by default, but nothing inside a cell
       // fills that height on its own, so a short card and a tall card side
       // by side kept their own content heights and left uneven bottoms.
-      className={`surface-lit card-enter relative isolate flex h-full flex-col rounded-none border border-line bg-surface p-4 sm:p-5 ${className}`}
+      className={`surface-lit card-enter relative isolate flex h-full flex-col rounded-2xl border border-line bg-surface p-4 sm:p-5 ${className}`}
     >
       <header className="flex items-center justify-between gap-3">
         <h2 className="text-[0.9375rem] font-semibold tracking-tight">
           {title}
         </h2>
         {children ? null : (
-          <span className="rounded-none bg-surface-raised px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted">
+          <span className="rounded-full bg-surface-raised px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted">
             Soon
           </span>
         )}
