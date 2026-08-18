@@ -17,16 +17,24 @@ import type { DayTape, Direction, Reading } from "@/lib/market-data/tape";
  */
 
 /** Colour only. The word beside the arrow comes from the dictionary. */
-const TONE: Record<Direction, { text: string; bg: string }> = {
-  UP: { text: "text-positive", bg: "bg-positive/12" },
-  DOWN: { text: "text-negative", bg: "bg-negative/12" },
-  FLAT: { text: "text-muted", bg: "bg-muted/12" },
+const TONE: Record<Direction, { text: string; bg: string; border: string }> = {
+  UP: { text: "text-positive", bg: "bg-positive/12", border: "border-positive" },
+  DOWN: { text: "text-negative", bg: "bg-negative/12", border: "border-negative" },
+  FLAT: { text: "text-muted", bg: "bg-muted/12", border: "border-line" },
 };
 
 function toneWord(direction: Direction, copy: TapeCopy["readout"]): string {
   if (direction === "UP") return copy.up;
   if (direction === "DOWN") return copy.down;
   return copy.flat;
+}
+
+/** Same label the arrow icon used to carry, kept for screen readers now that
+ * reading rows mark direction with a border instead of an icon. */
+function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string {
+  if (direction === "UP") return copy.arrowUp;
+  if (direction === "DOWN") return copy.arrowDown;
+  return copy.arrowFlat;
 }
 
 /** A solid triangle up or down, a bar for flat. Size follows the font. */
@@ -108,11 +116,13 @@ function ReadingRow({
   const formula = FORMULA[reading.key];
 
   const row = (
-    <div className="group flex items-start gap-3 px-3 py-2.5">
-      <Arrow direction={reading.direction} copy={copy} className="mt-0.5 size-4 shrink-0" />
+    <div className={`group flex items-start gap-3 border-l-2 px-3 py-3 ${tone.border}`}>
+      <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-baseline justify-between gap-x-3">
-          <span className={`text-sm ${tone.text}`}>{reading.label}</span>
+          <span className="font-mono text-xs tracking-tight text-muted uppercase">
+            {reading.label}
+          </span>
           <span className="flex items-baseline gap-2">
             {/* Hidden until the row is hovered — the formula is a footnote
                 for someone checking the arithmetic, not something every
@@ -122,7 +132,7 @@ function ReadingRow({
                 [{formula}]
               </span>
             ) : null}
-            <span className={`font-mono text-xs font-semibold ${tone.text}`}>
+            <span className={`font-mono text-sm font-bold ${tone.text}`}>
               {reading.value}
             </span>
           </span>
@@ -148,7 +158,7 @@ function ReadingRow({
   );
 
   return (
-    <li className={tone.bg}>
+    <li>
       {expandable ? (
         <button
           type="button"
@@ -332,16 +342,21 @@ export default function DayTapeReadout({
         ))}
       </ul>
 
-      {/* A status strip, not a paragraph: the same facts as before, laid out
-          as label/value rows so the card ends on something that reads as a
-          system readout rather than a wall of grey prose. */}
-      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-t border-line pt-4 font-mono text-[10px] leading-relaxed">
-        <dt className="text-muted/70">STATUS</dt>
-        <dd className="text-foreground">{agreementLine(tape, copy)}</dd>
+      {/* A status console, not a paragraph: the same facts as before, laid
+          out as bracketed label/value rows in a bordered box so the card
+          ends on something that reads as a system readout rather than a
+          wall of grey prose. */}
+      <dl className="divide-y divide-line border border-line bg-surface-raised/40 px-3 font-mono text-[10px] leading-relaxed">
+        <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
+          <dt className="shrink-0 font-bold text-muted/70">[STATUS]</dt>
+          <dd className={`font-semibold uppercase ${tone.text}`}>
+            {agreementLine(tape, copy)}
+          </dd>
+        </div>
 
         {tape.rangeVsAverage !== null ? (
-          <>
-            <dt className="text-muted/70">RANGE</dt>
+          <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
+            <dt className="shrink-0 font-bold text-muted/70">[RANGE]</dt>
             <dd className="text-muted">
               {tape.rangeVsAverage < 0.05
                 ? copy.rangeTiny
@@ -351,26 +366,28 @@ export default function DayTapeReadout({
                     ? copy.rangeQuiet(tape.rangeVsAverage)
                     : copy.rangeNormal(tape.rangeVsAverage)}
             </dd>
-          </>
+          </div>
         ) : null}
 
-        <dt className="text-muted/70">SESSION</dt>
-        <dd className="text-muted">
-          {copy.sessionOf(tape.sessionDate)}
-          {fetchedAt ? (
-            <>
-              {copy.pricedAt}
-              <LocalTime at={fetchedAt} utc={fetchedAt.slice(11, 16)} />
-            </>
-          ) : null}
-          {copy.refreshNote}
-        </dd>
+        <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
+          <dt className="shrink-0 font-bold text-muted/70">[SESSION]</dt>
+          <dd className="text-muted">
+            {copy.sessionOf(tape.sessionDate)}
+            {fetchedAt ? (
+              <>
+                {copy.pricedAt}
+                <LocalTime at={fetchedAt} utc={fetchedAt.slice(11, 16)} />
+              </>
+            ) : null}
+            {copy.refreshNote}
+          </dd>
+        </div>
 
         {stale ? (
-          <>
-            <dt className="text-warning/70">WARN</dt>
+          <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
+            <dt className="shrink-0 font-bold text-warning/70">[WARN]</dt>
             <dd className="text-warning">{copy.staleNote}</dd>
-          </>
+          </div>
         ) : null}
       </dl>
 
