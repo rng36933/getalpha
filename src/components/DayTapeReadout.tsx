@@ -104,14 +104,16 @@ function ReadingTile({
   const long = reading.value.length > 8;
 
   return (
-    <div className={`group flex flex-col p-4 ${reading.direction === "FLAT" ? "" : tone.bg}`}>
+    <div
+      className={`group flex min-h-24 flex-col justify-between p-4 ${reading.direction === "FLAT" ? "" : tone.bg}`}
+    >
       <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
       <span className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
         {reading.label}
       </span>
-      <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
         <span
-          className={`font-mono tracking-tight ${long ? "text-base font-bold" : "text-2xl font-black"} ${tone.text}`}
+          className={`font-mono tracking-tight ${long ? "text-lg font-bold" : "text-3xl font-black"} ${tone.text}`}
         >
           {reading.value}
         </span>
@@ -133,19 +135,19 @@ function RangeBar({ tape, copy }: { tape: DayTape; copy: TapeCopy["readout"] }) 
   if (tape.rangePosition === null) return null;
 
   return (
-    <div>
-      <div className="relative h-2 rounded-full bg-surface-raised">
-        <div
-          className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-foreground"
-          style={{ left: `${tape.rangePosition}%` }}
-        />
-      </div>
-      <div className="mt-1.5 flex justify-between font-mono text-[11px] tabular-nums text-muted">
+    <div className="flex flex-col gap-1.5">
+      <div className="flex justify-between font-mono text-[11px] tabular-nums text-muted">
         <span>{tape.dayLow}</span>
-        <span className="text-foreground">
+        <span className="font-bold text-accent">
           {tape.rangePosition}% {copy.ofRange}
         </span>
         <span>{tape.dayHigh}</span>
+      </div>
+      <div className="relative h-2 border border-line bg-surface-raised">
+        <div
+          className="absolute top-1/2 h-4 w-2 -translate-x-1/2 -translate-y-1/2 border border-background bg-accent"
+          style={{ left: `${tape.rangePosition}%` }}
+        />
       </div>
     </div>
   );
@@ -273,69 +275,86 @@ export default function DayTapeReadout({
 
       <RangeBar tape={tape} copy={copy} />
 
-      <div className="grid grid-cols-2 divide-x divide-y divide-line border border-line bg-surface-raised/20 md:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-y divide-line border border-line bg-surface-raised/10 sm:grid-cols-2 lg:grid-cols-5">
         {tape.readings.map((reading) => (
           <ReadingTile key={reading.key} reading={reading} copy={copy} />
         ))}
       </div>
 
-      {/* A status console, not a paragraph: the same facts as before, laid
-          out as bracketed label/value rows in a bordered box so the card
-          ends on something that reads as a system readout rather than a
-          wall of grey prose. */}
-      <dl className="divide-y divide-line border border-line bg-surface-raised/40 px-3 font-mono text-[10px] leading-relaxed">
-        <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
-          <dt className="shrink-0 font-bold text-muted/70">[STATUS]</dt>
-          <dd className={`font-semibold uppercase ${tone.text}`}>
-            {agreementLine(tape, copy)}
-          </dd>
-        </div>
-
-        {tape.rangeVsAverage !== null ? (
-          <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
-            <dt className="shrink-0 font-bold text-muted/70">[RANGE]</dt>
-            <dd className="text-muted">
-              {tape.rangeVsAverage < 0.05
-                ? copy.rangeTiny
-                : tape.rangeVsAverage >= 1.3
-                  ? copy.rangeWide(tape.rangeVsAverage)
-                  : tape.rangeVsAverage <= 0.7
-                    ? copy.rangeQuiet(tape.rangeVsAverage)
-                    : copy.rangeNormal(tape.rangeVsAverage)}
+      {/* A status console: the same facts as before, laid out as a band of
+          labelled columns plus a couple of terminal-style log lines, in one
+          bordered box, so the card ends on something that reads as a system
+          readout rather than a wall of grey prose. */}
+      <div className="border border-line bg-surface-raised/40 p-4 font-mono text-[10px] leading-relaxed">
+        <dl className="grid grid-cols-1 gap-4 divide-y divide-line border-b border-line pb-4 md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="flex flex-col gap-1 md:pr-4">
+            <dt className="text-[9px] font-bold tracking-widest text-muted/70 uppercase">
+              {"// "}Status
+            </dt>
+            <dd className={`text-xs font-black uppercase ${tone.text}`}>
+              {agreementLine(tape, copy)}
             </dd>
           </div>
-        ) : null}
 
-        <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
-          <dt className="shrink-0 font-bold text-muted/70">[SESSION]</dt>
-          <dd className="text-muted">
-            {copy.sessionOf(tape.sessionDate)}
-            {fetchedAt ? (
-              <>
-                {copy.pricedAt}
-                <LocalTime at={fetchedAt} utc={fetchedAt.slice(11, 16)} />
-              </>
-            ) : null}
-            {copy.refreshNote}
-          </dd>
-        </div>
+          {tape.rangeVsAverage !== null ? (
+            <div className="flex flex-col gap-1 pt-4 md:pt-0 md:px-4">
+              <dt className="text-[9px] font-bold tracking-widest text-muted/70 uppercase">
+                {"// "}Range
+              </dt>
+              <dd className="text-xs font-semibold text-foreground">
+                {tape.rangeVsAverage < 0.05
+                  ? copy.rangeTiny
+                  : tape.rangeVsAverage >= 1.3
+                    ? copy.rangeWide(tape.rangeVsAverage)
+                    : tape.rangeVsAverage <= 0.7
+                      ? copy.rangeQuiet(tape.rangeVsAverage)
+                      : copy.rangeNormal(tape.rangeVsAverage)}
+              </dd>
+            </div>
+          ) : null}
 
-        {stale ? (
-          <div className="flex flex-wrap items-baseline gap-x-2 py-2.5">
-            <dt className="shrink-0 font-bold text-warning/70">[WARN]</dt>
-            <dd className="text-warning">{copy.staleNote}</dd>
+          <div className="flex flex-col gap-1 pt-4 md:pt-0 md:pl-4">
+            <dt className="text-[9px] font-bold tracking-widest text-muted/70 uppercase">
+              {"// "}Session
+            </dt>
+            <dd className="text-xs text-muted">
+              {copy.sessionOf(tape.sessionDate)}
+              {fetchedAt ? (
+                <>
+                  {copy.pricedAt}
+                  <LocalTime at={fetchedAt} utc={fetchedAt.slice(11, 16)} />
+                </>
+              ) : null}
+            </dd>
           </div>
-        ) : null}
-      </dl>
+        </dl>
 
-      {/* Skipped when the market-closed warning already ran: both sentences
-          make the same "not a forecast" point, and saying it twice on one
-          card reads as noise rather than caution. */}
-      {tape.barelyTraded ? null : (
-        <p className="border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-          {copy.footnote}
-        </p>
-      )}
+        <div className="mt-4 space-y-1.5 text-muted">
+          <p className="flex items-start gap-2 text-[11px]">
+            <span className="shrink-0 font-bold text-accent">➜ [NET_LOG]:</span>
+            {/* refreshNote is written to continue a sentence (leading ". "),
+                so it's trimmed to stand on its own here. */}
+            <span>{copy.refreshNote.replace(/^\.\s*/, "")}</span>
+          </p>
+
+          {stale ? (
+            <p className="flex items-start gap-2 text-[11px]">
+              <span className="shrink-0 font-bold text-warning">➜ [WARN]:</span>
+              <span className="text-warning">{copy.staleNote}</span>
+            </p>
+          ) : null}
+
+          {/* Skipped when the market-closed warning already ran: both
+              sentences make the same "not a forecast" point, and saying it
+              twice on one card reads as noise rather than caution. */}
+          {tape.barelyTraded ? null : (
+            <p className="flex items-start gap-2 text-[10px]">
+              <span className="shrink-0 font-bold text-muted/70">➜ [DISCLAIMER]:</span>
+              <span className="tracking-tight text-muted/70 uppercase">{copy.footnote}</span>
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
