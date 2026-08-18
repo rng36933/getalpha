@@ -35,30 +35,61 @@ export default function PnlDistribution({
       ? worstLoss / medianLoss
       : null;
 
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="flex items-baseline gap-2">
-          <span className="figure font-mono text-3xl text-positive">{winPercent}%</span>
-          <span className="text-[11px] uppercase tracking-wider text-muted">won</span>
-        </span>
-        <span className="font-mono text-xs tabular-nums text-muted">
-          {wins} / {losses}
-        </span>
-      </div>
+  // A ring rather than a bar: the win/loss split read as a share of one
+  // whole, the same job a donut does on the reference dashboards, without
+  // pretending this is a portfolio allocation.
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  const wonDash = (winPercent / 100) * circumference;
 
+  return (
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
       <div
         role="img"
-        aria-label={`${wins} winning trades, ${losses} losing trades`}
-        className="flex h-3 w-full overflow-hidden bg-negative"
+        aria-label={`${winPercent}% won — ${wins} winning trades, ${losses} losing trades`}
+        className="relative mx-auto size-32 shrink-0 sm:mx-0"
       >
-        <div
-          className="h-full bg-positive"
-          style={{ width: `${winPercent}%` }}
-        />
+        <svg viewBox="0 0 100 100" className="size-32 -rotate-90">
+          <circle
+            cx={50}
+            cy={50}
+            r={radius}
+            fill="none"
+            stroke="var(--negative)"
+            strokeOpacity={0.35}
+            strokeWidth={10}
+          />
+          <circle
+            cx={50}
+            cy={50}
+            r={radius}
+            fill="none"
+            stroke="var(--positive)"
+            strokeWidth={10}
+            strokeLinecap="round"
+            strokeDasharray={`${wonDash} ${circumference}`}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="figure text-3xl text-positive">{winPercent}%</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted">won</span>
+        </div>
       </div>
 
-      <div className="w-full space-y-3">
+      <div className="w-full flex-1 space-y-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="flex items-center gap-4 text-xs">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-positive" aria-hidden="true" />
+              {wins} won
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-negative" aria-hidden="true" />
+              {losses} lost
+            </span>
+          </span>
+        </div>
+
         <p className="font-mono text-xs text-muted">{scored} closed trades</p>
 
         <p className="text-xs leading-relaxed text-muted">
