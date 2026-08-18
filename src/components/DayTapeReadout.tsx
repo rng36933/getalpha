@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import LivePrice from "@/components/LivePrice";
 import LocalTime from "@/components/LocalTime";
 import type { Locale } from "@/lib/i18n/locales";
@@ -17,10 +16,10 @@ import type { DayTape, Direction, Reading } from "@/lib/market-data/tape";
  */
 
 /** Colour only. The word beside the arrow comes from the dictionary. */
-const TONE: Record<Direction, { text: string; bg: string; border: string }> = {
-  UP: { text: "text-positive", bg: "bg-positive/12", border: "border-positive" },
-  DOWN: { text: "text-negative", bg: "bg-negative/12", border: "border-negative" },
-  FLAT: { text: "text-muted", bg: "bg-muted/12", border: "border-line" },
+const TONE: Record<Direction, { text: string; bg: string }> = {
+  UP: { text: "text-positive", bg: "bg-positive/12" },
+  DOWN: { text: "text-negative", bg: "bg-negative/12" },
+  FLAT: { text: "text-muted", bg: "bg-muted/12" },
 };
 
 function toneWord(direction: Direction, copy: TapeCopy["readout"]): string {
@@ -85,109 +84,47 @@ const FORMULA: Record<string, string> = {
 };
 
 /**
- * Reading keys whose detail sentence only restates a number shown elsewhere on
- * the card — the open/now pair above, the low/high under the range bar, or a
- * boilerplate line with no data in it. Cut here rather than in the copy files,
- * so the sentence still exists for anything else that reads `tape-copy.ts`.
- */
-const DETAIL_REDUNDANT: ReadonlySet<string> = new Set([
-  "VS_OPEN",
-  "RANGE_POSITION",
-  "INTRADAY_BARS",
-]);
-
-/**
- * One reading, collapsed to its label and value until pressed.
+ * One reading, as a stat tile in the grid rather than a row in a list.
  *
- * Rows whose detail sentence is cut as redundant (see `DETAIL_REDUNDANT`)
- * have nothing to expand into, so they render as plain, unclickable rows
- * rather than a toggle that always opens onto nothing.
+ * Only tinted when it actually points somewhere — a flat reading sitting on
+ * the same wash as an up or down one would blur the one signal the tint
+ * exists to carry.
  */
-function ReadingRow({
+function ReadingTile({
   reading,
   copy,
 }: {
   reading: Reading;
   copy: TapeCopy["readout"];
 }) {
-  const [open, setOpen] = useState(false);
-  const expandable = !DETAIL_REDUNDANT.has(reading.key);
   const tone = TONE[reading.direction];
   const formula = FORMULA[reading.key];
-
-  const row = (
-    <div className={`group flex items-start gap-3 border-l-2 px-3 py-3 ${tone.border}`}>
-      <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
-      <div className="min-w-0 flex-1">
-        <p className="flex flex-wrap items-baseline justify-between gap-x-3">
-          <span className="font-mono text-xs tracking-tight text-muted uppercase">
-            {reading.label}
-          </span>
-          <span className="flex items-baseline gap-2">
-            {/* Hidden until the row is hovered — the formula is a footnote
-                for someone checking the arithmetic, not something every
-                reader needs to see by default. */}
-            {formula ? (
-              <span className="hidden font-mono text-[10px] text-muted/60 group-hover:inline">
-                [{formula}]
-              </span>
-            ) : null}
-            <span className={`font-mono text-sm font-bold ${tone.text}`}>
-              {reading.value}
-            </span>
-          </span>
-        </p>
-      </div>
-      {/* The only visible difference between a row that opens onto more detail
-          and one that doesn't — without it every row looks identical, and a
-          reader has no way to tell which are worth pressing short of trying
-          each one and finding some do nothing. */}
-      {expandable ? (
-        <svg
-          viewBox="0 0 24 24"
-          className={`mt-0.5 size-3.5 shrink-0 transition-transform duration-300 ${tone.text} ${
-            open ? "rotate-180" : ""
-          }`}
-          aria-hidden="true"
-          fill="currentColor"
-        >
-          <path d="M7 10l5 5 5-5z" />
-        </svg>
-      ) : null}
-    </div>
-  );
+  // "3 up / 9 down" is a phrase, not a figure — set at the same size as the
+  // others it would run past the tile's edge.
+  const long = reading.value.length > 8;
 
   return (
-    <li>
-      {expandable ? (
-        <button
-          type="button"
-          onClick={() => setOpen((current) => !current)}
-          aria-expanded={open}
-          className="w-full cursor-pointer text-left transition-colors hover:bg-white/[0.03]"
+    <div className={`group flex flex-col p-4 ${reading.direction === "FLAT" ? "" : tone.bg}`}>
+      <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
+      <span className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
+        {reading.label}
+      </span>
+      <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+        <span
+          className={`font-mono tracking-tight ${long ? "text-base font-bold" : "text-2xl font-black"} ${tone.text}`}
         >
-          {row}
-        </button>
-      ) : (
-        row
-      )}
-
-      {expandable ? (
-        <div
-          className="grid"
-          style={{
-            gridTemplateRows: open ? "1fr" : "0fr",
-            transition: "grid-template-rows 300ms ease-in-out",
-          }}
-        >
-          <div className="overflow-hidden">
-            <p className="px-3 pb-2.5 pl-10 text-[11px] leading-relaxed text-muted">
-              {reading.detail}
-            </p>
-          </div>
-        </div>
-      ) : null}
-    </li>
+          {reading.value}
+        </span>
+        {/* Hidden until the tile is hovered — the formula is a footnote for
+            someone checking the arithmetic, not something every reader
+            needs to see by default. */}
+        {formula ? (
+          <span className="hidden font-mono text-[9px] text-muted/60 group-hover:inline">
+            [{formula}]
+          </span>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -336,11 +273,11 @@ export default function DayTapeReadout({
 
       <RangeBar tape={tape} copy={copy} />
 
-      <ul className="divide-y divide-line border-y border-line">
+      <div className="grid grid-cols-2 divide-x divide-y divide-line border border-line bg-surface-raised/20 md:grid-cols-4">
         {tape.readings.map((reading) => (
-          <ReadingRow key={reading.key} reading={reading} copy={copy} />
+          <ReadingTile key={reading.key} reading={reading} copy={copy} />
         ))}
-      </ul>
+      </div>
 
       {/* A status console, not a paragraph: the same facts as before, laid
           out as bracketed label/value rows in a bordered box so the card
