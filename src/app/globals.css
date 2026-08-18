@@ -115,20 +115,16 @@ body {
    inventing its own gradient/blur combination.
    --------------------------------------------------------------------------- */
 
-/* Violet glow for the cards that specifically mark "this runs on AI / is
-   Pro-only" — referenced by PricingPlans' Pro card and the dashboard's AI
-   Session Brief, but never actually defined, so both had been rendering
-   with none of their intended emphasis. Kept a distinct hue (violet, not
-   gold) so it still reads as its own signal now that gold glows everywhere
-   else on the dashboard. */
+/* Violet border for the cards that specifically mark "this runs on AI / is
+   Pro-only" — referenced by PricingPlans' Pro card. Border-color only, no
+   shadow: the restrained pass removed box-shadow/glow everywhere else on the
+   dashboard, and this signal shouldn't be the one exception. */
 .glow-ai {
   border-color: rgba(167, 139, 250, 0.35);
-  box-shadow: 0 12px 32px -12px rgba(167, 139, 250, 0.35);
 }
 
 .glow-ai:hover {
   border-color: rgba(167, 139, 250, 0.55);
-  box-shadow: 0 12px 32px -6px rgba(167, 139, 250, 0.45);
 }
 
 /* ---------------------------------------------------------------------------

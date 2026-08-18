@@ -298,21 +298,6 @@ export default async function DashboardPage({
     intraday: tapeIntraday.data,
   });
 
-  // Just today's session's closes, for the sparkline beside the price — the
-  // same session the reading tiles already describe in words, drawn as the
-  // shape it actually took rather than only summarised.
-  const sessionCloses = dayTape
-    ? tapeIntraday.data
-        .filter((bar) => {
-          const time =
-            typeof bar.time === "string"
-              ? bar.time.slice(0, 10)
-              : new Date(bar.time * 1000).toISOString().slice(0, 10);
-          return time === dayTape.sessionDate;
-        })
-        .map((bar) => bar.close)
-    : [];
-
   const pairHeadlines = headlinesFor(news.data, tapeInstrument.symbol);
 
   return (
@@ -376,7 +361,6 @@ export default async function DashboardPage({
                 tape={dayTape}
                 fetchedAt={tapeDaily.fetchedAt}
                 stale={tapeDaily.status === "CACHED"}
-                sparkline={sessionCloses}
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted">

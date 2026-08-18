@@ -178,75 +178,6 @@ function ReadingTile({
 }
 
 /**
- * The session's closes, drawn as a line — the shape behind the reading
- * tiles below, not only their summary in words.
- *
- * No axes, no grid, no hover: it sits beside a real price and a real
- * change figure, both already exact, so this only has to answer "what did
- * the path there look like" at a glance. Too few points to draw anything
- * from (a session just opened) is silently nothing rather than a flat
- * line pretending to be data.
- */
-function Sparkline({ closes, tone }: { closes: number[]; tone: { text: string } }) {
-  if (closes.length < 3) return null;
-
-  const w = 96;
-  const h = 32;
-  const min = Math.min(...closes);
-  const max = Math.max(...closes);
-  const range = max - min || 1;
-
-  const points = closes
-    .map((value, index) => {
-      const x = (index / (closes.length - 1)) * w;
-      const y = h - ((value - min) / range) * h;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-
-  return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      className={`ml-auto h-8 w-24 shrink-0 ${tone.text}`}
-      role="img"
-      aria-label={`Session price path, from ${min} to ${max}.`}
-    >
-      <polyline
-        points={points}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/** Where price sits between the day's low and its high. */
-function RangeBar({ tape, copy }: { tape: DayTape; copy: TapeCopy["readout"] }) {
-  if (tape.rangePosition === null) return null;
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between font-mono text-[11px] tabular-nums text-muted">
-        <span>{tape.dayLow}</span>
-        <span className="font-medium text-foreground">
-          {tape.rangePosition}% {copy.ofRange}
-        </span>
-        <span>{tape.dayHigh}</span>
-      </div>
-      <div className="relative h-1.5 rounded-full bg-surface-raised">
-        <div
-          className="absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent"
-          style={{ left: `${tape.rangePosition}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-/**
  * What the readings add up to, said accurately.
  *
  * "All" means all of them. The first version said "All 5 readings point up"
@@ -281,7 +212,6 @@ export default function DayTapeReadout({
   tape,
   fetchedAt,
   stale,
-  sparkline,
   locale = "en",
 }: {
   tape: DayTape;
@@ -289,8 +219,6 @@ export default function DayTapeReadout({
   fetchedAt: string | null;
   /** True when the provider failed and this is the last stored series. */
   stale?: boolean;
-  /** Today's session closes, oldest first. Omitted or too short draws nothing. */
-  sparkline?: number[];
   /**
    * Defaulted to English, because the dashboard is English and always will be.
    * Only the public Lithuanian page passes anything else.
@@ -361,8 +289,6 @@ export default function DayTapeReadout({
               {tape.changePercent}%)
             </span>
           </span>
-
-          <Sparkline closes={sparkline ?? []} tone={tone} />
         </div>
 
         {/* The direction word is coloured, so the sentence is built from the
@@ -384,8 +310,6 @@ export default function DayTapeReadout({
           })()}
         </p>
       </div>
-
-      <RangeBar tape={tape} copy={copy} />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {tape.readings.map((reading) => (

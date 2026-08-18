@@ -119,7 +119,7 @@ export default function PricingPlans({
           <div
             role="tablist"
             aria-label="Billing cycle"
-            className="inline-flex rounded-full border border-line bg-surface-raised p-1"
+            className="inline-flex rounded-lg border border-line bg-surface-raised p-1"
           >
             {(["month", "year"] as const).map((option) => (
               <button
@@ -128,16 +128,16 @@ export default function PricingPlans({
                 role="tab"
                 aria-selected={cycle === option}
                 onClick={() => setCycle(option)}
-                className={`relative flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
                   cycle === option
-                    ? "bg-accent text-white shadow-sm"
+                    ? "bg-accent text-white"
                     : "text-muted hover:text-foreground"
                 }`}
               >
                 {option === "month" ? "Monthly" : "Yearly"}
                 {option === "year" && savingsPercent ? (
                   <span
-                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                    className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                       cycle === "year"
                         ? "bg-white/20 text-white"
                         : "bg-positive/15 text-positive"
