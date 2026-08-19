@@ -23,5 +23,9 @@ export default function GoogleAnalytics() {
 
   if (!GA_ID) return null;
 
-  return <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />;
+  // Served from this origin (see next.config.ts's rewrite), not directly
+  // from googletagmanager.com — most ad-blockers match by domain, and a
+  // same-origin script survives blocklists a direct third-party request
+  // never would.
+  return <Script src={`/ga4/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />;
 }

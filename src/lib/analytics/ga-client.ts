@@ -37,7 +37,13 @@ export function gtagInit(): void {
   if (typeof window === "undefined" || !GA_ID) return;
   const gtag = ensureGtag();
   gtag("js", new Date());
-  gtag("config", GA_ID);
+  // transport_url routes hits through this origin's /ga4/g/collect rewrite
+  // (next.config.ts) instead of google-analytics.com directly — the same
+  // domain-based ad-blockers that were silently eating every hit (confirmed
+  // 2026-08-19: GA showed zero for 48h of real traffic the site's own
+  // counter logged) can't match a same-origin request the way they match a
+  // known tracker domain.
+  gtag("config", GA_ID, { transport_url: window.location.origin + "/ga4" });
 }
 
 /** Fires a GA4 event. A no-op wherever no GA4 property is configured. */

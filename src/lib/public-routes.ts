@@ -77,6 +77,13 @@ export const PUBLIC_ROUTES = [
   // A MetaTrader terminal has no browser and no session. That route
   // authenticates with the user's own connection token.
   "/api/mt5/sync",
+  // The GA4 first-party proxy (next.config.ts rewrites to googletagmanager.com
+  // / google-analytics.com) — an anonymous visitor reading the marketing
+  // pages has no session, same as /api/track-visit above. Confirmed
+  // 2026-08-19: without this, Clerk's middleware 404s the rewrite before it
+  // ever reaches next.config.ts, so GA collected literally nothing.
+  "/ga4/gtag/js",
+  "/ga4/g/collect",
 ] as const;
 
 /**

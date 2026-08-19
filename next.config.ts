@@ -38,6 +38,22 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
+
+  // First-party proxy for GA4, same reasoning as Sentry's tunnelRoute below:
+  // most ad-blockers match by domain (googletagmanager.com,
+  // google-analytics.com), not by path, so serving the library and sending
+  // hits from this site's own origin survives blocklists that a direct
+  // third-party request never would. Confirmed necessary 2026-08-19 — GA's
+  // own Data Streams admin showed "No data received in past 48 hours" while
+  // the site's self-hosted visit counter logged 78 real visitors in the same
+  // window; gtag.js loaded and queued a config command correctly, so the
+  // client code was never the bug, only the direct third-party request was.
+  async rewrites() {
+    return [
+      { source: "/ga4/gtag/js", destination: "https://www.googletagmanager.com/gtag/js" },
+      { source: "/ga4/g/collect", destination: "https://www.google-analytics.com/g/collect" },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {
