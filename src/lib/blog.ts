@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "mt5-vs-manual-spreadsheet-journal",
+    title: "MT5 vs Manual Spreadsheet Journal: Where the Numbers Diverge",
+    description:
+      "MT5's own history and a hand-kept spreadsheet rarely agree by the time both are totalled. Where the two numbers actually split, and which one is usually right.",
+    date: "2026-08-19",
+  },
+  {
     slug: "reading-an-equity-curve",
     title: "Reading an Equity Curve: What a Smooth Line Actually Hides",
     description:
