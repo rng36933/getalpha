@@ -503,7 +503,6 @@ export default function TradeList({
             />
             <th className="py-2 pr-3 text-left font-normal">Instrument</th>
             <th className="py-2 pr-3 text-left font-normal">Side</th>
-            <th className="py-2 pr-3 text-left font-normal">Setup</th>
             <SortableHeader
               label="Risk"
               align="right"
@@ -562,7 +561,6 @@ export default function TradeList({
                       {trade.direction === "BUY" ? "Buy" : "Sell"}
                     </span>
                   </td>
-                  <td className="py-3 pr-3 text-muted">{trade.setup ?? "—"}</td>
                   <td className="py-3 pr-3 text-right font-mono text-xs">
                     {trade.metrics.riskPercent === null ? (
                       // Not a missing value to shrug at: no stop means no

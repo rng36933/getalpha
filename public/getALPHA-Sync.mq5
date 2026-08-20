@@ -387,17 +387,43 @@ void CollectClosedTrades(string &trades[], int &count,
       if(contractSize <= 0)
          contractSize = 1;
 
-      // The stop and target requested on the order that opened the position.
-      // A stop added or moved afterwards by modifying the open position
-      // directly (rather than through a new order) will not show here — MT5
-      // does not keep that as a separate history order on every broker — but
-      // this is the stop the trader set at entry, which is what "no stop"
-      // should actually mean.
+      // Start from the stop/target requested on the order that opened the
+      // position, plus its comment (a modify-position request carries none).
       if(HistoryOrderSelect(entryOrder))
         {
          stop    = HistoryOrderGetDouble(entryOrder, ORDER_SL);
          target  = HistoryOrderGetDouble(entryOrder, ORDER_TP);
          comment = HistoryOrderGetString(entryOrder, ORDER_COMMENT);
+        }
+
+      // A stop added or moved AFTER opening (e.g. Quick Buy/Quick Sell with
+      // no SL, then a manual stop set on the open position) does not touch
+      // the entry order above — but modifying a position's SL/TP does create
+      // its own history order, tied to the position via ORDER_POSITION_ID
+      // rather than through a deal. Walk those and keep the latest non-zero
+      // SL/TP found before the close — that reflects what was actually
+      // protecting the trade, not just what was requested at entry.
+      datetime latestModify = 0;
+      int totalOrders = HistoryOrdersTotal();
+      for(int k = 0; k < totalOrders; k++)
+        {
+         ulong modOrder = HistoryOrderGetTicket(k);
+         if(modOrder == 0 || modOrder == entryOrder)
+            continue;
+         if((long)HistoryOrderGetInteger(modOrder, ORDER_POSITION_ID) != positionId)
+            continue;
+         datetime setupAt = (datetime)HistoryOrderGetInteger(modOrder, ORDER_TIME_SETUP);
+         if(setupAt < openedAt || setupAt > closedAt || setupAt < latestModify)
+            continue;
+         double modSl = HistoryOrderGetDouble(modOrder, ORDER_SL);
+         double modTp = HistoryOrderGetDouble(modOrder, ORDER_TP);
+         if(modSl <= 0 && modTp <= 0)
+            continue;
+         latestModify = setupAt;
+         if(modSl > 0)
+            stop = modSl;
+         if(modTp > 0)
+            target = modTp;
         }
 
       ArrayResize(trades, count + 1);
