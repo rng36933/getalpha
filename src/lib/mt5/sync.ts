@@ -133,6 +133,15 @@ export async function applySync(
       setup: setupTag(incoming.setup),
     };
 
+    // A stop/target the terminal already reported once (while the position
+    // was still open, read live off POSITION_SL/POSITION_TP) must survive the
+    // trade closing even if the closing payload's own reconstruction comes
+    // back empty — some brokers don't keep an SL/TP modify as a queryable
+    // history order, so a stop added after opening looks unset from deal
+    // history alone. Omitting the field from the update (rather than writing
+    // null over it) is what leaves the previously-synced value in place.
+    const { stopLoss, takeProfit, ...sharedRest } = shared;
+
     try {
       // Matched on the position ticket. An open position and the closed trade
       // it becomes are the same row, so closing updates rather than inserting.
@@ -144,12 +153,18 @@ export async function applySync(
           userId,
           externalId: incoming.ticket,
           createdAt: openedAt,
-          ...shared,
+          ...sharedRest,
+          stopLoss,
+          takeProfit,
         },
         // `createdAt` is absent from the update on purpose: it is when the
         // position opened, and a terminal resending it must not move a trade's
         // place in the journal.
-        update: shared,
+        update: {
+          ...sharedRest,
+          ...(stopLoss !== null ? { stopLoss } : {}),
+          ...(takeProfit !== null ? { takeProfit } : {}),
+        },
         select: { id: true },
       });
 
