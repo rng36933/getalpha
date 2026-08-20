@@ -15,6 +15,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-08-20",
+    title: "Fixed \"no stop\" for trades where the stop was set after opening",
+    body: "If you open with Quick Buy/Quick Sell and add the stop-loss afterward by editing the open position, the journal was reading the position's original order — which never had one — instead of the stop you actually set. It now follows the position's own history and picks up a stop or target added or moved at any point before the trade closed, which also fixes Planned RR and the Exit column showing blank for these trades. Re-download the add-on from Settings and reattach it; trades that already closed keep their old reading until resynced.",
+  },
+  {
+    date: "2026-08-20",
+    title: "Removed the empty Setup column from the Journal",
+    body: "It only ever showed something if a bot tagged the trade on entry — for manually opened trades it was always blank, so it's gone.",
+  },
+  {
     date: "2026-08-13",
     title: "News Alerts: a heads-up before each high-impact USD release",
     body: "A separate opt-in from the morning brief, in Settings. About 30 minutes before each high or medium-impact USD release, an email names what's due and how XAUUSD tends to react around it — never what to do about it.",
