@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "trading-the-plan-measured",
+    title: "What \"Trading the Plan\" Actually Means, Measured",
+    description:
+      "\"I traded the plan\" is a self-report, made after the outcome is already known. What the phrase actually breaks down into, and how to check it against the record instead of the memory.",
+    date: "2026-08-20",
+  },
+  {
     slug: "mt5-vs-manual-spreadsheet-journal",
     title: "MT5 vs Manual Spreadsheet Journal: Where the Numbers Diverge",
     description:
