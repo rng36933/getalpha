@@ -32,7 +32,12 @@ const EXIT_LABEL: Record<TradeMetrics["exitClassification"], string> = {
   BEYOND_TARGET: "Past target",
   BEYOND_STOP: "Past stop",
   STILL_OPEN: "Open",
-  UNKNOWN: "—",
+  // No stop and no target were ever recorded for this trade — most often
+  // because it closed within the same sync window it was opened and
+  // modified in, before the terminal had a chance to report the stop it
+  // was given (see MT5 sync.ts). A closed trade with neither price never
+  // hit anything automatically, so this is the honest guess, not "—".
+  UNKNOWN: "Possible manual exit",
 };
 
 function formatResult(value: number | null, currency: string | null): string {
