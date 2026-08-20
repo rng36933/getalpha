@@ -207,18 +207,30 @@ export default function DayTapeReadout({
           {tape.barelyTraded ? copy.marketClosed : copy.tradingNow}
         </p>
 
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
+        <div className="relative flex flex-wrap items-end gap-x-4 gap-y-1">
+          {/* Fills the dead space beside a short price with something that
+              still reads as "live," not as a chart or a level — a plain
+              blurred glow, breathing in time with the price's own text
+              glow. Absolutely positioned and non-interactive so it never
+              competes with the number or wraps the layout around it. */}
+          {tape.barelyTraded ? null : (
+            <div
+              aria-hidden="true"
+              className="price-ambient-glow pointer-events-none absolute -inset-y-6 left-0 z-0 w-full max-w-md sm:max-w-lg"
+            />
+          )}
+
           <LivePrice
             symbol={tape.symbol}
             timeframe="M15"
             initialPrice={tape.lastPrice}
-            className={`figure text-[2.75rem] sm:text-[3.5rem] ${
+            className={`figure relative z-10 text-[2.75rem] sm:text-[3.5rem] ${
               tape.barelyTraded ? "glow-text" : "glow-text-live"
             }`}
           />
 
           <span
-            className={`mb-1.5 inline-flex items-baseline gap-1 text-sm font-medium tabular-nums ${tone.text}`}
+            className={`relative z-10 mb-1.5 inline-flex items-baseline gap-1 text-sm font-medium tabular-nums ${tone.text}`}
           >
             <span className="sr-only">{directionLabel(tape.direction, copy)}</span>
             {tape.changeAbsolute > 0 ? "+" : ""}
