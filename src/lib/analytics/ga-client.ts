@@ -36,6 +36,20 @@ function ensureGtag(): (...args: unknown[]) => void {
 export function gtagInit(): void {
   if (typeof window === "undefined" || !GA_ID) return;
   const gtag = ensureGtag();
+  // Google's Consent Mode treats EEA traffic (Lithuania included) as
+  // consent-required by default: without an explicit "default" signal,
+  // gtag.js silently drops the /g/collect beacon instead of sending it —
+  // confirmed 2026-08-20 as the real cause of GA4 showing zero data for
+  // days despite the transport_url proxy working correctly end to end.
+  // No ads run on this product, so ad_storage/ad_user_data/ad_personalization
+  // stay denied; analytics_storage is granted by default (no cookie banner
+  // exists yet — an explicit product decision, not an oversight).
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    analytics_storage: "granted",
+  });
   gtag("js", new Date());
   // transport_url routes hits through this origin's /ga4/g/collect rewrite
   // (next.config.ts) instead of google-analytics.com directly — the same
