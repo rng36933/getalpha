@@ -53,7 +53,7 @@ export default function Card({
       </header>
 
       {children ? (
-        <div className="mt-4">{children}</div>
+        <div className="mt-4 flex flex-1 flex-col">{children}</div>
       ) : (
         <div
           className={`mt-4 grid ${height} place-items-center rounded-xl border border-dashed border-line text-xs text-muted`}

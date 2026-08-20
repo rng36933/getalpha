@@ -54,33 +54,39 @@ export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
   }
 
   return (
-    <ul className="divide-y divide-line">
-      {positions.map((position) => (
-        <li key={position.id} className="flex items-center gap-3 py-2.5">
-          <AssetBadge label={position.asset} />
+    // A tall card with only one or two open positions used to leave the rest
+    // of its height as dead space below the list — centering here means a
+    // short list reads as complete, not as a bug that forgot to fill in the
+    // rest.
+    <div className="flex flex-1 flex-col justify-center">
+      <ul className="divide-y divide-line">
+        {positions.map((position) => (
+          <li key={position.id} className="flex items-center gap-3 py-2.5">
+            <AssetBadge label={position.asset} />
 
-          <span
-            className={`w-10 shrink-0 font-mono text-[11px] ${
-              position.direction === "BUY" ? "text-positive" : "text-negative"
-            }`}
-          >
-            {position.direction === "BUY" ? "BUY" : "SELL"}
-          </span>
+            <span
+              className={`w-10 shrink-0 font-mono text-[11px] ${
+                position.direction === "BUY" ? "text-positive" : "text-negative"
+              }`}
+            >
+              {position.direction === "BUY" ? "BUY" : "SELL"}
+            </span>
 
-          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-            {position.asset}
-          </span>
+            <span className="min-w-0 flex-1 truncate text-sm font-medium">
+              {position.asset}
+            </span>
 
-          <span className="shrink-0 font-mono text-xs tabular-nums text-muted">
-            {position.riskPercent === null ? (
-              <span className="text-warning">no stop</span>
-            ) : (
-              `${position.riskPercent.toFixed(2)}% risk`
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
+            <span className="shrink-0 font-mono text-xs tabular-nums text-muted">
+              {position.riskPercent === null ? (
+                <span className="text-warning">no stop</span>
+              ) : (
+                `${position.riskPercent.toFixed(2)}% risk`
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -103,29 +109,31 @@ export function RiskExposure({
   }
 
   return (
-    <ul className="space-y-3">
-      {exposure.map((row) => (
-        <li key={row.asset}>
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-sm font-medium">{row.asset}</span>
-            <span className="font-mono text-xs tabular-nums text-muted">
-              {formatMoney(row.riskAmount, currency)}
-            </span>
-          </div>
+    <div className="flex flex-1 flex-col justify-center">
+      <ul className="space-y-3">
+        {exposure.map((row) => (
+          <li key={row.asset}>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-sm font-medium">{row.asset}</span>
+              <span className="font-mono text-xs tabular-nums text-muted">
+                {formatMoney(row.riskAmount, currency)}
+              </span>
+            </div>
 
-          <div
-            className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-raised"
-            role="img"
-            aria-label={`${row.share}% of open risk`}
-          >
             <div
-              className="h-full rounded-full bg-accent"
-              style={{ width: `${row.share}%` }}
-            />
-          </div>
-        </li>
-      ))}
-    </ul>
+              className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-raised"
+              role="img"
+              aria-label={`${row.share}% of open risk`}
+            >
+              <div
+                className="h-full rounded-full bg-accent"
+                style={{ width: `${row.share}%` }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
