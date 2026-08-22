@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "cost-of-revenge-trading",
+    title: "The Cost of Revenge Trading, In Real Numbers",
+    description:
+      "Revenge trading doesn't feel like a decision — it feels like getting even. What it actually costs, measured from the trades that follow a loss instead of from the feeling.",
+    date: "2026-08-22",
+  },
+  {
     slug: "trading-the-plan-measured",
     title: "What \"Trading the Plan\" Actually Means, Measured",
     description:

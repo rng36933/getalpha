@@ -28,9 +28,10 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] The Cost of Revenge Trading, In Real Numbers
+(empty — ask Almintas for more topics)
 
 **Published:**
+- [x] The Cost of Revenge Trading, In Real Numbers (2026-08-22)
 - [x] What "Trading the Plan" Actually Means, Measured (2026-08-20)
 - [x] MT5 vs Manual Spreadsheet Journal: Where the Numbers Diverge (2026-08-19)
 - [x] Reading an Equity Curve: What a Smooth Line Actually Hides (2026-08-18)
