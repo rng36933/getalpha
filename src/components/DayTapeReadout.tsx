@@ -270,7 +270,7 @@ export default function DayTapeReadout({
 
       {/* The same facts as before, laid out as a band of labelled columns
           plus a couple of footnotes, in one rounded glass panel. */}
-      <div className="rounded-2xl border border-line bg-surface-raised/40 p-5 transition-colors hover:border-[#383d4d]">
+      <div className="rounded-2xl border border-line bg-surface-raised/40 p-5 transition-colors hover:border-accent/60 hover:shadow-[0_0_16px_-4px_var(--accent)]">
         <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
             <dt>
