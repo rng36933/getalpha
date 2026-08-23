@@ -208,40 +208,37 @@ function Stat({
 /**
  * A win rate given a shape as well as a number.
  *
- * A bar rather than a ring or a gauge: the quantity is a proportion of one whole
- * thing, and a straight line is the one form where "a bit over half" is legible
- * without reading the figure. The 50% mark is drawn because that is the number
- * this one gets compared against, and a rate with no reference is a number
- * floating on its own.
+ * A row of discrete LED-style segments rather than a smooth bar — it reads
+ * like a terminal meter (matches the `// WIN RATE` label styling) and each
+ * segment is a legible 5-point chunk instead of a fill that has to be
+ * measured by eye. The center gap marks 50%, the number this gets compared
+ * against.
  */
 function WinRateMeter({ percent }: { percent: number }) {
   const clamped = Math.min(Math.max(percent, 0), 100);
-
+  const SEGMENTS = 20;
+  const lit = Math.round((clamped / 100) * SEGMENTS);
   const tone = percent >= 50 ? "var(--positive)" : "var(--negative)";
 
   return (
     <div className="mt-3">
-      <div className="relative h-2.5 overflow-hidden rounded-full bg-surface-raised">
-        <span
-          className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500"
-          style={{
-            width: `${clamped}%`,
-            background: `linear-gradient(90deg, ${tone}55, ${tone})`,
-            boxShadow: `0 0 10px ${tone}80`,
-          }}
-        />
-        <span className="absolute inset-y-0 left-1/2 w-px bg-line/70" />
-      </div>
-      {/* The figure above is the primary readout; this tick ties it to the
-          exact point on the bar it describes, rather than leaving the two
-          to be matched up by eye. */}
-      <div className="relative mt-1 h-3">
-        <span
-          className="absolute -translate-x-1/2 font-mono text-[10px] tabular-nums text-muted"
-          style={{ left: `${clamped}%` }}
-        >
-          {percent}%
-        </span>
+      <div className="flex gap-[3px]">
+        {Array.from({ length: SEGMENTS }, (_, i) => {
+          const isLit = i < lit;
+          const isMidline = i === SEGMENTS / 2 - 1;
+          return (
+            <span
+              key={i}
+              className={`h-3 w-1 rounded-[1px] transition-colors duration-300 ${
+                isMidline ? "mr-[3px]" : ""
+              }`}
+              style={{
+                backgroundColor: isLit ? tone : "var(--line)",
+                boxShadow: isLit ? `0 0 5px ${tone}` : "none",
+              }}
+            />
+          );
+        })}
       </div>
       <p className="mt-2.5 text-[11px] text-muted">
         {percent >= 50 ? "past" : "short of"} a coin flip
@@ -251,33 +248,43 @@ function WinRateMeter({ percent }: { percent: number }) {
 }
 
 /**
- * Gross win R against gross loss R, drawn as the two sides of the same bar.
- *
- * The profit factor is a ratio, and a ratio is the one thing a single bar cannot
- * show. Two segments of one bar can: how much of the total R moved was won and
- * how much was lost.
+ * Gross win R against gross loss R, drawn as two rows of LED segments rather
+ * than a split bar. Every trader's R-multiples aren't identical chunks, but
+ * discretizing the ratio into a fixed set of lit blocks per side makes "how
+ * much came back per unit risked" scannable as a shape, matching the win-rate
+ * meter's terminal-readout language instead of a plain proportion fill.
  */
 function ProfitFactorBar({ factor }: { factor: number }) {
   // factor = win / loss, so the won share of the whole is factor / (factor + 1).
   const wonShare = (factor / (factor + 1)) * 100;
+  const SEGMENTS = 20;
+  const wonLit = Math.round((wonShare / 100) * SEGMENTS);
+  const lostLit = SEGMENTS - wonLit;
 
   return (
     <div className="mt-2">
-      <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full">
-        <span
-          className="rounded-l-full"
-          style={{
-            width: `${wonShare}%`,
-            background: "linear-gradient(90deg, var(--positive)55, var(--positive))",
-            boxShadow: "0 0 10px var(--positive)80",
-          }}
-        />
-        <span
-          className="flex-1 rounded-r-full"
-          style={{
-            background: "linear-gradient(90deg, var(--negative), var(--negative)55)",
-          }}
-        />
+      <div className="flex gap-[3px]">
+        {Array.from({ length: wonLit }, (_, i) => (
+          <span
+            key={`won-${i}`}
+            className="h-3 w-1 rounded-[1px]"
+            style={{
+              backgroundColor: "var(--positive)",
+              boxShadow: "0 0 5px var(--positive)",
+            }}
+          />
+        ))}
+        {wonLit > 0 && lostLit > 0 ? <span className="mx-[2px] w-px bg-line" /> : null}
+        {Array.from({ length: lostLit }, (_, i) => (
+          <span
+            key={`lost-${i}`}
+            className="h-3 w-1 rounded-[1px]"
+            style={{
+              backgroundColor: "var(--negative)",
+              boxShadow: "0 0 5px var(--negative)",
+            }}
+          />
+        ))}
       </div>
       <p className="mt-1 text-[11px] text-muted">
         {factor >= 1
