@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "position-sizing-isnt-one-number",
+    title: "Position Sizing Isn't One Number: Why the Same 1% Risk Produces Different Trades",
+    description:
+      "\"Risk 1% per trade\" sounds like a single rule. In practice it produces a different position size, exposure and volatility profile every time, depending on where the stop sits.",
+    date: "2026-08-23",
+  },
+  {
     slug: "cost-of-revenge-trading",
     title: "The Cost of Revenge Trading, In Real Numbers",
     description:

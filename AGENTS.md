@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Position Sizing Isn't One Number: Why the Same 1% Risk Produces Different Trades
 - [ ] Drawdown Recovery Math: Why a 50% Loss Needs a 100% Gain to Break Even
 - [ ] The Difference Between a Losing Streak and a Broken Strategy
 - [ ] Correlation Risk: When "Diversified" Trades Are Actually the Same Bet Twice
@@ -60,6 +59,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Position Sizing Isn't One Number: Why the Same 1% Risk Produces Different Trades (2026-08-23)
 - [x] The Cost of Revenge Trading, In Real Numbers (2026-08-22)
 - [x] What "Trading the Plan" Actually Means, Measured (2026-08-20)
 - [x] MT5 vs Manual Spreadsheet Journal: Where the Numbers Diverge (2026-08-19)
