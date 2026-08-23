@@ -108,7 +108,7 @@ export default async function MacroDeskPage() {
         </div>
       </div>
 
-      <Card title="Positioning" className="mt-4">
+      <Card title="Positioning" className="mt-4" fill={false}>
         <CotList rows={cotRows} />
       </Card>
     </>

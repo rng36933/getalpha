@@ -16,6 +16,15 @@ type CardProps = {
   enter?: number;
   /** Real content. When present it replaces the placeholder and the "Soon" badge. */
   children?: React.ReactNode;
+  /**
+   * Whether the card stretches to fill its container's height. Defaults to
+   * true, which is what makes a row of grid siblings line up evenly. A card
+   * used on its own — not sharing a grid row with anything — has nothing to
+   * match, so stretching it just pads the content out with dead space down
+   * to whatever height the page happens to be; pass `fill={false}` there so
+   * the card sizes to its own content instead.
+   */
+  fill?: boolean;
 };
 
 export default function Card({
@@ -25,6 +34,7 @@ export default function Card({
   height = "h-44",
   enter = 0,
   children,
+  fill = true,
 }: CardProps) {
   return (
     // Less inner padding on a phone: 20px of card padding inside 16px of page
@@ -39,7 +49,7 @@ export default function Card({
       // its cells to the tallest one by default, but nothing inside a cell
       // fills that height on its own, so a short card and a tall card side
       // by side kept their own content heights and left uneven bottoms.
-      className={`surface-lit card-enter relative isolate flex h-full flex-col rounded-2xl border border-line bg-surface p-4 sm:p-5 ${className}`}
+      className={`surface-lit card-enter relative isolate flex ${fill ? "h-full" : ""} flex-col rounded-2xl border border-line bg-surface p-4 sm:p-5 ${className}`}
     >
       <header className="flex items-center justify-between gap-3">
         <h2 className="text-[0.9375rem] font-semibold tracking-tight">
