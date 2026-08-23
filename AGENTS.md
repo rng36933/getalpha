@@ -28,7 +28,36 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-(empty — ask Almintas for more topics)
+- [ ] Position Sizing Isn't One Number: Why the Same 1% Risk Produces Different Trades
+- [ ] Drawdown Recovery Math: Why a 50% Loss Needs a 100% Gain to Break Even
+- [ ] The Difference Between a Losing Streak and a Broken Strategy
+- [ ] Correlation Risk: When "Diversified" Trades Are Actually the Same Bet Twice
+- [ ] What Your Average Trade Duration Actually Reveals About Your Strategy
+- [ ] Backtesting Lies: Why Paper Performance Rarely Survives Live Execution
+- [ ] The Cost of Widening a Stop Loss "Just This Once"
+- [ ] Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours
+- [ ] Leverage Isn't the Risk — How You Use It Is
+- [ ] The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too
+- [ ] Grading a Trade by Process, Not Outcome: A Practical Scorecard
+- [ ] Why Two Traders With the Same Win Rate Can Have Opposite Results
+- [ ] The Real Cost of Overtrading, Measured in Fees and Slippage
+- [ ] Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves
+- [ ] FOMO Entries: What They Look Like in the Data, Not Just the Feeling
+- [ ] Why "I'll Journal It Later" Never Works
+- [ ] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't
+- [ ] How Spread and Commission Quietly Erase a "Winning" Strategy
+- [ ] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two
+- [ ] What a Maximum Daily Loss Limit Actually Protects You From
+- [ ] Confidence vs. Overconfidence, Measured in Position Size
+- [ ] Why Your Best Month Might Be Your Most Dangerous One
+- [ ] Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?
+- [ ] The Setup That Worked Once: How Traders Mistake Luck for an Edge
+- [ ] Journaling Emotions Without Turning Your Journal Into a Diary
+- [ ] Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck
+- [ ] The Weekend Gap Problem: What Holding Positions Overnight Actually Costs
+- [ ] How Many Strategies Should You Actually Be Running at Once?
+- [ ] Stop Loss vs. Mental Stop: Why Only One of Them Actually Works
+- [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
 - [x] The Cost of Revenge Trading, In Real Numbers (2026-08-22)
