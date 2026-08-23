@@ -148,8 +148,8 @@ export default function SessionBriefPanel({
       <div className="mt-4">
         {state.status === "idle" ? (
           <p className="text-sm text-muted">
-            Pick a session. Readers watching the same instruments share one
-            brief, so asking twice costs nothing.
+            Pick a session — London, New York, or Asia — for a written read
+            on your watchlist before you trade it.
           </p>
         ) : null}
 
@@ -166,8 +166,8 @@ export default function SessionBriefPanel({
                 {coverage.truncated
                   ? `One brief reports on at most ${coverage.instruments.length} instruments; reorder the watchlist to change which. `
                   : ""}
-                Readers watching the same instruments share one brief per
-                session, which is what keeps it affordable.
+                Everyone tracking these instruments this session reads the
+                same brief — that&apos;s the shared cost behind the price.
               </>
             ) : (
               <>

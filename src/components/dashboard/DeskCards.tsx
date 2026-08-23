@@ -217,16 +217,20 @@ function Stat({
 function WinRateMeter({ percent }: { percent: number }) {
   const clamped = Math.min(Math.max(percent, 0), 100);
 
+  const tone = percent >= 50 ? "var(--positive)" : "var(--negative)";
+
   return (
     <div className="mt-3">
-      <div className="relative h-3 overflow-hidden bg-surface-raised">
+      <div className="relative h-2.5 overflow-hidden rounded-full bg-surface-raised">
         <span
-          className={`absolute inset-y-0 left-0 ${
-            percent >= 50 ? "bg-positive/80" : "bg-negative/80"
-          }`}
-          style={{ width: `${clamped}%` }}
+          className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500"
+          style={{
+            width: `${clamped}%`,
+            background: `linear-gradient(90deg, ${tone}55, ${tone})`,
+            boxShadow: `0 0 10px ${tone}80`,
+          }}
         />
-        <span className="absolute inset-y-0 left-1/2 w-px bg-line" />
+        <span className="absolute inset-y-0 left-1/2 w-px bg-line/70" />
       </div>
       {/* The figure above is the primary readout; this tick ties it to the
           exact point on the bar it describes, rather than leaving the two
@@ -240,7 +244,7 @@ function WinRateMeter({ percent }: { percent: number }) {
         </span>
       </div>
       <p className="mt-2.5 text-[11px] text-muted">
-        {percent >= 50 ? "above" : "below"} an even split
+        {percent >= 50 ? "past" : "short of"} a coin flip
       </p>
     </div>
   );
@@ -259,17 +263,26 @@ function ProfitFactorBar({ factor }: { factor: number }) {
 
   return (
     <div className="mt-2">
-      <div className="flex h-3 gap-0.5 overflow-hidden">
+      <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full">
         <span
-          className="bg-positive/80"
-          style={{ width: `${wonShare}%` }}
+          className="rounded-l-full"
+          style={{
+            width: `${wonShare}%`,
+            background: "linear-gradient(90deg, var(--positive)55, var(--positive))",
+            boxShadow: "0 0 10px var(--positive)80",
+          }}
         />
-        <span className="flex-1 bg-negative/80" />
+        <span
+          className="flex-1 rounded-r-full"
+          style={{
+            background: "linear-gradient(90deg, var(--negative), var(--negative)55)",
+          }}
+        />
       </div>
       <p className="mt-1 text-[11px] text-muted">
         {factor >= 1
-          ? `${factor.toFixed(2)}R won per 1R lost`
-          : `only ${factor.toFixed(2)}R won per 1R lost`}
+          ? `${factor.toFixed(2)}R back for every 1R at risk`
+          : `only ${factor.toFixed(2)}R back for every 1R at risk`}
       </p>
     </div>
   );
