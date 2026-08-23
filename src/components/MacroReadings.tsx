@@ -13,43 +13,6 @@ import { GOLD_RELATIONSHIP } from "@/lib/market-data/gold-relationship";
  * of the card. Daily yields and monthly CPI sit side by side, and a reader
  * needs to see that one is from yesterday and the other from three weeks ago.
  */
-/**
- * Where a print sits in its own twelve-month range, as a bar.
- *
- * A thin fill bar rather than a ring: the same one-glance reading, in the
- * terminal-flat vocabulary the rest of the desk uses instead of a circular
- * gauge.
- */
-function RangeDial({ reading }: { reading: MacroReading }) {
-  if (reading.rangePercent === null) return null;
-
-  const label = `${reading.rangePercent}% of its 12-month range, between ${reading.rangeLow} and ${reading.rangeHigh}`;
-
-  return (
-    <span className="group relative flex w-16 shrink-0 flex-col items-end gap-1">
-      <span className="figure font-mono text-[11px] text-muted">
-        {reading.rangePercent}%
-      </span>
-      <span role="img" aria-label={label} className="h-1 w-full bg-line">
-        <span
-          className="block h-full bg-accent"
-          style={{ width: `${reading.rangePercent}%` }}
-        />
-      </span>
-
-      {/* Out of flow and opacity-revealed, same as the session card's
-          formula tooltip — a bar that grew on hover would push its own
-          neighbours in the row. */}
-      <span
-        role="tooltip"
-        className="pointer-events-none absolute right-0 bottom-full z-10 mb-2 w-max max-w-40 rounded-md border border-line bg-surface-raised px-2 py-1.5 text-[11px] leading-snug whitespace-normal text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-      >
-        {reading.rangeLow} — {reading.rangeHigh} over the last 12 months
-      </span>
-    </span>
-  );
-}
-
 export function ReadingList({ readings }: { readings: MacroReading[] }) {
   if (readings.length === 0) {
     // One quiet line, not a tall centred box. When the provider is down all
@@ -94,8 +57,6 @@ export function ReadingList({ readings }: { readings: MacroReading[] }) {
                   </span>
                 ) : null}
               </span>
-
-              <RangeDial reading={reading} />
             </div>
 
             {/* A fixed statement of mechanism, not a live prediction — see

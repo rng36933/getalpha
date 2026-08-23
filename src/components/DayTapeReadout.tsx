@@ -243,22 +243,22 @@ export default function DayTapeReadout({
             </span>
           </span>
 
-          {/* On a closed market there is no live price to echo, so instead of
-              the live glow that hugs the number, this takes the remaining
-              width beside it — a proper flex sibling with the row's own gap
-              keeping it off the digits, not an overlay guessing at where
-              they end. Muted, dashed, and slow rather than gold and solid,
-              so it reads as "the tape is quiet" and never as an actual
-              chart or price level. */}
+          {/* Fills the empty width to the right of a closed market's price,
+              where the live glow would otherwise be. Sits on the row's
+              bottom edge alongside the change figure rather than centering
+              against the price's full cap height — centered, it rode up
+              over the digits and read as crossing them out. Muted and
+              dashed rather than gold and solid, so it says "the tape is
+              quiet" without looking like a chart or a level. */}
           {tape.barelyTraded ? (
             <svg
               aria-hidden="true"
-              viewBox="0 0 200 20"
+              viewBox="0 0 200 12"
               preserveAspectRatio="none"
-              className="closed-market-flatline pointer-events-none order-last hidden h-5 min-w-[140px] flex-1 self-center sm:block"
+              className="closed-market-flatline pointer-events-none mb-2 hidden h-3 min-w-[120px] flex-1 sm:block"
             >
               <path
-                d="M0,10 L30,10 L42.5,8.3 L55,11.7 L72.5,10 L97.5,10 L110,8.3 L122.5,11.7 L140,10 L200,10"
+                d="M0,6 L30,6 L42.5,4.3 L55,7.7 L72.5,6 L97.5,6 L110,4.3 L122.5,7.7 L140,6 L200,6"
                 fill="none"
                 stroke="var(--muted)"
                 strokeWidth="1.5"
@@ -286,6 +286,7 @@ export default function DayTapeReadout({
             );
           })()}
         </p>
+
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
