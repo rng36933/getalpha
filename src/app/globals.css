@@ -161,8 +161,8 @@ body {
    text glow above — it fills the dead horizontal space beside a short
    number instead of leaving it blank, without drawing anything that could
    be mistaken for a chart or a level. Purely decorative: only shown while
-   the session price itself is live (see DayTapeReadout), never on a closed
-   market's still reading. */
+   the session price itself is live (see DayTapeReadout) — a closed market's
+   still reading gets the dashed flatline below in the same spot instead. */
 @keyframes price-ambient-glow-anim {
   0%, 100% { opacity: 0.35; transform: scale(0.94); }
   50%      { opacity: 0.6; transform: scale(1.04); }
@@ -177,6 +177,21 @@ body {
   );
   filter: blur(4px);
   animation: price-ambient-glow-anim 3.6s ease-in-out infinite;
+}
+
+/* Same dead-space job as the glow above, for when there is no live price to
+   echo: a slow-drifting dashed line, muted rather than gold so it never
+   reads as the accent doing something. The dashes (not a solid stroke) and
+   the near-flat path keep it from being mistaken for an actual price chart
+   or level — it only says the tape is quiet. */
+@keyframes closed-market-flatline-anim {
+  to { stroke-dashoffset: -160; }
+}
+
+.closed-market-flatline path {
+  opacity: 0.4;
+  stroke-dasharray: 5 6;
+  animation: closed-market-flatline-anim 7s linear infinite;
 }
 
 /* Violet glow for the cards that specifically mark "this runs on AI / is
@@ -346,6 +361,7 @@ body {
   .live-dot,
   .glow-text-live,
   .price-ambient-glow,
+  .closed-market-flatline path,
   .lp-shimmer:hover::after {
     animation: none !important;
   }

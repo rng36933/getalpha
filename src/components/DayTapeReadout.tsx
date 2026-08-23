@@ -212,8 +212,28 @@ export default function DayTapeReadout({
               still reads as "live," not as a chart or a level — a plain
               blurred glow, breathing in time with the price's own text
               glow. Absolutely positioned and non-interactive so it never
-              competes with the number or wraps the layout around it. */}
-          {tape.barelyTraded ? null : (
+              competes with the number or wraps the layout around it. On a
+              closed market there is no live price to echo, so the same
+              space gets a slow-drifting dashed flatline instead — muted,
+              not gold, and too flat/dashed to be read as an actual chart or
+              level; it just says "the tape is quiet" where the glow would
+              have said "the tape is moving." */}
+          {tape.barelyTraded ? (
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 400 80"
+              preserveAspectRatio="none"
+              className="closed-market-flatline pointer-events-none absolute -inset-y-6 left-0 z-0 w-full max-w-md sm:max-w-lg"
+            >
+              <path
+                d="M0,40 L50,40 L70,38.5 L90,41.5 L120,40 L160,40 L180,38.5 L200,41.5 L230,40 L400,40"
+                fill="none"
+                stroke="var(--muted)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          ) : (
             <div
               aria-hidden="true"
               className="price-ambient-glow pointer-events-none absolute -inset-y-6 left-0 z-0 w-full max-w-md sm:max-w-lg"
