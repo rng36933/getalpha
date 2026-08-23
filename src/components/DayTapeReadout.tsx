@@ -191,30 +191,6 @@ export default function DayTapeReadout({
           thing being read. It used to be set at 24px beside a 56px icon, which
           gave the decoration more weight than the number. */}
       <div className="relative">
-        {/* On a closed market there is no live price to echo, so instead of
-            hugging the price row the way the live glow does, this spans the
-            whole block (status line through the description below) and
-            centers in it — the actual empty area on a closed reading, not
-            just the sliver beside the number. Muted, dashed, and slow rather
-            than gold and solid, so it reads as "the tape is quiet" and never
-            as an actual chart or price level. */}
-        {tape.barelyTraded ? (
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 400 20"
-            preserveAspectRatio="none"
-            className="closed-market-flatline pointer-events-none absolute inset-0 z-0 hidden h-full w-full max-w-md sm:block sm:max-w-lg"
-          >
-            <path
-              d="M0,10 L60,10 L85,8.3 L110,11.7 L145,10 L195,10 L220,8.3 L245,11.7 L280,10 L400,10"
-              fill="none"
-              stroke="var(--muted)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        ) : null}
-
         {/* The pulse is the only looping animation in the app, and it carries
             information rather than atmosphere: it is the difference between a
             price that is moving and a price that is a historical record. A
@@ -266,6 +242,30 @@ export default function DayTapeReadout({
               {tape.changePercent}%)
             </span>
           </span>
+
+          {/* On a closed market there is no live price to echo, so instead of
+              the live glow that hugs the number, this takes the remaining
+              width beside it — a proper flex sibling with the row's own gap
+              keeping it off the digits, not an overlay guessing at where
+              they end. Muted, dashed, and slow rather than gold and solid,
+              so it reads as "the tape is quiet" and never as an actual
+              chart or price level. */}
+          {tape.barelyTraded ? (
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 200 20"
+              preserveAspectRatio="none"
+              className="closed-market-flatline pointer-events-none order-last hidden h-5 min-w-[140px] flex-1 self-center sm:block"
+            >
+              <path
+                d="M0,10 L30,10 L42.5,8.3 L55,11.7 L72.5,10 L97.5,10 L110,8.3 L122.5,11.7 L140,10 L200,10"
+                fill="none"
+                stroke="var(--muted)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          ) : null}
         </div>
 
         {/* The direction word is coloured, so the sentence is built from the
