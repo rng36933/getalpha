@@ -110,14 +110,18 @@ export default async function JournalPage() {
       <PageHeader
         title="Journal"
         subtitle="Every closed trade, straight from your terminal. Nothing here is typed by hand."
+        aside={
+          reviewsLeft ? (
+            <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-4 py-2">
+              <span className="size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+              <span className="text-sm font-semibold text-accent">
+                {reviewsLeft.remaining} of ~{reviewsLeft.ofEstimate}
+              </span>
+              <span className="text-sm text-muted">AI reviews left today</span>
+            </div>
+          ) : null
+        }
       />
-
-      {reviewsLeft ? (
-        <p className="-mt-4 mb-6 text-xs font-semibold text-foreground">
-          {reviewsLeft.remaining} of ~{reviewsLeft.ofEstimate} AI reviews left
-          today
-        </p>
-      ) : null}
 
       <div className="space-y-4">
         {closed.length > 0 ? (

@@ -190,12 +190,36 @@ export default function DayTapeReadout({
       {/* The measurement is the largest thing on the card, because it is the
           thing being read. It used to be set at 24px beside a 56px icon, which
           gave the decoration more weight than the number. */}
-      <div>
+      <div className="relative">
+        {/* On a closed market there is no live price to echo, so instead of
+            hugging the price row the way the live glow does, this spans the
+            whole block (status line through the description below) and
+            centers in it — the actual empty area on a closed reading, not
+            just the sliver beside the number. Muted, dashed, and slow rather
+            than gold and solid, so it reads as "the tape is quiet" and never
+            as an actual chart or price level. */}
+        {tape.barelyTraded ? (
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 400 20"
+            preserveAspectRatio="none"
+            className="closed-market-flatline pointer-events-none absolute inset-0 z-0 hidden h-full w-full max-w-md sm:block sm:max-w-lg"
+          >
+            <path
+              d="M0,10 L60,10 L85,8.3 L110,11.7 L145,10 L195,10 L220,8.3 L245,11.7 L280,10 L400,10"
+              fill="none"
+              stroke="var(--muted)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        ) : null}
+
         {/* The pulse is the only looping animation in the app, and it carries
             information rather than atmosphere: it is the difference between a
             price that is moving and a price that is a historical record. A
             closed market gets a still dot. */}
-        <p className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted">
+        <p className="relative z-10 mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted">
           {/* Accent, not green: "live" is not a direction, and a green dot on a
               red session would read as one. Green and red stay reserved for
               which way price went. */}
@@ -212,28 +236,10 @@ export default function DayTapeReadout({
               still reads as "live," not as a chart or a level — a plain
               blurred glow, breathing in time with the price's own text
               glow. Absolutely positioned and non-interactive so it never
-              competes with the number or wraps the layout around it. On a
-              closed market there is no live price to echo, so the same
-              space gets a slow-drifting dashed flatline instead — muted,
-              not gold, and too flat/dashed to be read as an actual chart or
-              level; it just says "the tape is quiet" where the glow would
-              have said "the tape is moving." */}
-          {tape.barelyTraded ? (
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 400 80"
-              preserveAspectRatio="none"
-              className="closed-market-flatline pointer-events-none absolute -inset-y-6 left-0 z-0 w-full max-w-md sm:max-w-lg"
-            >
-              <path
-                d="M0,40 L50,40 L70,38.5 L90,41.5 L120,40 L160,40 L180,38.5 L200,41.5 L230,40 L400,40"
-                fill="none"
-                stroke="var(--muted)"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          ) : (
+              competes with the number or wraps the layout around it. Live
+              only — the closed-market equivalent above covers the whole
+              block instead of just this row. */}
+          {tape.barelyTraded ? null : (
             <div
               aria-hidden="true"
               className="price-ambient-glow pointer-events-none absolute -inset-y-6 left-0 z-0 w-full max-w-md sm:max-w-lg"
@@ -265,7 +271,7 @@ export default function DayTapeReadout({
         {/* The direction word is coloured, so the sentence is built from the
             dictionary with the word already in place and split around it — a
             template with a hole would not let the middle be styled. */}
-        <p className="mt-2 text-sm text-muted">
+        <p className="relative z-10 mt-2 text-sm text-muted">
           {(() => {
             const word = toneWord(tape.direction, copy);
             const sentence = copy.sessionLine(word, String(tape.dayOpen));
