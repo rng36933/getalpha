@@ -47,10 +47,6 @@ export type DayTape = {
   readings: Reading[];
   agreeing: { up: number; down: number; flat: number };
 
-  /** Closes from the last `SPARKLINE_LOOKBACK` M15 bars, oldest first — the
-   * real series behind the readings above, drawn rather than only measured. */
-  sparkline: number[];
-
   /** Today's range against the average of the last completed sessions. */
   rangeVsAverage: number | null;
   /**
@@ -71,9 +67,6 @@ export type DayTape = {
 /** Intraday bars the balance and average readings look back over. */
 const INTRADAY_LOOKBACK = 12;
 const AVERAGE_LOOKBACK = 20;
-/** M15 bars, so 40 covers a 10-hour window — enough to draw a real sparkline
- * beside the price without pulling a second series just for the picture. */
-const SPARKLINE_LOOKBACK = 40;
 
 /** Completed sessions the typical daily range is measured over. */
 const RANGE_LOOKBACK = 10;
@@ -293,8 +286,6 @@ export function computeDayTape({
       down: readings.filter((r) => r.direction === "DOWN").length,
       flat: readings.filter((r) => r.direction === "FLAT").length,
     },
-
-    sparkline: intraday.slice(-SPARKLINE_LOOKBACK).map((bar) => bar.close),
 
     // Three decimals, not two: a Sunday's quarter-point range against a
     // forty-point average rounds to a flat zero at two, and "0× the average
