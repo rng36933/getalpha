@@ -107,7 +107,7 @@ function buildCandlesticks(
 
   // Seven evenly spaced ticks — dense enough to read the session's shape
   // without a label per bar, which would be unreadable at this density.
-  const TICK_COUNT = 20;
+  const TICK_COUNT = 30;
   const tickIndices = Array.from({ length: TICK_COUNT }, (_, i) =>
     Math.round((i * (bars.length - 1)) / (TICK_COUNT - 1)),
   );
