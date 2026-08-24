@@ -44,6 +44,26 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
  * what already ran, not a new claim, so it has to stay in lockstep with that
  * file rather than describe the computation in looser words.
  */
+/**
+ * Where the scattered background arrows sit, at what size, how faint, and
+ * how far out of sync with each other — fixed rather than `Math.random()`
+ * so the server-rendered markup and the client's first render match (a
+ * random value here would either mismatch on hydration or force the whole
+ * card to skip SSR). The scatter is deliberately irregular, not a grid.
+ */
+const ARROW_SCATTER: { left: number; top: number; size: number; opacity: number; delay: number }[] = [
+  { left: 4, top: 65, size: 11, opacity: 0.22, delay: 0 },
+  { left: 14, top: 25, size: 9, opacity: 0.18, delay: 0.5 },
+  { left: 24, top: 55, size: 13, opacity: 0.26, delay: 1.1 },
+  { left: 34, top: 15, size: 10, opacity: 0.2, delay: 0.2 },
+  { left: 46, top: 70, size: 12, opacity: 0.24, delay: 0.8 },
+  { left: 58, top: 30, size: 9, opacity: 0.18, delay: 1.3 },
+  { left: 70, top: 60, size: 14, opacity: 0.28, delay: 0.35 },
+  { left: 80, top: 20, size: 10, opacity: 0.2, delay: 0.95 },
+  { left: 90, top: 50, size: 11, opacity: 0.22, delay: 0.6 },
+  { left: 96, top: 12, size: 9, opacity: 0.16, delay: 1.5 },
+];
+
 const FORMULA: Record<string, string> = {
   VS_OPEN: "(price − open) / open × 100",
   VS_PRIOR_CLOSE: "price − prior close",
@@ -228,39 +248,69 @@ export default function DayTapeReadout({
           />
 
           {/* Fills the width beside the price on a wide row: the session's
-              direction, stated as a beam of light and an arrow rather than a
-              line graph. A soft vertical glow behind a chevron, drifting the
-              way the arrow points — the same "still updating" job the
-              price's own pulse does, in a bigger and blunter shape. Flat
-              gets a still dash instead, matching every other flat/closed
-              state on this card. */}
-          <div className="direction-beacon relative z-10 ml-4 hidden h-9 flex-1 items-center justify-center self-stretch lg:flex">
-            <span
-              aria-hidden="true"
-              className={`direction-beacon-glow absolute inset-y-0 w-14 rounded-full blur-xl ${
-                tape.direction === "UP"
-                  ? "bg-positive/30"
-                  : tape.direction === "DOWN"
-                    ? "bg-negative/30"
-                    : "bg-muted/20"
-              }`}
-            />
-            {tape.direction === "UP" ? (
-              <ArrowUp
-                aria-hidden="true"
-                className="direction-beacon-icon-up relative size-7 text-positive"
-                strokeWidth={2.5}
-                style={{ filter: "drop-shadow(0 0 6px var(--positive))" }}
-              />
-            ) : tape.direction === "DOWN" ? (
-              <ArrowDown
-                aria-hidden="true"
-                className="direction-beacon-icon-down relative size-7 text-negative"
-                strokeWidth={2.5}
-                style={{ filter: "drop-shadow(0 0 6px var(--negative))" }}
-              />
-            ) : (
+              direction, stated as a field of small drifting arrows behind
+              one bright one, rather than a line graph. Flat gets a single
+              still dash instead — a scatter of arrows agreeing on nothing
+              would just be noise. */}
+          <div className="direction-beacon relative z-10 ml-4 hidden h-9 flex-1 items-center justify-center self-stretch overflow-hidden lg:flex">
+            {tape.direction === "FLAT" ? (
               <Minus aria-hidden="true" className="relative size-6 text-muted" strokeWidth={2.5} />
+            ) : (
+              <>
+                {ARROW_SCATTER.map((arrow, i) =>
+                  tape.direction === "UP" ? (
+                    <ArrowUp
+                      key={i}
+                      aria-hidden="true"
+                      size={arrow.size}
+                      strokeWidth={2.5}
+                      className="direction-beacon-icon-up absolute text-positive"
+                      style={{
+                        left: `${arrow.left}%`,
+                        top: `${arrow.top}%`,
+                        opacity: arrow.opacity,
+                        animationDelay: `${arrow.delay}s`,
+                      }}
+                    />
+                  ) : (
+                    <ArrowDown
+                      key={i}
+                      aria-hidden="true"
+                      size={arrow.size}
+                      strokeWidth={2.5}
+                      className="direction-beacon-icon-down absolute text-negative"
+                      style={{
+                        left: `${arrow.left}%`,
+                        top: `${arrow.top}%`,
+                        opacity: arrow.opacity,
+                        animationDelay: `${arrow.delay}s`,
+                      }}
+                    />
+                  ),
+                )}
+
+                <span
+                  aria-hidden="true"
+                  className={`direction-beacon-glow absolute inset-y-0 w-14 rounded-full blur-xl ${
+                    tape.direction === "UP" ? "bg-positive/30" : "bg-negative/30"
+                  }`}
+                />
+                {tape.direction === "UP" ? (
+                  <ArrowUp
+                    aria-hidden="true"
+                    className="direction-beacon-icon-up relative size-7 text-positive"
+                    strokeWidth={2.5}
+                    style={{ filter: "drop-shadow(0 0 6px var(--positive))" }}
+                  />
+                ) : (
+                  <ArrowDown
+                    aria-hidden="true"
+                    className="direction-beacon-icon-down relative size-7 text-negative"
+                    strokeWidth={2.5}
+                    style={{ filter: "drop-shadow(0 0 6px var(--negative))" }}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
