@@ -254,26 +254,23 @@ export default function DayTapeReadout({
         </p>
 
         <div className="relative flex flex-wrap items-end gap-x-4 gap-y-1">
+          <span className="sr-only">{directionLabel(tape.direction, copy)}</span>
+
+          {/* The change span now lives inside LivePrice itself, flashing in
+              sync with the price on every tick — a static change figure
+              beside a live price meant the two disagreed the moment a new
+              tick landed but the page hadn't been reloaded. */}
           <LivePrice
             symbol={tape.symbol}
             timeframe="M15"
             initialPrice={tape.lastPrice}
+            dayOpen={tape.dayOpen}
             className={`figure relative z-10 text-[2.75rem] sm:text-[3.5rem] ${
               tape.barelyTraded ? "glow-text" : "glow-text-live"
             }`}
+            changeClassName="relative z-10 mb-1.5 inline-flex items-baseline gap-1 text-sm font-medium tabular-nums"
+            changeRestClassName={tone.text}
           />
-
-          <span
-            className={`relative z-10 mb-1.5 inline-flex items-baseline gap-1 text-sm font-medium tabular-nums ${tone.text}`}
-          >
-            <span className="sr-only">{directionLabel(tape.direction, copy)}</span>
-            {tape.changeAbsolute > 0 ? "+" : ""}
-            {tape.changeAbsolute}
-            <span className="text-muted">
-              ({tape.changePercent > 0 ? "+" : ""}
-              {tape.changePercent}%)
-            </span>
-          </span>
 
           {/* Fills the width beside the price on a wide row with the actual
               session, not a decoration standing in for one: the same closes
@@ -347,8 +344,8 @@ export default function DayTapeReadout({
 
       {/* The same facts as before, laid out as a band of labelled columns
           plus a couple of footnotes, in one rounded glass panel. */}
-      <div className="rounded-2xl border border-line bg-surface-raised/40 p-5 transition-colors hover:border-accent/60 hover:shadow-[0_0_16px_-4px_var(--accent)]">
-        <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="rounded-2xl border border-line bg-surface-raised/40 p-4 transition-colors hover:border-accent/60 hover:shadow-[0_0_16px_-4px_var(--accent)]">
+        <dl className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
             <dt>
               <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
@@ -397,7 +394,7 @@ export default function DayTapeReadout({
           </div>
         </dl>
 
-        <div className="mt-4 space-y-2 border-t border-line pt-4 text-[11px] leading-relaxed text-muted">
+        <div className="mt-3 space-y-1.5 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
           {stale ? <p className="text-warning">{copy.staleNote}</p> : null}
 
           {/* Skipped when the market-closed warning already ran: both

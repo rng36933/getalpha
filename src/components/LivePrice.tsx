@@ -21,11 +21,26 @@ export default function LivePrice({
   timeframe,
   initialPrice,
   className = "",
+  dayOpen,
+  changeClassName = "",
+  changeRestClassName = "",
 }: {
   symbol: string;
   timeframe: string;
   initialPrice: number;
   className?: string;
+  /**
+   * When given, a "change since open" span renders beside the price and
+   * flashes in sync with it. Both numbers come from the same tick — one
+   * updating while the other sat frozen at the server-rendered value was
+   * the bug this replaces.
+   */
+  dayOpen?: number;
+  /** Classes for the change span itself, independent of `className`. */
+  changeClassName?: string;
+  /** Tone class used when the span isn't actively flashing — the session's
+   * overall direction, computed server-side (see DayTapeReadout's `tone`). */
+  changeRestClassName?: string;
 }) {
   // Decimals inferred from the server-rendered price rather than
   // hard-coded, so a two-decimal FX pair and a gold price with more
@@ -104,17 +119,45 @@ export default function LivePrice({
     };
   }, [symbol, timeframe]);
 
+  const changeAbsolute = dayOpen !== undefined ? price - dayOpen : null;
+  const changePercent =
+    changeAbsolute !== null && dayOpen !== undefined && dayOpen > 0
+      ? (changeAbsolute / dayOpen) * 100
+      : null;
+
   return (
-    <span
-      className={`transition-colors duration-300 ${
-        flash === "up"
-          ? "text-positive"
-          : flash === "down"
-            ? "text-negative"
-            : ""
-      } ${className}`}
-    >
-      {price.toFixed(decimals)}
-    </span>
+    <>
+      <span
+        className={`transition-colors duration-300 ${
+          flash === "up"
+            ? "text-positive"
+            : flash === "down"
+              ? "text-negative"
+              : ""
+        } ${className}`}
+      >
+        {price.toFixed(decimals)}
+      </span>
+
+      {changeAbsolute !== null && changePercent !== null ? (
+        <span
+          className={`transition-colors duration-300 ${
+            flash === "up"
+              ? "text-positive"
+              : flash === "down"
+                ? "text-negative"
+                : changeRestClassName
+          } ${changeClassName}`}
+        >
+          {changeAbsolute > 0 ? "+" : ""}
+          {changeAbsolute.toFixed(decimals)}
+          <span className="text-muted">
+            {" "}
+            ({changePercent > 0 ? "+" : ""}
+            {changePercent.toFixed(2)}%)
+          </span>
+        </span>
+      ) : null}
+    </>
   );
 }
