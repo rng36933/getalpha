@@ -52,17 +52,13 @@ function toneFor(value: number | null): string {
   return "text-muted";
 }
 
-type Outcome = "ALL" | "WINS" | "LOSSES" | "OPEN" | "NO_STOP";
+type Outcome = "ALL" | "WINS" | "LOSSES" | "OPEN";
 
 const OUTCOMES: { value: Outcome; label: string }[] = [
   { value: "ALL", label: "All" },
   { value: "WINS", label: "Wins" },
   { value: "LOSSES", label: "Losses" },
   { value: "OPEN", label: "Open" },
-  // Not a result but the thing most worth being able to isolate: a trade taken
-  // with no stop has no defined risk, so nothing here can say whether its size
-  // was sensible — only what it happened to make or lose.
-  { value: "NO_STOP", label: "No stop" },
 ];
 
 type SortKey = "DATE_DESC" | "DATE_ASC" | "RESULT_DESC" | "RESULT_ASC" | "RISK_DESC";
@@ -249,26 +245,11 @@ export default function TradeList({
   // Filtering is client-side on purpose. The page already has every row it is
   // going to show, so a round trip per filter would spend a request to hide
   // rows the browser is holding.
-  const [asset, setAsset] = useState("ALL");
-  const [setup, setSetup] = useState("ALL");
   const [outcome, setOutcome] = useState<Outcome>("ALL");
   const [sortKey, setSortKey] = useState<SortKey>("DATE_DESC");
 
-  // Filter options come from what is actually in the journal, so nobody is
-  // offered a pair or a setup that would return nothing.
-  const assets = [...new Set(trades.map((row) => row.asset))].sort();
-  const setups = [
-    ...new Set(
-      trades
-        .map((row) => row.setup)
-        .filter((setup): setup is string => setup !== null && setup !== ""),
-    ),
-  ].sort();
-
   const rows = sortRows(
     trades.filter((row) => {
-      if (asset !== "ALL" && row.asset !== asset) return false;
-      if (setup !== "ALL" && row.setup !== setup) return false;
       if (outcome === "WINS" && !((row.pnl ?? 0) > 0)) return false;
       if (outcome === "LOSSES" && !((row.pnl ?? 0) < 0)) return false;
       if (
@@ -277,7 +258,6 @@ export default function TradeList({
       ) {
         return false;
       }
-      if (outcome === "NO_STOP" && row.metrics.flags.stopWasSet) return false;
       return true;
     }),
     sortKey,
@@ -297,7 +277,7 @@ export default function TradeList({
    * empty page. Derived rather than reset in an effect, which is the cascading
    * render the React compiler rejects.
    */
-  const filterKey = `${asset}|${setup}|${outcome}|${sortKey}`;
+  const filterKey = `${outcome}|${sortKey}`;
   const [paging, setPaging] = useState({ key: filterKey, page: 1 });
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PER_PAGE));
@@ -425,38 +405,6 @@ export default function TradeList({
           })}
         </div>
 
-        {assets.length > 1 ? (
-          <select
-            value={asset}
-            onChange={(event) => setAsset(event.target.value)}
-            aria-label="Filter by instrument"
-            className={selectClass}
-          >
-            <option value="ALL">Every instrument</option>
-            {assets.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        ) : null}
-
-        {setups.length > 1 ? (
-          <select
-            value={setup}
-            onChange={(event) => setSetup(event.target.value)}
-            aria-label="Filter by setup"
-            className={selectClass}
-          >
-            <option value="ALL">Every setup</option>
-            {setups.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        ) : null}
-
         <select
           value={sortKey}
           onChange={(event) => setSortKey(event.target.value as SortKey)}
@@ -482,11 +430,7 @@ export default function TradeList({
           No trades match those filters.{" "}
           <button
             type="button"
-            onClick={() => {
-              setAsset("ALL");
-              setSetup("ALL");
-              setOutcome("ALL");
-            }}
+            onClick={() => setOutcome("ALL")}
             className="text-accent hover:underline"
           >
             Clear them
