@@ -38,7 +38,7 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
 
 const SPARK_WIDTH = 400;
 const SPARK_HEIGHT = 40;
-const SPARK_PAD = 4;
+const SPARK_PAD = 2;
 
 type CandleBar = {
   x: number;
@@ -275,7 +275,7 @@ export default function DayTapeReadout({
               (a session just opened) draws nothing rather than a misleading
               single stick. */}
           {candlesticks ? (
-            <div className="relative z-10 ml-4 mb-1.5 hidden h-9 flex-1 self-stretch lg:block">
+            <div className="relative z-10 ml-4 mb-1.5 hidden h-14 flex-1 self-stretch lg:block">
               <svg
                 aria-hidden="true"
                 viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
