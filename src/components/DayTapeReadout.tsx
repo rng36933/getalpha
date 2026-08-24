@@ -17,10 +17,10 @@ import type { DayTape, Direction, Reading } from "@/lib/market-data/tape";
  */
 
 /** Colour only. The word beside the arrow comes from the dictionary. */
-const TONE: Record<Direction, { text: string; bg: string }> = {
-  UP: { text: "text-positive", bg: "bg-positive/[0.12]" },
-  DOWN: { text: "text-negative", bg: "bg-negative/[0.12]" },
-  FLAT: { text: "text-muted", bg: "bg-muted/[0.12]" },
+const TONE: Record<Direction, { text: string; bg: string; stroke: string }> = {
+  UP: { text: "text-positive", bg: "bg-positive/[0.12]", stroke: "var(--positive)" },
+  DOWN: { text: "text-negative", bg: "bg-negative/[0.12]", stroke: "var(--negative)" },
+  FLAT: { text: "text-muted", bg: "bg-muted/[0.12]", stroke: "var(--muted)" },
 };
 
 function toneWord(direction: Direction, copy: TapeCopy["readout"]): string {
@@ -44,13 +44,48 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
  * what already ran, not a new claim, so it has to stay in lockstep with that
  * file rather than describe the computation in looser words.
  */
+const SPARK_WIDTH = 400;
+const SPARK_HEIGHT = 40;
+const SPARK_PAD = 4;
+
 /**
- * The decorative track the live comet rides, and the muted line drawn under
- * it in both states. A fixed, perfectly periodic wave — never derived from
- * the price — so it reads as texture rather than as a chart of anything.
+ * The session's own closes, laid out as an SVG line and the area beneath it.
+ *
+ * This is the same series `computeDayTape` already samples for VS_AVERAGE and
+ * INTRADAY_BARS — drawn here instead of only measured, so the width beside the
+ * price shows the real session rather than a decoration standing in for one.
+ * A flat or near-flat run (a genuinely quiet session, or too few points to
+ * plot) draws as a flat line down the middle rather than nothing.
  */
-const WAVE_PATH =
-  "M0,6 Q25,2 50,6 T100,6 T150,6 T200,6 T250,6 T300,6 T350,6 T400,6";
+function buildSparkline(values: number[]): {
+  line: string;
+  area: string;
+  end: { x: number; y: number };
+} | null {
+  if (values.length < 2) return null;
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min;
+  const step = SPARK_WIDTH / (values.length - 1);
+  const usable = SPARK_HEIGHT - SPARK_PAD * 2;
+
+  const points = values.map((value, i) => {
+    const x = i * step;
+    const y =
+      range > 0
+        ? SPARK_PAD + (1 - (value - min) / range) * usable
+        : SPARK_HEIGHT / 2;
+    return { x, y };
+  });
+
+  const line = points
+    .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+    .join(" ");
+  const area = `${line} L${SPARK_WIDTH},${SPARK_HEIGHT} L0,${SPARK_HEIGHT} Z`;
+
+  return { line, area, end: points[points.length - 1] };
+}
 
 const FORMULA: Record<string, string> = {
   VS_OPEN: "(price − open) / open × 100",
@@ -173,7 +208,8 @@ export default function DayTapeReadout({
 }) {
   const copy = tapeCopy(locale).readout;
   const tone = TONE[tape.direction];
-  const gradientId = useId();
+  const areaGradientId = useId();
+  const spark = buildSparkline(tape.sparkline);
 
   // Which direction most readings share, for the tiles below — null when
   // there's a genuine split (e.g. 2 up, 2 down, 1 flat), since there's no
@@ -239,57 +275,47 @@ export default function DayTapeReadout({
             </span>
           </span>
 
-          {/* Fills the width beside the price on a wide row. A glowing comet
-              rides a gentle wave while the session is live — the same "still
-              updating" job the price's own pulse does, echoed across the
-              dead space instead of just sitting in it. The wave is a fixed
-              decorative shape, not a chart of anything — it never changes
-              with the price. Closed markets get the comet's old flatline
-              instead: static, muted, no motion to claim there's nothing
-              moving. */}
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 400 12"
-            preserveAspectRatio="none"
-            className="relative z-10 ml-4 mb-2 hidden h-3 flex-1 lg:block"
-          >
-            <path
-              d={WAVE_PATH}
-              fill="none"
-              stroke="var(--muted)"
-              strokeWidth="1"
-              opacity="0.2"
-            />
-            {tape.barelyTraded ? (
+          {/* Fills the width beside the price on a wide row with the actual
+              session, not a decoration standing in for one: the same closes
+              behind VS_AVERAGE and INTRADAY_BARS, drawn as a line with a
+              soft fill under it and — while live — a pulsing dot at the
+              current close, the same "still updating" job the price's own
+              pulse does. Too few points (a session just opened) draws
+              nothing rather than a misleading flat line. */}
+          {spark ? (
+            <svg
+              aria-hidden="true"
+              viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
+              preserveAspectRatio="none"
+              className="relative z-10 ml-4 mb-1 hidden h-9 flex-1 self-stretch lg:block"
+            >
+              <defs>
+                <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={tone.stroke} stopOpacity="0.28" />
+                  <stop offset="100%" stopColor={tone.stroke} stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d={spark.area} fill={`url(#${areaGradientId})`} stroke="none" />
               <path
-                d="M0,6 L400,6"
+                d={spark.line}
                 fill="none"
-                stroke="var(--muted)"
-                strokeWidth="1.5"
-                strokeDasharray="5 6"
-                opacity="0.4"
+                stroke={tone.stroke}
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={tape.barelyTraded ? 0.5 : 0.9}
               />
-            ) : (
-              <>
-                <defs>
-                  <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0" />
-                    <stop offset="50%" stopColor="var(--accent)" stopOpacity="1" />
-                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  className="live-pulse-sweep"
-                  d={WAVE_PATH}
-                  fill="none"
-                  stroke={`url(#${gradientId})`}
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  style={{ filter: "drop-shadow(0 0 3px var(--accent))" }}
+              {tape.barelyTraded ? null : (
+                <circle
+                  className="spark-live-dot"
+                  cx={spark.end.x}
+                  cy={spark.end.y}
+                  r="3.5"
+                  fill={tone.stroke}
                 />
-              </>
-            )}
-          </svg>
+              )}
+            </svg>
+          ) : null}
         </div>
 
         {/* The direction word is coloured, so the sentence is built from the

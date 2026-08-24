@@ -157,20 +157,18 @@ body {
   animation: glow-text-pulse-anim 2.4s ease-in-out infinite;
 }
 
-/* Fills the dead space beside the live session price with a gold comet
-   sweeping the line, left to right, on loop — motion that says "live" in
-   the empty width instead of a static blob sitting in it (see
-   DayTapeReadout). A short dash against a long gap, so only one comet is
-   ever visible; the closed-market state gets a plain static dashed line in
-   the same spot instead, no motion. */
-@keyframes live-pulse-sweep-anim {
-  from { stroke-dashoffset: 460; }
-  to { stroke-dashoffset: 0; }
+/* The dot at the live end of the session sparkline (see DayTapeReadout) —
+   the same "still updating" job the price's own text glow does, marking the
+   one point on the line that is the current price rather than history. */
+@keyframes spark-live-dot-anim {
+  0%, 100% { opacity: 0.55; r: 3.5; }
+  50%      { opacity: 1; r: 4.5; }
 }
 
-.live-pulse-sweep {
-  stroke-dasharray: 60 400;
-  animation: live-pulse-sweep-anim 2.8s linear infinite;
+.spark-live-dot {
+  animation: spark-live-dot-anim 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 /* Violet glow for the cards that specifically mark "this runs on AI / is
@@ -339,7 +337,7 @@ body {
   .lp-alarm,
   .live-dot,
   .glow-text-live,
-  .live-pulse-sweep,
+  .spark-live-dot,
   .lp-shimmer:hover::after {
     animation: none !important;
   }
