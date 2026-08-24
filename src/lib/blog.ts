@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "drawdown-recovery-math",
+    title: "Drawdown Recovery Math: Why a 50% Loss Needs a 100% Gain to Break Even",
+    description:
+      "The relationship between a loss and the gain needed to undo it isn't 1:1 — it's curved, and it gets steeper the deeper the drawdown goes. What that curve actually looks like, and why it should set your risk limits.",
+    date: "2026-08-24",
+  },
+  {
     slug: "position-sizing-isnt-one-number",
     title: "Position Sizing Isn't One Number: Why the Same 1% Risk Produces Different Trades",
     description:
