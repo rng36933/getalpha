@@ -39,6 +39,10 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
 const SPARK_WIDTH = 400;
 const SPARK_HEIGHT = 40;
 const SPARK_PAD = 1;
+/** Width reserved on the right so the last candle's glow doesn't sit under
+ * the price tag — the tag floats past the chart's own drawing area rather
+ * than on top of it. */
+const SPARK_RIGHT_GAP = 34;
 
 type CandleBar = {
   x: number;
@@ -68,7 +72,8 @@ function buildCandlesticks(
   const max = Math.max(...bars.map((b) => b.high));
   const range = max - min;
   const usable = SPARK_HEIGHT - SPARK_PAD * 2;
-  const slot = SPARK_WIDTH / bars.length;
+  const drawWidth = SPARK_WIDTH - SPARK_RIGHT_GAP;
+  const slot = drawWidth / bars.length;
   const bodyWidth = Math.max(slot * 0.72, 2);
 
   const y = (value: number) =>
