@@ -157,35 +157,18 @@ body {
   animation: glow-text-pulse-anim 2.4s ease-in-out infinite;
 }
 
-/* The session-direction beacon beside the live price (see DayTapeReadout):
-   a soft vertical glow breathing behind a chevron that drifts the way it
-   points. The same "still updating" job the price's own pulse does, in a
-   bigger, blunter shape than a sparkline. */
-@keyframes direction-beacon-glow-anim {
-  0%, 100% { opacity: 0.5; transform: scaleY(0.85); }
-  50%      { opacity: 1; transform: scaleY(1.15); }
+/* The dot at the live end of the session sparkline (see DayTapeReadout) —
+   the same "still updating" job the price's own text glow does, marking the
+   one point on the line that is the current price rather than history. */
+@keyframes spark-live-dot-anim {
+  0%, 100% { opacity: 0.55; transform: scale(0.85); }
+  50%      { opacity: 1; transform: scale(1.3); }
 }
 
-.direction-beacon-glow {
-  animation: direction-beacon-glow-anim 2.2s ease-in-out infinite;
-}
-
-@keyframes direction-beacon-icon-up-anim {
-  0%, 100% { transform: translateY(0); opacity: 0.85; }
-  50%      { transform: translateY(-5px); opacity: 1; }
-}
-
-@keyframes direction-beacon-icon-down-anim {
-  0%, 100% { transform: translateY(0); opacity: 0.85; }
-  50%      { transform: translateY(5px); opacity: 1; }
-}
-
-.direction-beacon-icon-up {
-  animation: direction-beacon-icon-up-anim 1.6s ease-in-out infinite;
-}
-
-.direction-beacon-icon-down {
-  animation: direction-beacon-icon-down-anim 1.6s ease-in-out infinite;
+.spark-live-dot {
+  animation: spark-live-dot-anim 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 /* Violet glow for the cards that specifically mark "this runs on AI / is
@@ -354,9 +337,7 @@ body {
   .lp-alarm,
   .live-dot,
   .glow-text-live,
-  .direction-beacon-glow,
-  .direction-beacon-icon-up,
-  .direction-beacon-icon-down,
+  .spark-live-dot,
   .lp-shimmer:hover::after {
     animation: none !important;
   }
