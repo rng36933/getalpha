@@ -68,7 +68,7 @@ type CandleBar = {
  */
 function buildCandlesticks(
   bars: { open: number; high: number; low: number; close: number }[],
-): { candles: CandleBar[]; lastX: number } | null {
+): { candles: CandleBar[]; lastX: number; lastY: number } | null {
   if (bars.length < 2) return null;
 
   const min = Math.min(...bars.map((b) => b.low));
@@ -76,7 +76,7 @@ function buildCandlesticks(
   const range = max - min;
   const usable = SPARK_HEIGHT - SPARK_PAD * 2;
   const slot = SPARK_WIDTH / bars.length;
-  const bodyWidth = Math.max(slot * 0.6, 1.5);
+  const bodyWidth = Math.max(slot * 0.4, 1.25);
 
   const y = (value: number) =>
     range > 0 ? SPARK_PAD + (1 - (value - min) / range) * usable : SPARK_HEIGHT / 2;
@@ -99,7 +99,13 @@ function buildCandlesticks(
     };
   });
 
-  return { candles, lastX: candles[candles.length - 1].x };
+  const last = bars[bars.length - 1];
+
+  return {
+    candles,
+    lastX: candles[candles.length - 1].x,
+    lastY: y(last.close),
+  };
 }
 
 const FORMULA: Record<string, string> = {
@@ -295,43 +301,75 @@ export default function DayTapeReadout({
               (a session just opened) draws nothing rather than a misleading
               single stick. */}
           {candlesticks ? (
-            <svg
-              aria-hidden="true"
-              viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
-              preserveAspectRatio="none"
-              className="relative z-10 ml-4 mb-1 hidden h-9 flex-1 self-stretch lg:block"
-            >
-              {candlesticks.candles.map((candle, i) => {
-                const isLast = i === candlesticks.candles.length - 1;
-                const live = isLast && !tape.barelyTraded;
-                const color = candle.up ? "var(--positive)" : "var(--negative)";
+            <div className="relative z-10 ml-4 mb-1.5 hidden h-7 flex-1 self-stretch lg:block">
+              <svg
+                aria-hidden="true"
+                viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
+                preserveAspectRatio="none"
+                className="size-full"
+              >
+                {/* The dashed reference line at the last close — same job as
+                    the price tag on a real chart's right edge, so "where's
+                    the price" has an answer right beside the candles rather
+                    than only far to the left. */}
+                <line
+                  x1="0"
+                  x2={SPARK_WIDTH}
+                  y1={candlesticks.lastY}
+                  y2={candlesticks.lastY}
+                  stroke={tape.direction === "DOWN" ? "var(--negative)" : "var(--positive)"}
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                  opacity="0.35"
+                />
 
-                return (
-                  <g
-                    key={i}
-                    opacity={tape.barelyTraded ? 0.5 : live ? 1 : 0.75}
-                    style={live ? { filter: `drop-shadow(0 0 2.5px ${color})` } : undefined}
-                  >
-                    <line
-                      x1={candle.x}
-                      x2={candle.x}
-                      y1={candle.wickTop}
-                      y2={candle.wickBottom}
-                      stroke={color}
-                      strokeWidth="1"
-                    />
-                    <rect
-                      className={live ? "spark-live-dot" : undefined}
-                      x={candle.x - candle.bodyWidth / 2}
-                      y={candle.bodyTop}
-                      width={candle.bodyWidth}
-                      height={candle.bodyBottom - candle.bodyTop}
-                      fill={color}
-                    />
-                  </g>
-                );
-              })}
-            </svg>
+                {candlesticks.candles.map((candle, i) => {
+                  const isLast = i === candlesticks.candles.length - 1;
+                  const live = isLast && !tape.barelyTraded;
+                  const color = candle.up ? "var(--positive)" : "var(--negative)";
+
+                  return (
+                    <g
+                      key={i}
+                      opacity={tape.barelyTraded ? 0.5 : live ? 1 : 0.75}
+                      style={live ? { filter: `drop-shadow(0 0 2.5px ${color})` } : undefined}
+                    >
+                      <line
+                        x1={candle.x}
+                        x2={candle.x}
+                        y1={candle.wickTop}
+                        y2={candle.wickBottom}
+                        stroke={color}
+                        strokeWidth="0.75"
+                      />
+                      <rect
+                        className={live ? "spark-live-dot" : undefined}
+                        x={candle.x - candle.bodyWidth / 2}
+                        y={candle.bodyTop}
+                        width={candle.bodyWidth}
+                        height={candle.bodyBottom - candle.bodyTop}
+                        fill={color}
+                      />
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {/* HTML, not SVG text — the viewBox is stretched non-uniformly
+                  (preserveAspectRatio="none"), which would distort a native
+                  SVG label. Positioned by percentage so it tracks the line
+                  regardless of the box's actual rendered size. */}
+              <span
+                className={`pointer-events-none absolute right-0 -translate-y-1/2 rounded px-1 py-0.5 font-mono text-[9px] font-semibold tabular-nums ${
+                  tape.direction === "DOWN"
+                    ? "bg-negative/15 text-negative"
+                    : "bg-positive/15 text-positive"
+                }`}
+                style={{ top: `${(candlesticks.lastY / SPARK_HEIGHT) * 100}%` }}
+              >
+                {tape.lastPrice}
+              </span>
+            </div>
           ) : null}
         </div>
 
