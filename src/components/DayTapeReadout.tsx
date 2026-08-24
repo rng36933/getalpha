@@ -38,7 +38,7 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
 
 const SPARK_WIDTH = 400;
 const SPARK_HEIGHT = 40;
-const SPARK_PAD = 2;
+const SPARK_PAD = 1;
 
 type CandleBar = {
   x: number;
@@ -130,7 +130,7 @@ function ReadingTile({
   // others it would run past the tile's edge.
   const long = reading.value.length > 8;
 
-  const toneClasses = `group flex min-h-24 w-full flex-col justify-between rounded-xl border p-5 text-left transition-colors ${
+  const toneClasses = `group flex min-h-16 w-full flex-col justify-between rounded-xl border p-3 text-left transition-colors ${
     reading.direction === "FLAT" || agreesWithMajority
       ? "border-line bg-white/[0.015] hover:border-[#383d4d]"
       : `border-transparent ${tone.bg} hover:border-current`
@@ -139,12 +139,12 @@ function ReadingTile({
   return (
     <div className={toneClasses}>
       <span className="sr-only">{directionLabel(reading.direction, copy)}</span>
-      <span className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
+      <span className="font-mono text-[9px] tracking-wider text-muted/70 uppercase">
         {reading.label}
       </span>
-      <div className="relative mt-2">
+      <div className="relative mt-1">
         <span
-          className={`font-mono tracking-tight ${long ? "text-2xl font-black" : "text-4xl font-black"} ${tone.text}`}
+          className={`font-mono tracking-tight ${long ? "text-lg font-black" : "text-2xl font-black"} ${tone.text}`}
         >
           {reading.value}
         </span>
@@ -220,7 +220,7 @@ export default function DayTapeReadout({
   const majority: Direction | null = leaders.length === 1 ? leaders[0][0] : null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {tape.barelyTraded ? (
         <p className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-xs leading-relaxed text-warning">
           {copy.barelyTraded}
@@ -265,18 +265,19 @@ export default function DayTapeReadout({
             changeClassName="relative z-10 mb-1.5 inline-flex items-baseline gap-1 text-sm font-medium tabular-nums"
             changeRestClassName={tone.text}
           />
+        </div>
 
-          {/* Fills the width beside the price on a wide row with the actual
-              session's price action — the same M15 bars behind VS_AVERAGE
-              and INTRADAY_BARS, drawn as real candles (wick + body, red or
-              green per bar) rather than a line connecting closes. The last
-              candle glows and pulses while the session is live, the same
-              "still updating" job the price's own pulse does. Too few bars
-              (a session just opened) draws nothing rather than a misleading
-              single stick. */}
-          {candlesticks ? (
-            <div className="relative z-10 ml-4 mb-1.5 hidden h-14 flex-1 self-stretch lg:block">
-              <svg
+        {/* A real chart panel, not a sliver beside the price — the same M15
+            bars behind VS_AVERAGE and INTRADAY_BARS, drawn as real candles
+            (wick + body, red or green per bar) at a height where the shape
+            actually reads, matching the proportions of a proper candlestick
+            chart rather than a squeezed-in strip. The last candle glows and
+            pulses while the session is live, the same "still updating" job
+            the price's own pulse does. Too few bars (a session just opened)
+            draws nothing rather than a misleading single stick. */}
+        {candlesticks ? (
+          <div className="relative z-10 mt-4 hidden h-56 lg:block">
+            <svg
                 aria-hidden="true"
                 viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
                 preserveAspectRatio="none"
@@ -345,7 +346,6 @@ export default function DayTapeReadout({
               </span>
             </div>
           ) : null}
-        </div>
 
         {/* The direction word is coloured, so the sentence is built from the
             dictionary with the word already in place and split around it — a
@@ -368,7 +368,7 @@ export default function DayTapeReadout({
 
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {tape.readings.map((reading) => (
           <ReadingTile key={reading.key} reading={reading} copy={copy} majority={majority} />
         ))}
