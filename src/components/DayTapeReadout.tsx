@@ -361,28 +361,41 @@ export default function DayTapeReadout({
                 reserved for the price tag, past where the candles actually
                 end, so time kept advancing after the price stopped. */}
             <div className="relative mt-1 h-3 font-mono text-[7px] whitespace-nowrap text-muted/60">
-              {candlesticks.ticks.map((tick, i) => {
-                const prev = candlesticks.ticks[i - 1];
-                const dayChanged =
-                  !prev ||
-                  new Date(tick.time * 1000).toDateString() !==
-                    new Date(prev.time * 1000).toDateString();
-                const isFirst = i === 0;
-                const isLast = i === candlesticks.ticks.length - 1;
+              {(() => {
+                // A date label is roughly twice as wide as a bare time one —
+                // showing it on two ticks that are only one slot apart (as
+                // happens right around a midnight crossing) overlaps them
+                // into unreadable mush. Only repeats the date once at least
+                // `MIN_DATE_GAP` ticks have passed since the last one shown.
+                const MIN_DATE_GAP = 4;
+                let lastDateTickIndex = -Infinity;
 
-                return (
-                  <span
-                    key={i}
-                    className="absolute"
-                    style={{
-                      left: `${(tick.x / SPARK_WIDTH) * 100}%`,
-                      transform: isFirst ? "none" : isLast ? "translateX(-100%)" : "translateX(-50%)",
-                    }}
-                  >
-                    {formatTickTime(tick.time, dayChanged)}
-                  </span>
-                );
-              })}
+                return candlesticks.ticks.map((tick, i) => {
+                  const prev = candlesticks.ticks[i - 1];
+                  const dayChanged =
+                    !prev ||
+                    new Date(tick.time * 1000).toDateString() !==
+                      new Date(prev.time * 1000).toDateString();
+                  const showDate = dayChanged && i - lastDateTickIndex >= MIN_DATE_GAP;
+                  if (showDate) lastDateTickIndex = i;
+
+                  const isFirst = i === 0;
+                  const isLast = i === candlesticks.ticks.length - 1;
+
+                  return (
+                    <span
+                      key={i}
+                      className="absolute"
+                      style={{
+                        left: `${(tick.x / SPARK_WIDTH) * 100}%`,
+                        transform: isFirst ? "none" : isLast ? "translateX(-100%)" : "translateX(-50%)",
+                      }}
+                    >
+                      {formatTickTime(tick.time, showDate)}
+                    </span>
+                  );
+                });
+              })()}
             </div>
           </div>
           ) : null}
