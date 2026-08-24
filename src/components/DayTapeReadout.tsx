@@ -74,7 +74,7 @@ function buildCandlesticks(
   const usable = SPARK_HEIGHT - SPARK_PAD * 2;
   const drawWidth = SPARK_WIDTH - SPARK_RIGHT_GAP;
   const slot = drawWidth / bars.length;
-  const bodyWidth = Math.max(slot * 0.72, 2);
+  const bodyWidth = Math.max(slot * 0.55, 1.5);
 
   const y = (value: number) =>
     range > 0 ? SPARK_PAD + (1 - (value - min) / range) * usable : SPARK_HEIGHT / 2;
