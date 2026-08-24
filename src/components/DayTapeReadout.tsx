@@ -38,7 +38,7 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
 
 const SPARK_WIDTH = 400;
 const SPARK_HEIGHT = 40;
-const SPARK_PAD = 4;
+const SPARK_PAD = 12;
 
 type CandleBar = {
   x: number;
