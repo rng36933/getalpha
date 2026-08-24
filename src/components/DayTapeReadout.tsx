@@ -105,14 +105,12 @@ function buildCandlesticks(
 
   const last = bars[bars.length - 1];
 
-  // Four ticks — start, two evenly spaced between, and the live end —
-  // rather than one per bar, which would be unreadable at this density.
-  const tickIndices = [
-    0,
-    Math.round((bars.length - 1) / 3),
-    Math.round(((bars.length - 1) * 2) / 3),
-    bars.length - 1,
-  ];
+  // Seven evenly spaced ticks — dense enough to read the session's shape
+  // without a label per bar, which would be unreadable at this density.
+  const TICK_COUNT = 7;
+  const tickIndices = Array.from({ length: TICK_COUNT }, (_, i) =>
+    Math.round((i * (bars.length - 1)) / (TICK_COUNT - 1)),
+  );
   const ticks = tickIndices.map((i) => ({ x: candles[i].x, time: bars[i].time }));
 
   return {
