@@ -72,9 +72,10 @@ export type DayTape = {
 /** Intraday bars the balance and average readings look back over. */
 const INTRADAY_LOOKBACK = 12;
 const AVERAGE_LOOKBACK = 20;
-/** M15 bars, so 40 covers a 10-hour window — enough to draw a real sparkline
- * beside the price without pulling a second series just for the picture. */
-const SPARKLINE_LOOKBACK = 40;
+/** M15 bars — 150 covers a bit under 40 hours, close to the full 180-bar
+ * window `fetchCandles` already pulls, so this draws almost everything it
+ * has rather than pulling a second series just for the picture. */
+const SPARKLINE_LOOKBACK = 150;
 
 /** Completed sessions the typical daily range is measured over. */
 const RANGE_LOOKBACK = 10;
