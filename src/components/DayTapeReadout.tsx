@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import LivePrice from "@/components/LivePrice";
 import LocalTime from "@/components/LocalTime";
 import type { Locale } from "@/lib/i18n/locales";
@@ -43,6 +44,14 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
  * what already ran, not a new claim, so it has to stay in lockstep with that
  * file rather than describe the computation in looser words.
  */
+/**
+ * The decorative track the live comet rides, and the muted line drawn under
+ * it in both states. A fixed, perfectly periodic wave — never derived from
+ * the price — so it reads as texture rather than as a chart of anything.
+ */
+const WAVE_PATH =
+  "M0,6 Q25,2 50,6 T100,6 T150,6 T200,6 T250,6 T300,6 T350,6 T400,6";
+
 const FORMULA: Record<string, string> = {
   VS_OPEN: "(price − open) / open × 100",
   VS_PRIOR_CLOSE: "price − prior close",
@@ -164,6 +173,7 @@ export default function DayTapeReadout({
 }) {
   const copy = tapeCopy(locale).readout;
   const tone = TONE[tape.direction];
+  const gradientId = useId();
 
   // Which direction most readings share, for the tiles below — null when
   // there's a genuine split (e.g. 2 up, 2 down, 1 flat), since there's no
@@ -229,12 +239,14 @@ export default function DayTapeReadout({
             </span>
           </span>
 
-          {/* Fills the width beside the price on a wide row. A gold comet
-              sweeps the line while the session is live — the same "still
+          {/* Fills the width beside the price on a wide row. A glowing comet
+              rides a gentle wave while the session is live — the same "still
               updating" job the price's own pulse does, echoed across the
-              dead space instead of just sitting in it. Closed markets get
-              the comet's old flatline instead: static, muted, no motion to
-              claim there's nothing moving. */}
+              dead space instead of just sitting in it. The wave is a fixed
+              decorative shape, not a chart of anything — it never changes
+              with the price. Closed markets get the comet's old flatline
+              instead: static, muted, no motion to claim there's nothing
+              moving. */}
           <svg
             aria-hidden="true"
             viewBox="0 0 400 12"
@@ -242,7 +254,7 @@ export default function DayTapeReadout({
             className="relative z-10 ml-4 mb-2 hidden h-3 flex-1 lg:block"
           >
             <path
-              d="M0,6 L400,6"
+              d={WAVE_PATH}
               fill="none"
               stroke="var(--muted)"
               strokeWidth="1"
@@ -258,14 +270,24 @@ export default function DayTapeReadout({
                 opacity="0.4"
               />
             ) : (
-              <path
-                className="live-pulse-sweep"
-                d="M0,6 L400,6"
-                fill="none"
-                stroke="var(--accent)"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              <>
+                <defs>
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0" />
+                    <stop offset="50%" stopColor="var(--accent)" stopOpacity="1" />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path
+                  className="live-pulse-sweep"
+                  d={WAVE_PATH}
+                  fill="none"
+                  stroke={`url(#${gradientId})`}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  style={{ filter: "drop-shadow(0 0 3px var(--accent))" }}
+                />
+              </>
             )}
           </svg>
         </div>
