@@ -107,7 +107,7 @@ function buildCandlesticks(
 
   // Seven evenly spaced ticks — dense enough to read the session's shape
   // without a label per bar, which would be unreadable at this density.
-  const TICK_COUNT = 7;
+  const TICK_COUNT = 20;
   const tickIndices = Array.from({ length: TICK_COUNT }, (_, i) =>
     Math.round((i * (bars.length - 1)) / (TICK_COUNT - 1)),
   );
@@ -126,13 +126,12 @@ function buildCandlesticks(
  * epoch-seconds value MT5/the broker feed uses, formatted client-side rather
  * than assuming a fixed offset.
  */
-function formatTickTime(epochSeconds: number): string {
+function formatTickTime(epochSeconds: number, showDate: boolean): string {
   const date = new Date(epochSeconds * 1000);
-  const now = new Date();
-  const sameDay = date.toDateString() === now.toDateString();
-
-  const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  if (sameDay) return time;
+  // 24-hour, no AM/PM — at 20 ticks in a fixed width, every character spent
+  // on formatting is a character not spent on the next label fitting.
+  const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  if (!showDate) return time;
 
   const day = date.toLocaleDateString([], { month: "short", day: "numeric" });
   return `${day} ${time}`;
@@ -356,10 +355,16 @@ export default function DayTapeReadout({
             {/* The axis a real chart has along its bottom edge — which bar is
                 which, not just what the bars are worth. Four points rather
                 than one per bar, unreadable at this density. */}
-            <div className="mt-1 flex justify-between font-mono text-[9px] text-muted/60">
-              {candlesticks.ticks.map((tick, i) => (
-                <span key={i}>{formatTickTime(tick.time)}</span>
-              ))}
+            <div className="mt-1 flex justify-between font-mono text-[7px] whitespace-nowrap text-muted/60">
+              {candlesticks.ticks.map((tick, i) => {
+                const prev = candlesticks.ticks[i - 1];
+                const dayChanged =
+                  !prev ||
+                  new Date(tick.time * 1000).toDateString() !==
+                    new Date(prev.time * 1000).toDateString();
+
+                return <span key={i}>{formatTickTime(tick.time, dayChanged)}</span>;
+              })}
             </div>
           </div>
           ) : null}
