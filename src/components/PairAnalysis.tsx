@@ -119,7 +119,7 @@ function BucketRow({
             ) : null}
           </div>
           <span
-            className={`w-14 shrink-0 text-right font-mono text-xs tabular-nums ${toneFor(
+            className={`shrink-0 whitespace-nowrap text-right font-mono text-xs tabular-nums ${toneFor(
               bucket.totalPnl,
             )}`}
           >
