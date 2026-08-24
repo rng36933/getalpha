@@ -19,7 +19,12 @@ const BAR_COUNT = 180;
  * far sooner. Roughly a fifth of a bar in each case.
  */
 export const TIMEFRAMES = {
-  M15: { label: "M15", interval: "15min", freshForMs: 3 * 60 * 1000 },
+  // Shortened from 3 minutes on request — safe to do because the cache is
+  // one shared row per symbol (see store.ts), not per visitor, so this caps
+  // the whole app at one provider call a minute for M15 per symbol in view,
+  // nowhere near the 8-credit/minute ceiling for a desk that only tracks
+  // XAUUSD in practice.
+  M15: { label: "M15", interval: "15min", freshForMs: 60 * 1000 },
   H1: { label: "H1", interval: "1h", freshForMs: 10 * 60 * 1000 },
   H4: { label: "H4", interval: "4h", freshForMs: 30 * 60 * 1000 },
   D1: { label: "D1", interval: "1day", freshForMs: 15 * 60 * 1000 },
