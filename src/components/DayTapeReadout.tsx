@@ -208,20 +208,6 @@ export default function DayTapeReadout({
         </p>
 
         <div className="relative flex flex-wrap items-end gap-x-4 gap-y-1">
-          {/* Fills the dead space beside a short price with something that
-              still reads as "live," not as a chart or a level — a plain
-              blurred glow, breathing in time with the price's own text
-              glow. Absolutely positioned and non-interactive so it never
-              competes with the number or wraps the layout around it. Live
-              only — the closed-market equivalent above covers the whole
-              block instead of just this row. */}
-          {tape.barelyTraded ? null : (
-            <div
-              aria-hidden="true"
-              className="price-ambient-glow pointer-events-none absolute -inset-y-6 left-0 z-0 w-full max-w-md sm:max-w-lg"
-            />
-          )}
-
           <LivePrice
             symbol={tape.symbol}
             timeframe="M15"
@@ -243,29 +229,30 @@ export default function DayTapeReadout({
             </span>
           </span>
 
-          {/* Fills the empty width to the right of a closed market's price,
-              where the live glow would otherwise be. Sits on the row's
-              bottom edge alongside the change figure rather than centering
-              against the price's full cap height — centered, it rode up
-              over the digits and read as crossing them out. Muted and
-              dashed rather than gold and solid, so it says "the tape is
-              quiet" without looking like a chart or a level. */}
-          {tape.barelyTraded ? (
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 200 12"
-              preserveAspectRatio="none"
-              className="closed-market-flatline pointer-events-none mb-2 hidden h-3 min-w-[120px] flex-1 sm:block"
-            >
-              <path
-                d="M0,6 L30,6 L42.5,4.3 L55,7.7 L72.5,6 L97.5,6 L110,4.3 L122.5,7.7 L140,6 L200,6"
-                fill="none"
-                stroke="var(--muted)"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          ) : null}
+          {/* Fills the width beside the price with real numbers instead of
+              decoration — the day's high and low, which the readings below
+              only ever use as the input to RANGE_POSITION and never state
+              plainly on their own. Hidden below lg because that's the only
+              width where the price row leaves this much dead space to begin
+              with; below that the price already reaches the row's edge. */}
+          <div className="relative z-10 ml-auto hidden items-end gap-6 pb-1.5 lg:flex">
+            <div className="text-right">
+              <p className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
+                {copy.dayHigh}
+              </p>
+              <p className="font-mono text-lg font-semibold tabular-nums text-foreground">
+                {tape.dayHigh}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
+                {copy.dayLow}
+              </p>
+              <p className="font-mono text-lg font-semibold tabular-nums text-foreground">
+                {tape.dayLow}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* The direction word is coloured, so the sentence is built from the
