@@ -301,6 +301,11 @@ export default function DayTapeReadout({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 opacity={tape.barelyTraded ? 0.5 : 0.9}
+                style={
+                  tape.barelyTraded
+                    ? undefined
+                    : { filter: `drop-shadow(0 0 2.5px ${tone.stroke})` }
+                }
               />
               {tape.barelyTraded ? null : (
                 <circle
