@@ -362,13 +362,17 @@ export default function DayTapeReadout({
                 end, so time kept advancing after the price stopped. */}
             <div className="relative mt-1 h-3 font-mono text-[7px] whitespace-nowrap text-muted/60">
               {(() => {
-                // A date label is roughly twice as wide as a bare time one —
-                // showing it on two ticks that are only one slot apart (as
-                // happens right around a midnight crossing) overlaps them
-                // into unreadable mush. Only repeats the date once at least
-                // `MIN_DATE_GAP` ticks have passed since the last one shown.
-                const MIN_DATE_GAP = 4;
-                let lastDateTickIndex = -Infinity;
+                // Real collision avoidance, not just a fixed tick count —
+                // labels are estimated in the same SPARK_WIDTH units as the
+                // candles, and a label is dropped (date first, then the
+                // whole label) whenever it would overlap the one already
+                // placed to its left. The naive version showed a date on
+                // whichever tick landed right after midnight even when it
+                // was one slot away from a tick that had already spent a
+                // full date-width label right next to it.
+                const CHAR_WIDTH = 2.1; // rough monospace width, in SPARK_WIDTH units
+                const LABEL_GAP = 6;
+                let rightEdgeOfLastLabel = -Infinity;
 
                 return candlesticks.ticks.map((tick, i) => {
                   const prev = candlesticks.ticks[i - 1];
@@ -376,11 +380,31 @@ export default function DayTapeReadout({
                     !prev ||
                     new Date(tick.time * 1000).toDateString() !==
                       new Date(prev.time * 1000).toDateString();
-                  const showDate = dayChanged && i - lastDateTickIndex >= MIN_DATE_GAP;
-                  if (showDate) lastDateTickIndex = i;
 
                   const isFirst = i === 0;
                   const isLast = i === candlesticks.ticks.length - 1;
+                  const anchor = isFirst ? "start" : isLast ? "end" : "center";
+
+                  const place = (text: string) => {
+                    const width = text.length * CHAR_WIDTH;
+                    const start =
+                      anchor === "start" ? tick.x : anchor === "end" ? tick.x - width : tick.x - width / 2;
+                    return { start, end: start + width };
+                  };
+
+                  let text = formatTickTime(tick.time, dayChanged);
+                  let box = place(text);
+
+                  // Too close to the last label placed: first give up the
+                  // date (much shorter), and if it still collides, skip
+                  // this tick's label entirely rather than overlap it.
+                  if (dayChanged && box.start < rightEdgeOfLastLabel + LABEL_GAP) {
+                    text = formatTickTime(tick.time, false);
+                    box = place(text);
+                  }
+                  if (!isFirst && box.start < rightEdgeOfLastLabel + LABEL_GAP) return null;
+
+                  rightEdgeOfLastLabel = box.end;
 
                   return (
                     <span
@@ -391,7 +415,7 @@ export default function DayTapeReadout({
                         transform: isFirst ? "none" : isLast ? "translateX(-100%)" : "translateX(-50%)",
                       }}
                     >
-                      {formatTickTime(tick.time, showDate)}
+                      {text}
                     </span>
                   );
                 });
