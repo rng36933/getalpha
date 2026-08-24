@@ -355,15 +355,33 @@ export default function DayTapeReadout({
             {/* The axis a real chart has along its bottom edge — which bar is
                 which, not just what the bars are worth. Four points rather
                 than one per bar, unreadable at this density. */}
-            <div className="mt-1 flex justify-between font-mono text-[7px] whitespace-nowrap text-muted/60">
+            {/* Absolutely positioned by the same x/SPARK_WIDTH fraction as
+                the candles themselves, not evenly spread across the row —
+                `justify-between` spread the last labels into the gap
+                reserved for the price tag, past where the candles actually
+                end, so time kept advancing after the price stopped. */}
+            <div className="relative mt-1 h-3 font-mono text-[7px] whitespace-nowrap text-muted/60">
               {candlesticks.ticks.map((tick, i) => {
                 const prev = candlesticks.ticks[i - 1];
                 const dayChanged =
                   !prev ||
                   new Date(tick.time * 1000).toDateString() !==
                     new Date(prev.time * 1000).toDateString();
+                const isFirst = i === 0;
+                const isLast = i === candlesticks.ticks.length - 1;
 
-                return <span key={i}>{formatTickTime(tick.time, dayChanged)}</span>;
+                return (
+                  <span
+                    key={i}
+                    className="absolute"
+                    style={{
+                      left: `${(tick.x / SPARK_WIDTH) * 100}%`,
+                      transform: isFirst ? "none" : isLast ? "translateX(-100%)" : "translateX(-50%)",
+                    }}
+                  >
+                    {formatTickTime(tick.time, dayChanged)}
+                  </span>
+                );
               })}
             </div>
           </div>
