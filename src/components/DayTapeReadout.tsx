@@ -229,30 +229,45 @@ export default function DayTapeReadout({
             </span>
           </span>
 
-          {/* Fills the width beside the price with real numbers instead of
-              decoration — the day's high and low, which the readings below
-              only ever use as the input to RANGE_POSITION and never state
-              plainly on their own. Hidden below lg because that's the only
-              width where the price row leaves this much dead space to begin
-              with; below that the price already reaches the row's edge. */}
-          <div className="relative z-10 ml-auto hidden items-end gap-6 pb-1.5 lg:flex">
-            <div className="text-right">
-              <p className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
-                {copy.dayHigh}
-              </p>
-              <p className="font-mono text-lg font-semibold tabular-nums text-foreground">
-                {tape.dayHigh}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="font-mono text-[10px] tracking-wider text-muted/70 uppercase">
-                {copy.dayLow}
-              </p>
-              <p className="font-mono text-lg font-semibold tabular-nums text-foreground">
-                {tape.dayLow}
-              </p>
-            </div>
-          </div>
+          {/* Fills the width beside the price on a wide row. A gold comet
+              sweeps the line while the session is live — the same "still
+              updating" job the price's own pulse does, echoed across the
+              dead space instead of just sitting in it. Closed markets get
+              the comet's old flatline instead: static, muted, no motion to
+              claim there's nothing moving. */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 400 12"
+            preserveAspectRatio="none"
+            className="relative z-10 ml-4 mb-2 hidden h-3 flex-1 lg:block"
+          >
+            <path
+              d="M0,6 L400,6"
+              fill="none"
+              stroke="var(--muted)"
+              strokeWidth="1"
+              opacity="0.2"
+            />
+            {tape.barelyTraded ? (
+              <path
+                d="M0,6 L400,6"
+                fill="none"
+                stroke="var(--muted)"
+                strokeWidth="1.5"
+                strokeDasharray="5 6"
+                opacity="0.4"
+              />
+            ) : (
+              <path
+                className="live-pulse-sweep"
+                d="M0,6 L400,6"
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            )}
+          </svg>
         </div>
 
         {/* The direction word is coloured, so the sentence is built from the

@@ -157,6 +157,22 @@ body {
   animation: glow-text-pulse-anim 2.4s ease-in-out infinite;
 }
 
+/* Fills the dead space beside the live session price with a gold comet
+   sweeping the line, left to right, on loop — motion that says "live" in
+   the empty width instead of a static blob sitting in it (see
+   DayTapeReadout). A short dash against a long gap, so only one comet is
+   ever visible; the closed-market state gets a plain static dashed line in
+   the same spot instead, no motion. */
+@keyframes live-pulse-sweep-anim {
+  from { stroke-dashoffset: 460; }
+  to { stroke-dashoffset: 0; }
+}
+
+.live-pulse-sweep {
+  stroke-dasharray: 60 400;
+  animation: live-pulse-sweep-anim 2.8s linear infinite;
+}
+
 /* Violet glow for the cards that specifically mark "this runs on AI / is
    Pro-only" — referenced by PricingPlans' Pro card. Kept a distinct hue
    (violet, not gold) so it still reads as its own signal now that gold
@@ -323,6 +339,7 @@ body {
   .lp-alarm,
   .live-dot,
   .glow-text-live,
+  .live-pulse-sweep,
   .lp-shimmer:hover::after {
     animation: none !important;
   }

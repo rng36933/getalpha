@@ -43,8 +43,6 @@ export type TapeCopy = {
     marketClosed: string;
     tradingNow: string;
     ofRange: string;
-    dayHigh: string;
-    dayLow: string;
     /** "<Up> on the session, from an open of <price>." */
     sessionLine: (word: string, open: string) => string;
     barelyTraded: string;
@@ -93,8 +91,6 @@ const en: TapeCopy = {
     marketClosed: "market closed",
     tradingNow: "trading now",
     ofRange: "of range",
-    dayHigh: "Day high",
-    dayLow: "Day low",
     sessionLine: (word, open) => `${word} on the session, from an open of ${open}.`,
     barelyTraded:
       "This session has barely traded — its whole range so far is a fraction of a normal day. Almost certainly a closed market. The arrows below are correct and mean very little until it opens.",
@@ -162,8 +158,6 @@ const lt: TapeCopy = {
     marketClosed: "rinka uždaryta",
     tradingNow: "prekiaujama dabar",
     ofRange: "ruožo",
-    dayHigh: "Dienos aukščiausia",
-    dayLow: "Dienos žemiausia",
     sessionLine: (word, open) =>
       `${word} per sesiją, atidarius ties ${open}.`,
     barelyTraded:
