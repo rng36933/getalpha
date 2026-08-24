@@ -63,8 +63,15 @@ type CandleBar = {
  * by a scale built only from closes.
  */
 function buildCandlesticks(
-  bars: { open: number; high: number; low: number; close: number }[],
-): { candles: CandleBar[]; lastX: number; lastY: number } | null {
+  bars: { time: number; open: number; high: number; low: number; close: number }[],
+): {
+  candles: CandleBar[];
+  lastX: number;
+  lastY: number;
+  /** Evenly spaced x positions with the bar time at each, for the axis
+   * below the chart — first bar, last bar, and a couple of points between. */
+  ticks: { x: number; time: number }[];
+} | null {
   if (bars.length < 2) return null;
 
   const min = Math.min(...bars.map((b) => b.low));
@@ -98,11 +105,39 @@ function buildCandlesticks(
 
   const last = bars[bars.length - 1];
 
+  // Four ticks — start, two evenly spaced between, and the live end —
+  // rather than one per bar, which would be unreadable at this density.
+  const tickIndices = [
+    0,
+    Math.round((bars.length - 1) / 3),
+    Math.round(((bars.length - 1) * 2) / 3),
+    bars.length - 1,
+  ];
+  const ticks = tickIndices.map((i) => ({ x: candles[i].x, time: bars[i].time }));
+
   return {
     candles,
     lastX: candles[candles.length - 1].x,
     lastY: y(last.close),
+    ticks,
   };
+}
+
+/**
+ * A tick's time, in the reader's own local time zone and clock — the same
+ * epoch-seconds value MT5/the broker feed uses, formatted client-side rather
+ * than assuming a fixed offset.
+ */
+function formatTickTime(epochSeconds: number): string {
+  const date = new Date(epochSeconds * 1000);
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+
+  const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (sameDay) return time;
+
+  const day = date.toLocaleDateString([], { month: "short", day: "numeric" });
+  return `${day} ${time}`;
 }
 
 /**
@@ -249,7 +284,8 @@ export default function DayTapeReadout({
             the price's own pulse does. Too few bars (a session just opened)
             draws nothing rather than a misleading single stick. */}
         {candlesticks ? (
-          <div className="relative z-10 mt-4 hidden h-56 lg:block">
+          <div className="relative z-10 mt-4 hidden lg:block">
+          <div className="relative h-56">
             <svg
                 aria-hidden="true"
                 viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
@@ -318,6 +354,16 @@ export default function DayTapeReadout({
                 {tape.lastPrice}
               </span>
             </div>
+
+            {/* The axis a real chart has along its bottom edge — which bar is
+                which, not just what the bars are worth. Four points rather
+                than one per bar, unreadable at this density. */}
+            <div className="mt-1 flex justify-between font-mono text-[9px] text-muted/60">
+              {candlesticks.ticks.map((tick, i) => (
+                <span key={i}>{formatTickTime(tick.time)}</span>
+              ))}
+            </div>
+          </div>
           ) : null}
 
         {/* The direction word is coloured, so the sentence is built from the

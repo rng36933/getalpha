@@ -49,8 +49,9 @@ export type DayTape = {
 
   /** The last `SPARKLINE_LOOKBACK` M15 bars, oldest first, full OHLC — the
    * real price action behind the readings above, drawn as candles rather
-   * than only measured or flattened to a line of closes. */
-  sparkline: { open: number; high: number; low: number; close: number }[];
+   * than only measured or flattened to a line of closes. `time` is epoch
+   * seconds, as `fetchCandles` returns it for intraday bars. */
+  sparkline: { time: number; open: number; high: number; low: number; close: number }[];
 
   /** Today's range against the average of the last completed sessions. */
   rangeVsAverage: number | null;
@@ -72,10 +73,11 @@ export type DayTape = {
 /** Intraday bars the balance and average readings look back over. */
 const INTRADAY_LOOKBACK = 12;
 const AVERAGE_LOOKBACK = 20;
-/** M15 bars — 150 covers a bit under 40 hours, close to the full 180-bar
- * window `fetchCandles` already pulls, so this draws almost everything it
- * has rather than pulling a second series just for the picture. */
-const SPARKLINE_LOOKBACK = 150;
+/** M15 bars — 100 covers 25 hours. 150 reached back far enough to catch
+ * the weekend close, where every bar is flat (open=high=low=close) for
+ * the hours the market is shut, squashing every real bar's scale down
+ * to nothing beside it; 100 stays inside a normal trading day. */
+const SPARKLINE_LOOKBACK = 100;
 
 /** Completed sessions the typical daily range is measured over. */
 const RANGE_LOOKBACK = 10;
@@ -297,6 +299,7 @@ export function computeDayTape({
     },
 
     sparkline: intraday.slice(-SPARKLINE_LOOKBACK).map((bar) => ({
+      time: typeof bar.time === "number" ? bar.time : Number(bar.time),
       open: round(bar.open, decimals),
       high: round(bar.high, decimals),
       low: round(bar.low, decimals),
