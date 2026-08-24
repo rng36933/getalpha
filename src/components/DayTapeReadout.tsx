@@ -36,13 +36,6 @@ function directionLabel(direction: Direction, copy: TapeCopy["readout"]): string
   return copy.arrowFlat;
 }
 
-/**
- * The real arithmetic behind each reading, shown on hover next to its value.
- *
- * Matches `computeDayTape` in `tape.ts` exactly — this is documentation of
- * what already ran, not a new claim, so it has to stay in lockstep with that
- * file rather than describe the computation in looser words.
- */
 const SPARK_WIDTH = 400;
 const SPARK_HEIGHT = 40;
 const SPARK_PAD = 4;
@@ -108,21 +101,12 @@ function buildCandlesticks(
   };
 }
 
-const FORMULA: Record<string, string> = {
-  VS_OPEN: "(price − open) / open × 100",
-  VS_PRIOR_CLOSE: "price − prior close",
-  RANGE_POSITION: "(price − low) / (high − low) × 100",
-  INTRADAY_BARS: "count(close > open) vs count(close < open), last 12 bars",
-  VS_AVERAGE: "price − mean(last 20 closes)",
-};
-
 /**
  * One reading, as a stat tile in the grid rather than a row in a list.
  *
  * Only tinted when it actually points somewhere — a flat reading sitting on
  * the same wash as an up or down one would blur the one signal the tint
- * exists to carry. No click-to-expand: a tile just states its number, the
- * formula hint on hover is the only extra layer.
+ * exists to carry.
  */
 function ReadingTile({
   reading,
@@ -141,7 +125,6 @@ function ReadingTile({
   majority: Direction | null;
 }) {
   const tone = TONE[reading.direction];
-  const formula = FORMULA[reading.key];
   const agreesWithMajority = majority !== null && reading.direction === majority;
   // "3 up / 9 down" is a phrase, not a figure — set at the same size as the
   // others it would run past the tile's edge.
@@ -165,15 +148,6 @@ function ReadingTile({
         >
           {reading.value}
         </span>
-        {/* Positioned out of flow and revealed by opacity, not display — a
-            tile that grows or wraps to a second line on hover shifts every
-            other tile in its grid row along with it, which is the "jumps
-            when I move the mouse" feeling this replaces. */}
-        {formula ? (
-          <span className="pointer-events-none absolute top-full left-0 mt-0.5 font-mono text-[9px] whitespace-nowrap text-muted/60 opacity-0 transition-opacity group-hover:opacity-100">
-            [{formula}]
-          </span>
-        ) : null}
       </div>
     </div>
   );
