@@ -47,9 +47,10 @@ export type DayTape = {
   readings: Reading[];
   agreeing: { up: number; down: number; flat: number };
 
-  /** Closes from the last `SPARKLINE_LOOKBACK` M15 bars, oldest first — the
-   * real series behind the readings above, drawn rather than only measured. */
-  sparkline: number[];
+  /** The last `SPARKLINE_LOOKBACK` M15 bars, oldest first, full OHLC — the
+   * real price action behind the readings above, drawn as candles rather
+   * than only measured or flattened to a line of closes. */
+  sparkline: { open: number; high: number; low: number; close: number }[];
 
   /** Today's range against the average of the last completed sessions. */
   rangeVsAverage: number | null;
@@ -294,7 +295,12 @@ export function computeDayTape({
       flat: readings.filter((r) => r.direction === "FLAT").length,
     },
 
-    sparkline: intraday.slice(-SPARKLINE_LOOKBACK).map((bar) => bar.close),
+    sparkline: intraday.slice(-SPARKLINE_LOOKBACK).map((bar) => ({
+      open: round(bar.open, decimals),
+      high: round(bar.high, decimals),
+      low: round(bar.low, decimals),
+      close: round(bar.close, decimals),
+    })),
 
     // Three decimals, not two: a Sunday's quarter-point range against a
     // forty-point average rounds to a flat zero at two, and "0× the average

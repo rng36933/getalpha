@@ -1,6 +1,5 @@
 "use client";
 
-import { useId } from "react";
 import LivePrice from "@/components/LivePrice";
 import LocalTime from "@/components/LocalTime";
 import type { Locale } from "@/lib/i18n/locales";
@@ -17,10 +16,10 @@ import type { DayTape, Direction, Reading } from "@/lib/market-data/tape";
  */
 
 /** Colour only. The word beside the arrow comes from the dictionary. */
-const TONE: Record<Direction, { text: string; bg: string; stroke: string }> = {
-  UP: { text: "text-positive", bg: "bg-positive/[0.12]", stroke: "var(--positive)" },
-  DOWN: { text: "text-negative", bg: "bg-negative/[0.12]", stroke: "var(--negative)" },
-  FLAT: { text: "text-muted", bg: "bg-muted/[0.12]", stroke: "var(--muted)" },
+const TONE: Record<Direction, { text: string; bg: string }> = {
+  UP: { text: "text-positive", bg: "bg-positive/[0.12]" },
+  DOWN: { text: "text-negative", bg: "bg-negative/[0.12]" },
+  FLAT: { text: "text-muted", bg: "bg-muted/[0.12]" },
 };
 
 function toneWord(direction: Direction, copy: TapeCopy["readout"]): string {
@@ -48,43 +47,59 @@ const SPARK_WIDTH = 400;
 const SPARK_HEIGHT = 40;
 const SPARK_PAD = 4;
 
+type CandleBar = {
+  x: number;
+  bodyWidth: number;
+  wickTop: number;
+  wickBottom: number;
+  bodyTop: number;
+  bodyBottom: number;
+  up: boolean;
+};
+
 /**
- * The session's own closes, laid out as an SVG line and the area beneath it.
+ * The session's own M15 bars, laid out as real candlesticks — wicks and
+ * bodies, not a line connecting closes.
  *
  * This is the same series `computeDayTape` already samples for VS_AVERAGE and
- * INTRADAY_BARS — drawn here instead of only measured, so the width beside the
- * price shows the real session rather than a decoration standing in for one.
- * A flat or near-flat run (a genuinely quiet session, or too few points to
- * plot) draws as a flat line down the middle rather than nothing.
+ * INTRADAY_BARS, drawn here instead of only measured. The high/low across the
+ * whole window sets the scale, so a long wick on one bar doesn't get clipped
+ * by a scale built only from closes.
  */
-function buildSparkline(values: number[]): {
-  line: string;
-  area: string;
-  end: { x: number; y: number };
-} | null {
-  if (values.length < 2) return null;
+function buildCandlesticks(
+  bars: { open: number; high: number; low: number; close: number }[],
+): { candles: CandleBar[]; lastX: number } | null {
+  if (bars.length < 2) return null;
 
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const min = Math.min(...bars.map((b) => b.low));
+  const max = Math.max(...bars.map((b) => b.high));
   const range = max - min;
-  const step = SPARK_WIDTH / (values.length - 1);
   const usable = SPARK_HEIGHT - SPARK_PAD * 2;
+  const slot = SPARK_WIDTH / bars.length;
+  const bodyWidth = Math.max(slot * 0.6, 1.5);
 
-  const points = values.map((value, i) => {
-    const x = i * step;
-    const y =
-      range > 0
-        ? SPARK_PAD + (1 - (value - min) / range) * usable
-        : SPARK_HEIGHT / 2;
-    return { x, y };
+  const y = (value: number) =>
+    range > 0 ? SPARK_PAD + (1 - (value - min) / range) * usable : SPARK_HEIGHT / 2;
+
+  const candles = bars.map((bar, i) => {
+    const bodyTop = y(Math.max(bar.open, bar.close));
+    const bodyBottom = y(Math.min(bar.open, bar.close));
+
+    return {
+      x: slot * i + slot / 2,
+      bodyWidth,
+      wickTop: y(bar.high),
+      wickBottom: y(bar.low),
+      // A doji (open === close) would draw a zero-height rect and vanish —
+      // every bar gets at least a hairline body so the row it traded in is
+      // still visible.
+      bodyTop: Math.min(bodyTop, bodyBottom - 1),
+      bodyBottom: Math.max(bodyBottom, bodyTop + 1),
+      up: bar.close >= bar.open,
+    };
   });
 
-  const line = points
-    .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
-    .join(" ");
-  const area = `${line} L${SPARK_WIDTH},${SPARK_HEIGHT} L0,${SPARK_HEIGHT} Z`;
-
-  return { line, area, end: points[points.length - 1] };
+  return { candles, lastX: candles[candles.length - 1].x };
 }
 
 const FORMULA: Record<string, string> = {
@@ -208,8 +223,7 @@ export default function DayTapeReadout({
 }) {
   const copy = tapeCopy(locale).readout;
   const tone = TONE[tape.direction];
-  const areaGradientId = useId();
-  const spark = buildSparkline(tape.sparkline);
+  const candlesticks = buildCandlesticks(tape.sparkline);
 
   // Which direction most readings share, for the tiles below — null when
   // there's a genuine split (e.g. 2 up, 2 down, 1 flat), since there's no
@@ -273,49 +287,50 @@ export default function DayTapeReadout({
           />
 
           {/* Fills the width beside the price on a wide row with the actual
-              session, not a decoration standing in for one: the same closes
-              behind VS_AVERAGE and INTRADAY_BARS, drawn as a line with a
-              soft fill under it and — while live — a pulsing dot at the
-              current close, the same "still updating" job the price's own
-              pulse does. Too few points (a session just opened) draws
-              nothing rather than a misleading flat line. */}
-          {spark ? (
+              session's price action — the same M15 bars behind VS_AVERAGE
+              and INTRADAY_BARS, drawn as real candles (wick + body, red or
+              green per bar) rather than a line connecting closes. The last
+              candle glows and pulses while the session is live, the same
+              "still updating" job the price's own pulse does. Too few bars
+              (a session just opened) draws nothing rather than a misleading
+              single stick. */}
+          {candlesticks ? (
             <svg
               aria-hidden="true"
               viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
               preserveAspectRatio="none"
               className="relative z-10 ml-4 mb-1 hidden h-9 flex-1 self-stretch lg:block"
             >
-              <defs>
-                <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={tone.stroke} stopOpacity="0.28" />
-                  <stop offset="100%" stopColor={tone.stroke} stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d={spark.area} fill={`url(#${areaGradientId})`} stroke="none" />
-              <path
-                d={spark.line}
-                fill="none"
-                stroke={tone.stroke}
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity={tape.barelyTraded ? 0.5 : 0.9}
-                style={
-                  tape.barelyTraded
-                    ? undefined
-                    : { filter: `drop-shadow(0 0 2.5px ${tone.stroke})` }
-                }
-              />
-              {tape.barelyTraded ? null : (
-                <circle
-                  className="spark-live-dot"
-                  cx={spark.end.x}
-                  cy={spark.end.y}
-                  r="3.5"
-                  fill={tone.stroke}
-                />
-              )}
+              {candlesticks.candles.map((candle, i) => {
+                const isLast = i === candlesticks.candles.length - 1;
+                const live = isLast && !tape.barelyTraded;
+                const color = candle.up ? "var(--positive)" : "var(--negative)";
+
+                return (
+                  <g
+                    key={i}
+                    opacity={tape.barelyTraded ? 0.5 : live ? 1 : 0.75}
+                    style={live ? { filter: `drop-shadow(0 0 2.5px ${color})` } : undefined}
+                  >
+                    <line
+                      x1={candle.x}
+                      x2={candle.x}
+                      y1={candle.wickTop}
+                      y2={candle.wickBottom}
+                      stroke={color}
+                      strokeWidth="1"
+                    />
+                    <rect
+                      className={live ? "spark-live-dot" : undefined}
+                      x={candle.x - candle.bodyWidth / 2}
+                      y={candle.bodyTop}
+                      width={candle.bodyWidth}
+                      height={candle.bodyBottom - candle.bodyTop}
+                      fill={color}
+                    />
+                  </g>
+                );
+              })}
             </svg>
           ) : null}
         </div>
