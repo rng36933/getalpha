@@ -1,7 +1,6 @@
 "use client";
 
 import LivePrice from "@/components/LivePrice";
-import LocalTime from "@/components/LocalTime";
 import type { Locale } from "@/lib/i18n/locales";
 import { tapeCopy, type TapeCopy } from "@/lib/market-data/tape-copy";
 import type { DayTape, Direction, Reading } from "@/lib/market-data/tape";
@@ -156,37 +155,6 @@ function ReadingTile({
       </div>
     </div>
   );
-}
-
-/**
- * What the readings add up to, said accurately.
- *
- * "All" means all of them. The first version said "All 5 readings point up"
- * whenever none pointed down — so one reading up and four flat was reported as
- * unanimous, which is the sort of small lie that makes a reader stop trusting
- * the big numbers too.
- */
-function agreementLine(tape: DayTape, copy: TapeCopy["readout"]): string {
-  const { up, down, flat } = tape.agreeing;
-  const total = tape.readings.length;
-
-  if (total === 0) return copy.nothingMeasurable;
-
-  if (up === total) return copy.allUp(total);
-  if (down === total) return copy.allDown(total);
-  if (flat === total) return copy.allFlat(total);
-
-  const parts: string[] = [];
-  if (up > 0) parts.push(copy.countUp(up));
-  if (down > 0) parts.push(copy.countDown(down));
-  if (flat > 0) parts.push(copy.countFlat(flat));
-
-  const counts = parts.join(", ");
-
-  if (up > down) return copy.leaningUp(counts, total);
-  if (down > up) return copy.leaningDown(counts, total);
-
-  return copy.noLean(counts, total);
 }
 
 export default function DayTapeReadout({
@@ -379,69 +347,9 @@ export default function DayTapeReadout({
         ))}
       </div>
 
-      {/* The same facts as before, laid out as a band of labelled columns
-          plus a couple of footnotes, in one rounded glass panel. */}
-      <div className="rounded-2xl border border-line bg-surface-raised/40 p-4 transition-colors hover:border-accent/60 hover:shadow-[0_0_16px_-4px_var(--accent)]">
-        <dl className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <div className="flex flex-col gap-1.5">
-            <dt>
-              <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
-                Status
-              </span>
-            </dt>
-            <dd className={`text-xs font-semibold uppercase ${tone.text}`}>
-              {agreementLine(tape, copy)}
-            </dd>
-          </div>
-
-          {tape.rangeVsAverage !== null ? (
-            <div className="flex flex-col gap-1.5">
-              <dt>
-                <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
-                  Range
-                </span>
-              </dt>
-              <dd className="text-xs font-semibold text-foreground">
-                {tape.rangeVsAverage < 0.05
-                  ? copy.rangeTiny
-                  : tape.rangeVsAverage >= 1.3
-                    ? copy.rangeWide(tape.rangeVsAverage)
-                    : tape.rangeVsAverage <= 0.7
-                      ? copy.rangeQuiet(tape.rangeVsAverage)
-                      : copy.rangeNormal(tape.rangeVsAverage)}
-              </dd>
-            </div>
-          ) : null}
-
-          <div className="flex flex-col gap-1.5">
-            <dt>
-              <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-semibold tracking-widest text-muted uppercase">
-                Session
-              </span>
-            </dt>
-            <dd className="text-xs text-muted">
-              {copy.sessionOf(tape.sessionDate)}
-              {fetchedAt ? (
-                <>
-                  {copy.pricedAt}
-                  <LocalTime at={fetchedAt} utc={fetchedAt.slice(11, 16)} />
-                </>
-              ) : null}
-            </dd>
-          </div>
-        </dl>
-
-        <div className="mt-3 space-y-1.5 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-          {stale ? <p className="text-warning">{copy.staleNote}</p> : null}
-
-          {/* Skipped when the market-closed warning already ran: both
-              sentences make the same "not a forecast" point, and saying it
-              twice on one card reads as noise rather than caution. */}
-          {tape.barelyTraded ? null : (
-            <p className="text-[10px] text-muted/70">{copy.footnote}</p>
-          )}
-        </div>
-      </div>
+      {stale ? (
+        <p className="text-[11px] leading-relaxed text-warning">{copy.staleNote}</p>
+      ) : null}
     </div>
   );
 }
