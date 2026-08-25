@@ -15,6 +15,11 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-08-26",
+    title: "Open Positions no longer reads a profit-locking stop as \"no stop\"",
+    body: "Moving a stop past entry to lock in a gain isn't the same as having no stop at all, but the card couldn't tell the two apart and warned about both the same way. A stop on the profit side of entry now shows as \"profit locked\" instead.",
+  },
+  {
     date: "2026-08-20",
     title: "Fixed \"no stop\" for trades where the stop was set after opening",
     body: "If you open with Quick Buy/Quick Sell and add the stop-loss afterward by editing the open position, the journal was reading the position's original order — which never had one — instead of the stop you actually set. It now follows the position's own history and picks up a stop or target added or moved at any point before the trade closed, which also fixes Planned RR and the Exit column showing blank for these trades. Re-download the add-on from Settings and reattach it; trades that already closed keep their old reading until resynced.",
