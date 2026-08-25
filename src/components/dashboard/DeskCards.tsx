@@ -44,6 +44,18 @@ function pnl(value: number | null, currency: string | null): string {
   return formatSignedMoney(value, currency);
 }
 
+/**
+ * Enough decimals for the instrument, judged from its price.
+ *
+ * Gold at 2350 needs two; EUR/USD at 1.0854 needs four. Hardcoding either
+ * makes one of them unreadable, and nothing on the trade says which is which.
+ */
+function priceDecimals(price: number): number {
+  if (price >= 100) return 2;
+  if (price >= 10) return 3;
+  return 5;
+}
+
 /* ------------------------------------------------------------------ open */
 
 export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
@@ -72,8 +84,13 @@ export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
               {position.direction === "BUY" ? "BUY" : "SELL"}
             </span>
 
-            <span className="min-w-0 flex-1 truncate text-sm font-medium">
-              {position.asset}
+            <span className="min-w-0 flex-1 truncate">
+              <span className="block text-sm font-medium">{position.asset}</span>
+              <span className="block font-mono text-[11px] tabular-nums text-muted">
+                {position.entryPrice.toFixed(priceDecimals(position.entryPrice))}
+                {" · "}
+                {position.size} lot
+              </span>
             </span>
 
             <span className="shrink-0 font-mono text-xs tabular-nums text-muted">

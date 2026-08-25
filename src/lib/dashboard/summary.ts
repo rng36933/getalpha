@@ -18,6 +18,7 @@ export type OpenPosition = {
   asset: string;
   direction: "BUY" | "SELL";
   entryPrice: number;
+  size: number;
   /** Currency at risk if the stop is hit. Null when no stop was recorded. */
   riskAmount: number | null;
   riskPercent: number | null;
@@ -102,6 +103,7 @@ export function summariseTrades(trades: Trade[]): DashboardSummary {
         asset: trade.asset,
         direction: trade.direction,
         entryPrice: trade.entryPrice.toNumber(),
+        size: trade.size.toNumber(),
         riskAmount: metrics.riskAmount,
         riskPercent: metrics.riskPercent,
         stopWasSet: metrics.flags.stopWasSet,
