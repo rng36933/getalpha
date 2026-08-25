@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "losing-streak-vs-broken-strategy",
+    title: "The Difference Between a Losing Streak and a Broken Strategy",
+    description:
+      "Seven losses in a row can mean two very different things: normal variance inside a working edge, or a strategy that stopped working. The numbers that tell the two apart, and the one that usually can't.",
+    date: "2026-08-25",
+  },
+  {
     slug: "drawdown-recovery-math",
     title: "Drawdown Recovery Math: Why a 50% Loss Needs a 100% Gain to Break Even",
     description:
