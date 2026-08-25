@@ -21,6 +21,14 @@ export type OpenPosition = {
   /** Currency at risk if the stop is hit. Null when no stop was recorded. */
   riskAmount: number | null;
   riskPercent: number | null;
+  /**
+   * A stop exists in the terminal, even though riskPercent is null.
+   *
+   * True when the stop has been moved to the profit side of entry (locking
+   * in a gain rather than capping a loss) — riskAmount has no meaning there,
+   * but it is not the same situation as no stop existing at all.
+   */
+  stopWasSet: boolean;
   openedAt: string;
 };
 
@@ -96,6 +104,7 @@ export function summariseTrades(trades: Trade[]): DashboardSummary {
         entryPrice: trade.entryPrice.toNumber(),
         riskAmount: metrics.riskAmount,
         riskPercent: metrics.riskPercent,
+        stopWasSet: metrics.flags.stopWasSet,
         openedAt: trade.createdAt.toISOString(),
       });
 

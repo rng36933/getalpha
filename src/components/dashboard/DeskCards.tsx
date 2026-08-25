@@ -77,10 +77,12 @@ export function OpenPositions({ positions }: { positions: OpenPosition[] }) {
             </span>
 
             <span className="shrink-0 font-mono text-xs tabular-nums text-muted">
-              {position.riskPercent === null ? (
-                <span className="text-warning">no stop</span>
-              ) : (
+              {position.riskPercent !== null ? (
                 `${position.riskPercent.toFixed(2)}% risk`
+              ) : position.stopWasSet ? (
+                <span className="text-positive">profit locked</span>
+              ) : (
+                <span className="text-warning">no stop</span>
               )}
             </span>
           </li>
