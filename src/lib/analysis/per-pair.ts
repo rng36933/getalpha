@@ -263,7 +263,10 @@ export function analyseJournal(trades: Trade[]): JournalAnalysis {
       openedAt: trade.createdAt,
       pnl,
       riskPercent: metrics.riskPercent,
-      hasStop: metrics.flags.stopWasSet && !metrics.flags.stopOnWrongSideOfEntry,
+      // A stop moved past entry to lock in a gain still counts as a stop —
+      // it just has no risk to measure. stopOnWrongSideOfEntry is a reason
+      // riskPercent is null, not a reason to say no stop was ever set.
+      hasStop: metrics.flags.stopWasSet,
       hasNotes: !metrics.flags.contextNoteMissing,
       isOpen: trade.closedAt === null,
       previous,

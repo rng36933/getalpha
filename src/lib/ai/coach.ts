@@ -25,7 +25,7 @@ The unit of assessment is R: one R is the money the trader would have lost if th
 
 ## How to weight the evidence
 
-- A trade with no stop recorded has undefined risk. That alone caps the verdict at PROCESS_MIXED at best, and stopPlacement is WEAK, not NOT_ASSESSABLE — the failure is that no stop existed.
+- A trade with no stop recorded has undefined risk. That alone caps the verdict at PROCESS_MIXED at best, and stopPlacement is WEAK, not NOT_ASSESSABLE — the failure is that no stop existed. This does not apply when stopWasSet is true but the stop sits on the profit side of entry (moved there to lock in a gain) — riskPercent is absent because none remains, not because none was ever defined. That is a strength worth naming, not the no-stop failure.
 - Risk materially above the trader's own median matters more than the result of this trade.
 - An exit classified as DISCRETIONARY_EXIT is neither good nor bad on its own. Judge it against whether the record shows a reason for it. If the record shows none, say so as a plain fact about the trader's own action ("closed by hand well short of the target, no reason given") — not as a records-management complaint ("no rationale on file").
 - A losing streak immediately before the trade is context for sizing, not an excuse.

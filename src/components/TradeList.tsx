@@ -512,9 +512,17 @@ export default function TradeList({
                   </td>
                   <td className="py-3 pr-3 text-right font-mono text-xs">
                     {trade.metrics.riskPercent === null ? (
-                      // Not a missing value to shrug at: no stop means no
-                      // defined risk, and the review says so too.
-                      <span className="text-warning">no stop</span>
+                      trade.metrics.flags.stopWasSet ? (
+                        // The stop is real but sits on the profit side of
+                        // entry (locking in a gain) — riskPercent has no
+                        // meaning there, but that is not the same as no stop
+                        // existing at all.
+                        <span className="text-positive">profit locked</span>
+                      ) : (
+                        // Genuinely missing: no stop means no defined risk,
+                        // and the review says so too.
+                        <span className="text-warning">no stop</span>
+                      )
                     ) : (
                       <span
                         className={
