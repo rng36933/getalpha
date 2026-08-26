@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Correlation Risk: When "Diversified" Trades Are Actually the Same Bet Twice
 - [ ] What Your Average Trade Duration Actually Reveals About Your Strategy
 - [ ] Backtesting Lies: Why Paper Performance Rarely Survives Live Execution
 - [ ] The Cost of Widening a Stop Loss "Just This Once"
@@ -57,6 +56,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Correlation Risk: When "Diversified" Trades Are Actually the Same Bet Twice (2026-08-26)
 - [x] The Difference Between a Losing Streak and a Broken Strategy (2026-08-25)
 - [x] Drawdown Recovery Math: Why a 50% Loss Needs a 100% Gain to Break Even (2026-08-24)
 - [x] Position Sizing Isn't One Number: Why the Same 1% Risk Produces Different Trades (2026-08-23)

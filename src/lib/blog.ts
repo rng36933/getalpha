@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "correlation-risk-same-bet-twice",
+    title: "Correlation Risk: When \"Diversified\" Trades Are Actually the Same Bet Twice",
+    description:
+      "Five open positions can still be one bet wearing five tickers. What correlated exposure actually looks like in a trade log, and why the position count on your dashboard is lying to you.",
+    date: "2026-08-26",
+  },
+  {
     slug: "losing-streak-vs-broken-strategy",
     title: "The Difference Between a Losing Streak and a Broken Strategy",
     description:
