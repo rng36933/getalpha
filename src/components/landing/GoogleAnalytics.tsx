@@ -26,6 +26,8 @@ export default function GoogleAnalytics() {
   // Served from this origin (see next.config.ts's rewrite), not directly
   // from googletagmanager.com — most ad-blockers match by domain, and a
   // same-origin script survives blocklists a direct third-party request
-  // never would.
-  return <Script src={`/ga4/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />;
+  // never would. The path itself is an unguessable hash, not "/gtag/js" —
+  // filter lists match that literal path fragment regardless of domain,
+  // which was quietly eating every hit until 2026-08-26 (see next.config.ts).
+  return <Script src={`/a3f7e91c2b6d4085/init.js?id=${GA_ID}`} strategy="afterInteractive" />;
 }

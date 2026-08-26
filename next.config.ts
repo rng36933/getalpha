@@ -48,10 +48,25 @@ const nextConfig: NextConfig = {
   // the site's self-hosted visit counter logged 78 real visitors in the same
   // window; gtag.js loaded and queued a config command correctly, so the
   // client code was never the bug, only the direct third-party request was.
+  //
+  // The path segments matter as much as the domain: "/ga4/gtag/js" and
+  // "/ga4/g/collect" still contain the literal strings "gtag/js" and
+  // "g/collect" that filter lists like EasyPrivacy match on regardless of
+  // which domain serves them — confirmed 2026-08-26 by comparing this same
+  // rewrite (zero hits from real visitors over 48h in server logs) against
+  // Vercel's own analytics script, which sits at an unguessable hashed path
+  // and logged 6-12 real visitors/day over the same window. Unrecognizable
+  // path segments below, same trick Vercel's own script already uses.
   async rewrites() {
     return [
-      { source: "/ga4/gtag/js", destination: "https://www.googletagmanager.com/gtag/js" },
-      { source: "/ga4/g/collect", destination: "https://www.google-analytics.com/g/collect" },
+      {
+        source: "/a3f7e91c2b6d4085/init.js",
+        destination: "https://www.googletagmanager.com/gtag/js",
+      },
+      {
+        source: "/a3f7e91c2b6d4085/hit",
+        destination: "https://www.google-analytics.com/g/collect",
+      },
     ];
   },
 };
