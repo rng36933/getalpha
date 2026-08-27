@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] What Your Average Trade Duration Actually Reveals About Your Strategy
 - [ ] Backtesting Lies: Why Paper Performance Rarely Survives Live Execution
 - [ ] The Cost of Widening a Stop Loss "Just This Once"
 - [ ] Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours
@@ -56,6 +55,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] What Your Average Trade Duration Actually Reveals About Your Strategy (2026-08-27)
 - [x] Correlation Risk: When "Diversified" Trades Are Actually the Same Bet Twice (2026-08-26)
 - [x] The Difference Between a Losing Streak and a Broken Strategy (2026-08-25)
 - [x] Drawdown Recovery Math: Why a 50% Loss Needs a 100% Gain to Break Even (2026-08-24)

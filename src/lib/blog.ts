@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "average-trade-duration",
+    title: "What Your Average Trade Duration Actually Reveals About Your Strategy",
+    description:
+      "Holding time is one of the least-checked numbers in a trading journal. What it exposes about a strategy that win rate and P&L can't.",
+    date: "2026-08-27",
+  },
+  {
     slug: "correlation-risk-same-bet-twice",
     title: "Correlation Risk: When \"Diversified\" Trades Are Actually the Same Bet Twice",
     description:
