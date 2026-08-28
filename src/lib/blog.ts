@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "backtesting-lies",
+    title: "Backtesting Lies: Why Paper Performance Rarely Survives Live Execution",
+    description:
+      "A backtest that shows a 70% win rate and a smooth equity curve is not lying about the past. It is lying about what happens when you trade it with real money.",
+    date: "2026-08-28",
+  },
+  {
     slug: "average-trade-duration",
     title: "What Your Average Trade Duration Actually Reveals About Your Strategy",
     description:
