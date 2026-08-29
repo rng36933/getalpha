@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "widening-a-stop-loss",
+    title: "The Cost of Widening a Stop Loss “Just This Once”",
+    description:
+      "Widening a stop once doesn't feel like a strategy change. Run the expectancy math and it is one — and it's a change that keeps making itself again.",
+    date: "2026-08-29",
+  },
+  {
     slug: "backtesting-lies",
     title: "Backtesting Lies: Why Paper Performance Rarely Survives Live Execution",
     description:

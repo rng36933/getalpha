@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] The Cost of Widening a Stop Loss "Just This Once"
 - [ ] Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours
 - [ ] Leverage Isn't the Risk — How You Use It Is
 - [ ] The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too
@@ -54,6 +53,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] The Cost of Widening a Stop Loss "Just This Once" (2026-08-29)
 - [x] Backtesting Lies: Why Paper Performance Rarely Survives Live Execution (2026-08-28)
 - [x] What Your Average Trade Duration Actually Reveals About Your Strategy (2026-08-27)
 - [x] Correlation Risk: When "Diversified" Trades Are Actually the Same Bet Twice (2026-08-26)
