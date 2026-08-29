@@ -32,6 +32,11 @@ export const PUBLIC_ROUTES = [
   // What shipped, for a visitor deciding whether to trust an active product
   // and a registered user alike — not gated behind a session either way.
   "/changelog",
+  // Live uptime for the site, database, and payments — same reasoning as the
+  // changelog. A status page only a signed-in user can read is useless during
+  // the outage it exists for: an anonymous visitor wondering if the site is
+  // down has no session either.
+  "/status",
   // Articles, same reasoning as the changelog — written for whoever is
   // deciding whether to sign up, so gating them behind a session defeats the
   // point.

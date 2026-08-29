@@ -35,6 +35,9 @@ export default function PublicLayout({
             <Link href="/changelog" className="font-medium text-accent hover:text-accent/80">
               Changelog
             </Link>
+            <Link href="/status" className="hover:text-foreground">
+              Status
+            </Link>
             {LEGAL_PAGES.map((page) => (
               <Link key={page.href} href={page.href} className="hover:text-foreground">
                 {page.label}

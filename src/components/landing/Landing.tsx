@@ -425,6 +425,9 @@ export default function Landing({
             <Link href="/changelog" className="transition-all duration-300 ease-in-out hover:text-white">
               Changelog
             </Link>
+            <Link href="/status" className="transition-all duration-300 ease-in-out hover:text-white">
+              Status
+            </Link>
             {LEGAL_PAGES.map((page) => (
               <Link key={page.href} href={page.href} className="transition-all duration-300 ease-in-out hover:text-white">
                 {page.label}
