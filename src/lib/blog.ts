@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "session-overlap-volatility",
+    title: "Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours",
+    description:
+      "Volatility isn't spread evenly across the trading day. Most of it is concentrated in a couple of session-overlap hours, and a strategy tested without separating them is really being tested on two different markets at once.",
+    date: "2026-08-30",
+  },
+  {
     slug: "widening-a-stop-loss",
     title: "The Cost of Widening a Stop Loss “Just This Once”",
     description:

@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours
 - [ ] Leverage Isn't the Risk — How You Use It Is
 - [ ] The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too
 - [ ] Grading a Trade by Process, Not Outcome: A Practical Scorecard
@@ -53,6 +52,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours (2026-08-30)
 - [x] The Cost of Widening a Stop Loss "Just This Once" (2026-08-29)
 - [x] Backtesting Lies: Why Paper Performance Rarely Survives Live Execution (2026-08-28)
 - [x] What Your Average Trade Duration Actually Reveals About Your Strategy (2026-08-27)
