@@ -52,9 +52,9 @@ export function gtagInit(): void {
   });
   gtag("js", new Date());
   // transport_url routes hits through this origin's rewrite (next.config.ts)
-  // instead of google-analytics.com directly. The path itself matters too,
-  // not just the domain — see next.config.ts for why it's a hash now instead
-  // of the literal "/g/collect".
+  // instead of google-analytics.com directly. gtag.js appends "/g/collect"
+  // to this itself — that suffix isn't ours to rename, only the prefix is
+  // hashed. See next.config.ts for the rewrite this has to match exactly.
   gtag("config", GA_ID, {
     transport_url: window.location.origin + "/a3f7e91c2b6d4085",
   });

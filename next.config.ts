@@ -56,7 +56,16 @@ const nextConfig: NextConfig = {
   // rewrite (zero hits from real visitors over 48h in server logs) against
   // Vercel's own analytics script, which sits at an unguessable hashed path
   // and logged 6-12 real visitors/day over the same window. Unrecognizable
-  // path segments below, same trick Vercel's own script already uses.
+  // prefix below, same trick Vercel's own script already uses.
+  //
+  // The collect route's suffix must stay literally "/g/collect": gtag.js
+  // appends that itself to whatever `transport_url` ga-client.ts hands it
+  // (https://.../a3f7e91c2b6d4085), it isn't something this rewrite gets to
+  // rename. The 2026-08-26 hashing pass renamed this route's source to
+  // "/hit" along with the prefix, which broke it completely — every hit
+  // 404'd against a route that no longer existed, confirmed 2026-08-31 via
+  // a manual sendBeacon to the real gtag-generated path. That silent 404 is
+  // the actual reason GA4 has shown zero data since, not ad-blocking.
   async rewrites() {
     return [
       {
@@ -64,7 +73,7 @@ const nextConfig: NextConfig = {
         destination: "https://www.googletagmanager.com/gtag/js",
       },
       {
-        source: "/a3f7e91c2b6d4085/hit",
+        source: "/a3f7e91c2b6d4085/g/collect",
         destination: "https://www.google-analytics.com/g/collect",
       },
     ];
