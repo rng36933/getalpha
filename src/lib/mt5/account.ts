@@ -17,12 +17,16 @@ export async function getAccountCurrency(
   if (!userId) return null;
 
   try {
-    const connection = await prisma.mtConnection.findUnique({
+    // A user may have both an MT5 and an MT4 connection (see the
+    // `[userId, platform]` key in schema.prisma) — whichever last reported a
+    // currency wins, same tie-break as the dashboard's connection prompt.
+    const connections = await prisma.mtConnection.findMany({
       where: { userId },
       select: { currency: true },
+      orderBy: { lastSeenAt: { sort: "desc", nulls: "last" } },
     });
 
-    return connection?.currency ?? null;
+    return connections[0]?.currency ?? null;
   } catch (error) {
     console.error("Could not read the account currency:", error);
     return null;

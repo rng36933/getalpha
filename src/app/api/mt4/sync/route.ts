@@ -7,31 +7,20 @@ import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { requireJsonRequest } from "@/lib/request-guards";
 
 /**
- * A terminal sending more than this in one call is not a person trading.
- *
- * Raised from 500, which was too low for the one send that legitimately is
- * large: the first run ships ninety days of history in a single request, and an
- * active trader clears five hundred trades in that window without being at all
- * unusual. The failure mode was also worse than it looks — the request is
- * rejected whole, and the open positions travelling in the same payload go with
- * it, so the symptom is a desk showing nothing open rather than a truncated
- * history.
- *
- * Two thousand trades at roughly 250 bytes each is about half a megabyte, well
- * inside the platform's body limit. Past that the sender really is something
- * other than one person's terminal.
+ * The MT4 twin of /api/mt5/sync — same payload shape, same `applySync`
+ * pipeline, just tagged `TradeSource.MT4` on the way in. See that route for
+ * the reasoning behind the limits and the token-based auth; nothing here
+ * diverges from it except the source tag.
  */
 const MAX_TRADES = 2000;
 
 /**
- * POST /api/mt5/sync
+ * POST /api/mt4/sync
  *
- * Called by the Expert Advisor running in somebody's MetaTrader terminal, with
- * their connection token as a bearer credential. Public in the middleware,
- * because a terminal has no Clerk session; the token is what authenticates it.
- *
- * The direction of travel is the point: the terminal sends to us and we never
- * connect to it. Nothing stored here could be used to reach anybody's broker.
+ * Called by the Expert Advisor running in somebody's MetaTrader 4 terminal,
+ * with their connection token as a bearer credential. Public in the
+ * middleware, because a terminal has no Clerk session; the token is what
+ * authenticates it.
  */
 export async function POST(request: Request) {
   const token = tokenFromHeader(request.headers.get("authorization"));
@@ -43,17 +32,15 @@ export async function POST(request: Request) {
   const wrongType = requireJsonRequest(request);
   if (wrongType) return wrongType;
 
-  // Keyed on the token so one terminal cannot exhaust another's allowance, and
-  // on its hash so the raw token never reaches the in-memory map.
   const tokenHash = hashToken(token);
 
-  const limited = enforceRateLimit(`mt5:${tokenHash}`, LIMITS.write);
+  const limited = enforceRateLimit(`mt4:${tokenHash}`, LIMITS.write);
   if (limited) return limited;
 
   const connection = await prisma.mtConnection
     .findUnique({ where: { tokenHash }, select: { id: true, userId: true } })
     .catch((error) => {
-      console.error("MT5 sync could not read the connection:", error);
+      console.error("MT4 sync could not read the connection:", error);
       return null;
     });
 
@@ -101,7 +88,7 @@ export async function POST(request: Request) {
     const result = await applySync(
       connection.userId,
       payload.trades as IncomingTrade[],
-      TradeSource.MT5,
+      TradeSource.MT4,
     );
 
     await prisma.mtConnection.update({
@@ -116,7 +103,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
-    console.error("POST /api/mt5/sync failed:", error);
+    console.error("POST /api/mt4/sync failed:", error);
     return NextResponse.json({ error: "Could not store the trades" }, { status: 500 });
   }
 }

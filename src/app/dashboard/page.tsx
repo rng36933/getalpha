@@ -162,10 +162,17 @@ async function loadMt5State(userId: string | null): Promise<{
   }
 
   try {
-    const connection = await prisma.mtConnection.findUnique({
+    // A user may have both an MT5 and an MT4 connection now (see the
+    // `[userId, platform]` key in schema.prisma) — this prompt cares about
+    // whichever terminal is actually talking, not which platform it is, so
+    // the one that has sent something most recently wins; a key that exists
+    // but has never received beats one that doesn't exist at all.
+    const connections = await prisma.mtConnection.findMany({
       where: { userId },
       select: { lastSeenAt: true, currency: true },
+      orderBy: { lastSeenAt: { sort: "desc", nulls: "last" } },
     });
+    const connection = connections[0] ?? null;
 
     return {
       connected: connection !== null,

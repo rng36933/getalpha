@@ -461,6 +461,13 @@ model AiUsageLog {
 enum TradeSource {
   MANUAL
   MT5
+  MT4
+}
+
+/// Which terminal a connection or a synced trade came from.
+enum Platform {
+  MT5
+  MT4
 }
 
 /// A terminal allowed to push trades into one account's journal.
@@ -472,9 +479,15 @@ enum TradeSource {
 /// Note what is deliberately absent: any credential for the broker. The
 /// terminal sends to us; we never connect to it, and there is nothing here
 /// that could be used to reach somebody's trading account.
+///
+/// Started as one row per user (`userId @unique`) back when MT5 was the only
+/// terminal this accepted. Widened to `[userId, platform]` when MT4 joined,
+/// the same move `DashboardLayout` made for `page` — a user may run both at
+/// once, and each terminal needs its own token to disconnect independently.
 model MtConnection {
-  id     String @id @default(uuid())
-  userId String @unique
+  id       String   @id @default(uuid())
+  userId   String
+  platform Platform @default(MT5)
 
   /// SHA-256 of the token, hex encoded.
   tokenHash String @unique
@@ -490,6 +503,7 @@ model MtConnection {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, platform])
   @@index([lastSeenAt])
 }
 
@@ -501,14 +515,17 @@ model Trade {
   /// overwritten by the terminal on the next update.
   source TradeSource @default(MANUAL)
 
-  /// The MT5 position ticket, for synced trades.
+  /// The terminal's own ticket for this trade — the MT5 position ticket, or
+  /// the MT4 order ticket.
   ///
-  /// The position ticket rather than the deal ticket, because a position is one
-  /// trade from open to close while its deals are the two ends of it. Keyed
-  /// this way, an open position becomes the same row when it closes instead of
-  /// a second one — and a terminal that restarts and resends its whole history
-  /// updates rows rather than duplicating them, which the unique constraint
-  /// enforces rather than a check two concurrent requests could both pass.
+  /// For MT5, the position ticket rather than the deal ticket, because a
+  /// position is one trade from open to close while its deals are the two
+  /// ends of it. Keyed this way (together with `source`, see the unique
+  /// constraint below), an open position becomes the same row when it closes
+  /// instead of a second one — and a terminal that restarts and resends its
+  /// whole history updates rows rather than duplicating them, which the
+  /// unique constraint enforces rather than a check two concurrent requests
+  /// could both pass.
   externalId String?
 
   asset     String
@@ -547,7 +564,11 @@ model Trade {
   createdAt DateTime  @default(now())
   closedAt  DateTime?
 
-  @@unique([userId, externalId])
+  // `source` is part of the key, not just `[userId, externalId]`: MT4 and MT5
+  // ticket numbers are assigned independently by each terminal and can land
+  // on the same number for the same user, which would otherwise merge two
+  // unrelated trades from two different platforms into one row.
+  @@unique([userId, source, externalId])
   @@index([userId, createdAt])
   @@index([asset])
   @@index([userId, setup])

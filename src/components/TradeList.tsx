@@ -18,8 +18,8 @@ export type TradeRow = {
   exitPrice: number | null;
   pnl: number | null;
   createdAt: string;
-  /** MT5 rows are owned by the terminal; only their notes can be edited. */
-  source: "MANUAL" | "MT5";
+  /** Synced rows are owned by the terminal; only their notes can be edited. */
+  source: "MANUAL" | "MT5" | "MT4";
   marketContext: string | null;
   emotionalState: string | null;
   metrics: TradeMetrics;
@@ -490,12 +490,12 @@ export default function TradeList({
                   </td>
                   <td className="py-3 pr-3 font-medium">
                     {trade.asset}
-                    {trade.source === "MT5" ? (
+                    {trade.source === "MT5" || trade.source === "MT4" ? (
                       <span
                         title="Synced from MetaTrader."
                         className="ml-2 rounded border border-line px-1 py-0.5 align-middle text-[10px] font-normal tracking-wide text-muted"
                       >
-                        MT5
+                        {trade.source}
                       </span>
                     ) : null}
                   </td>

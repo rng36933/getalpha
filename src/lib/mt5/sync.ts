@@ -5,6 +5,9 @@ import { normaliseSymbol } from "./symbol";
 /**
  * Applying what a terminal sent.
  *
+ * Shared by both the MT5 and MT4 sync routes — the wire shape below is the
+ * same for each, `source` (see `applySync`) is what tells the two apart.
+ *
  * The terminal is the source of truth for anything it owns: it resends the
  * open positions it can see and the trades it has closed, and this overwrites
  * rather than appends. That is what makes a restart harmless — the EA has no
@@ -14,7 +17,7 @@ import { normaliseSymbol } from "./symbol";
 
 /** One position or closed trade, as the EA sends it. */
 export type IncomingTrade = {
-  /** MT5 position ticket. Unique per account, stable from open to close. */
+  /** MT5 position ticket, or MT4 order ticket. Stable from open to close. */
   ticket: string;
   symbol: string;
   direction: "BUY" | "SELL";
@@ -87,6 +90,7 @@ function isUsable(trade: IncomingTrade): boolean {
 export async function applySync(
   userId: string,
   trades: IncomingTrade[],
+  source: TradeSource = TradeSource.MT5,
 ): Promise<SyncResult> {
   let applied = 0;
   let skipped = 0;
@@ -129,7 +133,7 @@ export async function applySync(
           : null,
       accountBalance: decimal(incoming.accountBalance),
       closedAt: parseDate(incoming.closedAt),
-      source: TradeSource.MT5,
+      source,
       setup: setupTag(incoming.setup),
     };
 
@@ -147,7 +151,7 @@ export async function applySync(
       // it becomes are the same row, so closing updates rather than inserting.
       await prisma.trade.upsert({
         where: {
-          userId_externalId: { userId, externalId: incoming.ticket },
+          userId_source_externalId: { userId, source, externalId: incoming.ticket },
         },
         create: {
           userId,

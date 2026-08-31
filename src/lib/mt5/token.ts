@@ -3,6 +3,10 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 /**
  * Connection tokens.
  *
+ * Shared by MT5 and MT4 — same shape, same hashing, just a different prefix
+ * per platform so a token is self-describing in logs and support requests
+ * without a database lookup.
+ *
  * The plaintext is shown once, at creation, and never stored. What the database
  * holds is a SHA-256 hash, so a leaked table hands nobody a working key.
  *
@@ -13,12 +17,12 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
  * makes.
  */
 
-const PREFIX = "ga_mt5_";
+const PREFIXES = { MT5: "ga_mt5_", MT4: "ga_mt4_" } as const;
 
 export type IssuedToken = { token: string; hash: string };
 
-export function issueToken(): IssuedToken {
-  const token = PREFIX + randomBytes(32).toString("base64url");
+export function issueToken(platform: keyof typeof PREFIXES = "MT5"): IssuedToken {
+  const token = PREFIXES[platform] + randomBytes(32).toString("base64url");
   return { token, hash: hashToken(token) };
 }
 
@@ -38,7 +42,8 @@ export function tokenFromHeader(header: string | null): string | null {
   const [scheme, value] = header.split(" ");
   if (scheme?.toLowerCase() !== "bearer" || !value) return null;
 
-  return value.startsWith(PREFIX) ? value : null;
+  const knownPrefix = Object.values(PREFIXES).some((prefix) => value.startsWith(prefix));
+  return knownPrefix ? value : null;
 }
 
 /**

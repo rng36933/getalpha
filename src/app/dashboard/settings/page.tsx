@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
 import EmailPreferences from "@/components/EmailPreferences";
+import Mt4Connect from "@/components/Mt4Connect";
 import Mt5Connect from "@/components/Mt5Connect";
 import PageHeader from "@/components/PageHeader";
 import DraggableGrid, {
@@ -37,7 +38,7 @@ async function loadPreference(userId: string): Promise<EmailPreferenceState> {
   }
 }
 
-type Mt5State = {
+type TerminalState = {
   connected: boolean;
   accountLogin: string | null;
   broker: string | null;
@@ -45,7 +46,7 @@ type Mt5State = {
   tradeCount: number;
 };
 
-const NO_MT5: Mt5State = {
+const NO_TERMINAL: TerminalState = {
   connected: false,
   accountLogin: null,
   broker: null,
@@ -53,14 +54,22 @@ const NO_MT5: Mt5State = {
   tradeCount: 0,
 };
 
-async function loadMt5(userId: string): Promise<Mt5State> {
+/**
+ * Shared by MT5 and MT4 — same shape, `platform`/`source` is what tells the
+ * two connections and their trade counts apart (see the `[userId, platform]`
+ * and `[userId, source, externalId]` keys in schema.prisma).
+ */
+async function loadTerminal(
+  userId: string,
+  platform: "MT5" | "MT4",
+): Promise<TerminalState> {
   try {
     const [connection, tradeCount] = await Promise.all([
-      prisma.mtConnection.findUnique({ where: { userId } }),
-      prisma.trade.count({ where: { userId, source: "MT5" } }),
+      prisma.mtConnection.findUnique({ where: { userId_platform: { userId, platform } } }),
+      prisma.trade.count({ where: { userId, source: platform } }),
     ]);
 
-    if (!connection) return { ...NO_MT5, tradeCount };
+    if (!connection) return { ...NO_TERMINAL, tradeCount };
 
     return {
       connected: true,
@@ -70,18 +79,19 @@ async function loadMt5(userId: string): Promise<Mt5State> {
       tradeCount,
     };
   } catch (error) {
-    console.error("Could not read the MetaTrader connection:", error);
-    return NO_MT5;
+    console.error(`Could not read the ${platform} connection:`, error);
+    return NO_TERMINAL;
   }
 }
 
 export default async function SettingsPage() {
   const { userId } = await auth();
 
-  const [emailPreference, access, mt5, savedOrder] = await Promise.all([
+  const [emailPreference, access, mt5, mt4, savedOrder] = await Promise.all([
     userId ? loadPreference(userId) : Promise.resolve(NO_EMAIL_PREFERENCE),
     userId ? checkAccess(userId) : Promise.resolve({ allowed: false } as const),
-    userId ? loadMt5(userId) : Promise.resolve(NO_MT5),
+    userId ? loadTerminal(userId, "MT5") : Promise.resolve(NO_TERMINAL),
+    userId ? loadTerminal(userId, "MT4") : Promise.resolve(NO_TERMINAL),
     userId
       ? loadOrder(userId, "settings").catch((error) => {
           console.error("Could not read the settings layout:", error);
@@ -96,6 +106,14 @@ export default async function SettingsPage() {
       children: (
         <Card title="MetaTrader 5">
           <Mt5Connect {...mt5} />
+        </Card>
+      ),
+    },
+    {
+      key: "mt4",
+      children: (
+        <Card title="MetaTrader 4">
+          <Mt4Connect {...mt4} />
         </Card>
       ),
     },

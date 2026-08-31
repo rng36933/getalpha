@@ -20,7 +20,7 @@ export const DASHBOARD_CARD_KEYS = [
 export type DashboardCardKey = (typeof DASHBOARD_CARD_KEYS)[number];
 
 /** The reorderable cards on Settings, in their default order. */
-export const SETTINGS_CARD_KEYS = ["mt5", "email"] as const;
+export const SETTINGS_CARD_KEYS = ["mt5", "mt4", "email"] as const;
 export type SettingsCardKey = (typeof SETTINGS_CARD_KEYS)[number];
 
 /**

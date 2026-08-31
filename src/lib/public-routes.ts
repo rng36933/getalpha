@@ -82,6 +82,8 @@ export const PUBLIC_ROUTES = [
   // A MetaTrader terminal has no browser and no session. That route
   // authenticates with the user's own connection token.
   "/api/mt5/sync",
+  // Same reasoning, MT4's twin route.
+  "/api/mt4/sync",
   // The GA4 first-party proxy (next.config.ts rewrites to googletagmanager.com
   // / google-analytics.com) — an anonymous visitor reading the marketing
   // pages has no session, same as /api/track-visit above. Confirmed
@@ -103,17 +105,18 @@ export const PUBLIC_ROUTES = [
  * covers .htm, and `js(?!on)` skips scripts while still protecting .json, which
  * is data and frequently somebody's.
  *
- * `mq5` is here deliberately. It is the MetaTrader program, and it holds no
- * secret — the connection token is pasted in by whoever installs it. Leaving it
- * out meant Clerk protected it and the download answered 404 to anyone not
- * signed in, which is a confusing way to serve a file whose whole purpose is
- * being readable before you trust it.
+ * `mq5`/`mq4` are here deliberately. They are the MetaTrader programs, and
+ * they hold no secret — the connection token is pasted in by whoever installs
+ * one. Leaving them out meant Clerk protected the download and it answered
+ * 404 to anyone not signed in, which is a confusing way to serve a file whose
+ * whole purpose is being readable before you trust it.
  */
 export const STATIC_EXTENSIONS = [
   "html?",
   "css",
   "js(?!on)",
   "mq5",
+  "mq4",
   "jpe?g",
   "webp",
   "png",

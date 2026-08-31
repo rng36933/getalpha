@@ -45,12 +45,15 @@ test("public/ is actually being read, so the check above cannot pass vacuously",
   // A test that silently examines an empty list is worse than no test.
   assert.ok(publicFiles.length > 0);
   assert.ok(publicFiles.includes("getALPHA-Sync.mq5"));
+  assert.ok(publicFiles.includes("getALPHA-Sync.mq4"));
 });
 
-test("the MetaTrader download is reachable without signing in", () => {
-  // It holds no secret — the connection token is pasted in by whoever installs
-  // it — and its whole purpose is being readable before you trust it.
+test("the MetaTrader downloads are reachable without signing in", () => {
+  // They hold no secret — the connection token is pasted in by whoever
+  // installs one — and their whole purpose is being readable before you
+  // trust them.
   assert.equal(isStaticExtension("mq5"), true);
+  assert.equal(isStaticExtension("mq4"), true);
 });
 
 test("the crawler-facing routes are on the allowlist", () => {
@@ -72,6 +75,7 @@ test("the callers that have no session are on the allowlist", () => {
     "/api/webhooks/(.*)",
     "/api/cron/(.*)",
     "/api/mt5/sync",
+    "/api/mt4/sync",
   ]) {
     assert.ok(PUBLIC_ROUTES.includes(route as (typeof PUBLIC_ROUTES)[number]));
   }
@@ -95,6 +99,7 @@ test("nothing private has crept onto the allowlist", () => {
     "/api/ai/coach",
     "/api/ai/session-brief",
     "/api/mt5/connection",
+    "/api/mt4/connection",
     "/api/billing/checkout",
     "/api/support",
     "/api/watchlist",
