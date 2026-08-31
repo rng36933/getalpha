@@ -123,34 +123,31 @@ export default function TradingViewConnect({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <p className="text-sm leading-relaxed text-muted">
-          A TradingView alert sends this desk each order your strategy fills. It
-          only sends — never places or changes an order, no broker connection
-          involved.{" "}
+        <p className="text-[13px] leading-relaxed text-muted">
+          A TradingView alert sends this desk each order your strategy fills —
+          it only sends, never places or changes an order, no broker
+          connection involved.{" "}
           <strong className="font-medium text-foreground">
             getALPHA never connects to TradingView; the alert connects to us.
-          </strong>
-        </p>
-
-        <p className="mt-4 text-sm leading-relaxed text-muted">
-          Unlike MT5/MT4/cTrader, there is no real broker account behind
-          TradingView alerts — a trade here is built from your strategy's own
-          entry and exit signals, one open position per symbol at a time.
+          </strong>{" "}
+          Unlike MT5/MT4/cTrader, there is no real broker account behind a
+          TradingView alert — a trade here is built from your strategy's own
+          entry/exit signals, one open position per symbol at a time.
         </p>
       </div>
 
       {connected ? (
         <div
-          className={`rounded-lg border px-4 py-3 ${
+          className={`rounded-lg border px-3 py-2 ${
             lastSeenAt && hasGoneQuiet(lastSeenAt)
               ? "border-warning/30 bg-warning/10"
               : "border-positive/30 bg-positive/10"
           }`}
         >
           <p
-            className={`text-sm font-medium ${
+            className={`text-[13px] font-medium ${
               lastSeenAt && hasGoneQuiet(lastSeenAt) ? "text-warning" : "text-positive"
             }`}
           >
@@ -160,7 +157,7 @@ export default function TradingViewConnect({
                 ? `Nothing received for ${ago(lastSeenAt).replace(" ago", "")}`
                 : "Alert connected"}
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-muted">
+          <p className="mt-0.5 text-xs leading-relaxed text-muted">
             {lastSeenAt
               ? `Last sent ${ago(lastSeenAt)} · ${tradeCount} synced trade${
                   tradeCount === 1 ? "" : "s"
@@ -171,11 +168,11 @@ export default function TradingViewConnect({
       ) : null}
 
       {webhookUrl ? (
-        <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3">
-          <p className="text-sm font-medium text-warning">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2">
+          <p className="text-[13px] font-medium text-warning">
             Copy this now — it is not shown again
           </p>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
             <input
               readOnly
               value={webhookUrl}
@@ -196,7 +193,7 @@ export default function TradingViewConnect({
 
       <div>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">Alert message — paste exactly as-is</p>
+          <p className="text-[13px] font-medium">Alert message — paste exactly as-is</p>
           <button
             type="button"
             onClick={() => copy(ALERT_TEMPLATE, setCopiedTemplate)}
@@ -205,23 +202,20 @@ export default function TradingViewConnect({
             {copiedTemplate ? "Copied" : "Copy"}
           </button>
         </div>
-        <pre className="mt-2 overflow-x-auto rounded-lg border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11px] leading-relaxed text-muted">
+        <pre className="mt-1.5 overflow-x-auto rounded-lg border border-line bg-surface-raised px-3 py-2 font-mono text-[11px] leading-relaxed text-muted">
           {ALERT_TEMPLATE}
         </pre>
       </div>
 
-      <ol className="space-y-4">
+      <ol className="space-y-1.5">
         {STEPS.map((step, index) => (
-          <li key={step.title} className="grid grid-cols-[1.5rem_1fr] gap-3">
-            <span className="mt-0.5 grid size-6 place-items-center rounded-md bg-surface-raised font-mono text-xs text-muted">
-              {index + 1}
-            </span>
-            <div>
-              <p className="text-sm font-medium">{step.title}</p>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
-                {step.body}
-              </p>
-            </div>
+          <li key={step.title} className="flex gap-2 text-[13px] leading-relaxed">
+            <span className="shrink-0 font-mono text-muted">{index + 1}.</span>
+            <p className="text-muted">
+              <span className="font-medium text-foreground">{step.title}</span>
+              {" — "}
+              {step.body}
+            </p>
           </li>
         ))}
       </ol>
@@ -235,12 +229,12 @@ export default function TradingViewConnect({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2.5">
         <button
           type="button"
           onClick={generate}
           disabled={busy}
-          className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-background transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
+          className="rounded-lg bg-accent px-4 py-2 text-[13px] font-semibold text-background transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-muted"
         >
           {busy ? "Working…" : connected ? "Generate a new URL" : "Generate my webhook URL"}
         </button>
@@ -250,14 +244,14 @@ export default function TradingViewConnect({
             type="button"
             onClick={disconnect}
             disabled={busy}
-            className="text-sm text-muted transition-colors hover:text-negative disabled:opacity-50"
+            className="text-[13px] text-muted transition-colors hover:text-negative disabled:opacity-50"
           >
             Disconnect
           </button>
         ) : null}
       </div>
 
-      <p className="border-t border-line pt-4 text-xs leading-relaxed text-muted">
+      <p className="border-t border-line pt-3 text-xs leading-relaxed text-muted">
         No stop, target or account balance is available from an alert, so
         those fields stay empty on these rows — everything else about them can
         still be edited and reviewed like any other trade.
