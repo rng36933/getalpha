@@ -145,6 +145,11 @@ export default async function SettingsPage() {
     },
     {
       key: "email",
+      // Full width: the four terminal cards above are one family and pair up
+      // naturally, but Email is a different kind of setting and pairing it
+      // with whichever terminal card happens to land next to it read as
+      // arbitrary rather than intentional.
+      className: "md:col-span-2",
       children: (
         <Card title="Email">
           <EmailPreferences
@@ -170,7 +175,13 @@ export default async function SettingsPage() {
         page="settings"
         items={items}
         initialOrder={order}
-        className="grid max-w-2xl grid-cols-1 gap-4"
+        // Two columns now that there are four near-identical terminal cards:
+        // stacked single-file the way this page used to be (back when it was
+        // just MT5 + Email) reads as a long list rather than a set of
+        // options to pick from. `grid-flow-dense` is what lets a shorter
+        // card later in the order backfill a gap a taller one left above it,
+        // same trick the dashboard grid uses.
+        className="grid grid-flow-dense grid-cols-1 gap-4 md:grid-cols-2 xl:max-w-4xl"
       />
     </>
   );
