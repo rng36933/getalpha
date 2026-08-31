@@ -106,35 +106,47 @@ export default async function SettingsPage() {
       : Promise.resolve(null),
   ]);
 
+  // Every card shares this: CSS columns (below) is what makes a shorter card
+  // let the next one flow up right after it instead of leaving a gap the
+  // width of its own column — a real CSS Grid row can't do that, its row
+  // height is always the tallest cell in it, which is the gap this was
+  // fixing. `break-inside-avoid` is what stops a card from being sliced in
+  // half across the column break.
+  const cardClassName = "mb-4 break-inside-avoid";
+
   const items: GridItem[] = [
     {
       key: "mt5",
+      className: cardClassName,
       children: (
-        <Card title="MetaTrader 5">
+        <Card title="MetaTrader 5" fill={false}>
           <Mt5Connect {...mt5} />
         </Card>
       ),
     },
     {
       key: "mt4",
+      className: cardClassName,
       children: (
-        <Card title="MetaTrader 4">
+        <Card title="MetaTrader 4" fill={false}>
           <Mt4Connect {...mt4} />
         </Card>
       ),
     },
     {
       key: "ctrader",
+      className: cardClassName,
       children: (
-        <Card title="cTrader">
+        <Card title="cTrader" fill={false}>
           <CtraderConnect {...ctrader} />
         </Card>
       ),
     },
     {
       key: "tradingview",
+      className: cardClassName,
       children: (
-        <Card title="TradingView">
+        <Card title="TradingView" fill={false}>
           <TradingViewConnect
             connected={tradingview.connected}
             lastSeenAt={tradingview.lastSeenAt}
@@ -145,13 +157,9 @@ export default async function SettingsPage() {
     },
     {
       key: "email",
-      // Full width: the four terminal cards above are one family and pair up
-      // naturally, but Email is a different kind of setting and pairing it
-      // with whichever terminal card happens to land next to it read as
-      // arbitrary rather than intentional.
-      className: "md:col-span-2",
+      className: cardClassName,
       children: (
-        <Card title="Email">
+        <Card title="Email" fill={false}>
           <EmailPreferences
             initialDailyBrief={emailPreference.dailyBrief}
             initialNewsAlerts={emailPreference.newsAlerts}
@@ -175,13 +183,13 @@ export default async function SettingsPage() {
         page="settings"
         items={items}
         initialOrder={order}
-        // Two columns now that there are four near-identical terminal cards:
-        // stacked single-file the way this page used to be (back when it was
-        // just MT5 + Email) reads as a long list rather than a set of
-        // options to pick from. `grid-flow-dense` is what lets a shorter
-        // card later in the order backfill a gap a taller one left above it,
-        // same trick the dashboard grid uses.
-        className="grid grid-flow-dense grid-cols-1 gap-4 md:grid-cols-2 xl:max-w-4xl"
+        // CSS columns, not CSS Grid: five cards of very different heights
+        // (a connected terminal's status box alone adds several lines) means
+        // a grid row-height forcing every card in it to match the tallest
+        // reads as broken whitespace, not alignment. Columns let each card
+        // take only the height it needs and the next one flow up right
+        // after — see `cardClassName` above for the per-card half of this.
+        className="columns-1 gap-4 md:columns-2 xl:max-w-4xl"
       />
     </>
   );
