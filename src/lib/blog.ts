@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "leverage-isnt-the-risk",
+    title: "Leverage Isn't the Risk — How You Use It Is",
+    description:
+      "500:1 leverage and 2:1 leverage can produce the exact same risk on a trade, or wildly different ones. The number on the account label tells you almost nothing on its own — what you do with it tells you everything.",
+    date: "2026-08-31",
+  },
+  {
     slug: "session-overlap-volatility",
     title: "Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours",
     description:
