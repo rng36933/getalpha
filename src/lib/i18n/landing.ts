@@ -186,9 +186,9 @@ export const landingCopy: LandingCopy = {
   meta: {
     // The brand line stays first — a keyword suffix appended, not a
     // replacement, so search terms sit behind the voice a reader sees.
-    title: "getALPHA — the trading journal that judges the decision — free for MetaTrader 5",
+    title: "getALPHA — the trading journal that judges the decision — free for MetaTrader, cTrader & TradingView",
     description:
-      "Your MetaTrader trades, journalled automatically, with every number computed from your own record. Free journal, charts and calendar; AI process review on Pro.",
+      "Your MetaTrader, cTrader or TradingView trades, journalled automatically, with every number computed from your own record. Free journal, charts and calendar; AI process review on Pro.",
   },
   nav: { how: "How it works", signIn: "Sign in", getStarted: "Get started" },
   hero: {
@@ -259,8 +259,8 @@ export const landingCopy: LandingCopy = {
     items: [
       {
         title: "Connect",
-        body: "Drop the add-on into MetaTrader, paste one key. Ninety days of history arrives on the first sync.",
-        note: "Desktop MetaTrader 5",
+        body: "Drop the add-on into your platform, paste one key. Ninety days of history arrives on the first sync.",
+        note: "MT5, MT4 or cTrader — TradingView syncs forward from connection",
       },
       {
         title: "Trade",
@@ -332,7 +332,7 @@ export const landingCopy: LandingCopy = {
         "Cumulative P&L curve and outcome distribution",
         "Live charts for your watchlist",
         "Economic calendar in your own timezone",
-        "MetaTrader sync — 90 days of history",
+        "MetaTrader, cTrader or TradingView sync",
       ],
       cta: "Start free",
     },
@@ -400,7 +400,7 @@ export const landingCopy: LandingCopy = {
       },
       {
         q: "Which brokers are supported?",
-        a: "Any broker via desktop MetaTrader 5 — the add-on reads your terminal, and MetaTrader has to be running to sync.",
+        a: "Any broker via desktop MetaTrader 5, MetaTrader 4 or cTrader — the add-on reads your terminal, which has to be running to sync. TradingView works differently: your strategy's own alerts log the trade, no broker connection needed.",
       },
       {
         q: "What is actually free?",

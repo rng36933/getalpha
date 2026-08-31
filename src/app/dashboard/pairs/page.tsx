@@ -91,14 +91,14 @@ export default async function PairsPage({
               journal — it has no opinion of its own about any pair.
             </p>
             <p className="mt-2 text-sm text-muted">
-              Connect MetaTrader and ninety days of history arrives on the first
+              Connect your platform and ninety days of history arrives on the first
               sync, broken down per instrument.
             </p>
             <Link
               href="/dashboard"
               className="mt-4 inline-block text-sm text-accent hover:underline"
             >
-              Connect MetaTrader
+              Connect your platform
             </Link>
           </div>
         </Card>

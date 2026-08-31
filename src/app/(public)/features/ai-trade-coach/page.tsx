@@ -42,8 +42,8 @@ export default function Page() {
 
       <h2>Why the notes matter</h2>
       <p>
-        MT5 can&apos;t tell the coach why you took a trade — that context only exists if you write
-        it down. A review built only on price, size and stop is arithmetic you could do yourself.
+        Your terminal can&apos;t tell the coach why you took a trade — that context only exists if
+        you write it down. A review built only on price, size and stop is arithmetic you could do yourself.
         The trades worth reviewing are the ones with a sentence of context attached, which is why{" "}
         <Link href="/features/trading-journal">the journal</Link> prompts for it before the habit
         of skipping it sets in.

@@ -31,7 +31,7 @@ export function welcomeText({ firstName, appUrl }: WelcomeEmailInput): string {
     "",
     "Your getALPHA account is live. Here's how to get your first real number on the board:",
     "",
-    "1. Connect MetaTrader — Settings > MT5 Connection. Ninety days of closed trades sync on the first pass, nothing typed by hand.",
+    "1. Connect your platform — Settings, then MT5, MT4, cTrader or TradingView. Ninety days of closed trades sync on the first pass (MT5/MT4/cTrader), nothing typed by hand.",
     "2. Open the Journal — every synced trade already has its P&L and risk computed from your own record.",
     "3. Trade normally — closed positions keep landing in the journal by themselves.",
     "",
@@ -53,7 +53,7 @@ export function welcomeHtml({ firstName, appUrl }: WelcomeEmailInput): string {
 <title>${escape(welcomeSubject())}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#0a0b0f;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Connect MetaTrader and your first synced trade is a few minutes away.</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Connect your platform and your first synced trade is a few minutes away.</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0b0f;">
   <tr>
@@ -86,7 +86,7 @@ export function welcomeHtml({ firstName, appUrl }: WelcomeEmailInput): string {
               <tr>
                 <td style="padding:0 0 14px 0;vertical-align:top;width:28px;font-size:14px;font-weight:600;color:#f2c94c;">1.</td>
                 <td style="padding:0 0 14px 0;font-size:14px;line-height:1.5;color:#c7cad3;">
-                  <strong style="color:#e9ebf0;">Connect MetaTrader</strong> — Settings &gt; MT5 Connection. Ninety days of closed trades sync on the first pass, nothing typed by hand.
+                  <strong style="color:#e9ebf0;">Connect your platform</strong> — Settings, then MT5, MT4, cTrader or TradingView. Ninety days of closed trades sync on the first pass (MT5/MT4/cTrader), nothing typed by hand.
                 </td>
               </tr>
               <tr>

@@ -135,7 +135,7 @@ export default function Mt5Prompt({
           </p>
 
           <h2 className="mt-2 max-w-[34ch] text-base font-semibold tracking-tight text-balance sm:text-lg">
-            Connect MetaTrader and the journal fills itself.
+            Connect your platform and the journal fills itself.
           </h2>
 
           <p className="mt-2 max-w-[62ch] text-[13px] leading-relaxed text-muted">
@@ -157,10 +157,10 @@ export default function Mt5Prompt({
               href="/dashboard/settings"
               className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-[filter] hover:brightness-110"
             >
-              Connect MetaTrader
+              Connect your platform
             </Link>
             <span className="text-xs text-muted">
-              Five steps, desktop only. One is compiling the file — easy to miss.
+              MT5, MT4, cTrader or TradingView — desktop only for the three terminals.
             </span>
           </div>
         </div>

@@ -17,7 +17,7 @@ export const FEATURE_PAGES: FeaturePageMeta[] = [
     slug: "trading-journal",
     title: "Automated Trading Journal",
     description:
-      "Trades sync straight from MetaTrader 5. P&L, risk taken and reward planned are computed from the terminal — you never type a number in.",
+      "Trades sync straight from MetaTrader, cTrader or TradingView. P&L, risk taken and reward planned are computed from the terminal — you never type a number in.",
   },
   {
     slug: "ai-trade-coach",

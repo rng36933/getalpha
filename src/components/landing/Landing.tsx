@@ -133,7 +133,7 @@ export default function Landing({
             applicationCategory: "FinanceApplication",
             operatingSystem: "Web",
             description:
-              "A trading journal and process-review tool for MetaTrader (MT5) traders. Syncs closed trades automatically, computes P&L and risk, and gives a written review of how a trade was taken — not a buy/sell signal.",
+              "A trading journal and process-review tool for MetaTrader, cTrader and TradingView traders. Syncs closed trades automatically, computes P&L and risk, and gives a written review of how a trade was taken — not a buy/sell signal.",
             url: siteUrl,
             offers: [
               {

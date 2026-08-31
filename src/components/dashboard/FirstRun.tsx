@@ -51,7 +51,7 @@ const ONBOARDING_STEPS = [
   },
   {
     emoji: "⚡",
-    title: "Or Connect MetaTrader",
+    title: "Or Connect Your Platform",
     description: "Sync 90 days automatically.",
     action: { label: "Connect", href: "/dashboard/settings" },
   },
@@ -182,7 +182,7 @@ export default function FirstRun() {
             Start your first trade
           </Link>
           <span className="text-xs text-muted">
-            Takes 2 minutes · No manual entry needed if you use MetaTrader
+            Takes 2 minutes · No manual entry needed if you sync from your platform
           </span>
         </div>
       </div>

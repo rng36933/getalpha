@@ -168,7 +168,7 @@ export function RecentTrades({
   if (trades.length === 0) {
     return (
       <Empty>
-        No closed trades yet. <JournalLink label="Connect MetaTrader" /> and they
+        No closed trades yet. <JournalLink label="Connect your platform" /> and they
         arrive by themselves.
       </Empty>
     );

@@ -37,7 +37,7 @@ export default function FeaturePage({ title, tagline, children }: FeaturePagePro
           Start your free journal
         </p>
         <p className="mt-1 text-sm text-muted">
-          Free to sync trades from MT5 and see your P&amp;L, risk and calendar. No card required.
+          Free to sync trades from MT5, MT4, cTrader or TradingView and see your P&amp;L, risk and calendar. No card required.
         </p>
         <div className="mt-4">
           <Button href="/register" variant="primary" onClick={() => gtagEvent("cta_click", { location: "feature_page" })}>

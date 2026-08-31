@@ -5,7 +5,7 @@ import { FEATURE_PAGES } from "@/lib/features";
 export const metadata: Metadata = {
   title: { absolute: "Features · getALPHA" },
   description:
-    "Automated MT5 trade journaling, an AI trading coach, and a pre-session brief — what getALPHA actually does, one feature at a time.",
+    "Automated trade journaling for MT5, MT4, cTrader and TradingView, an AI trading coach, and a pre-session brief — what getALPHA actually does, one feature at a time.",
   alternates: { canonical: "/features" },
 };
 

@@ -3,24 +3,24 @@ import Link from "next/link";
 import FeaturePage from "@/components/FeaturePage";
 
 export const metadata: Metadata = {
-  title: { absolute: "Automated Trading Journal for MetaTrader 5 · getALPHA" },
+  title: { absolute: "Automated Trading Journal for MetaTrader, cTrader & TradingView · getALPHA" },
   description:
-    "A trading journal that syncs closed trades straight from MT5 and computes P&L, risk and reward from the terminal — free, no card required.",
+    "A trading journal that syncs closed trades straight from MT5, MT4, cTrader or TradingView and computes P&L, risk and reward from your own record — free, no card required.",
   alternates: { canonical: "/features/trading-journal" },
 };
 
 export default function Page() {
   return (
     <FeaturePage
-      title="Automated Trading Journal for MetaTrader 5"
-      tagline="Trades sync from MT5. Every number is computed, not typed in."
+      title="Automated Trading Journal for MetaTrader, cTrader & TradingView"
+      tagline="Trades sync from your platform. Every number is computed, not typed in."
     >
       <p>
         A trading journal is only as honest as the numbers in it, and a journal you fill in by
         hand is a journal you can flatter — a stop that got moved, a size that got rounded down in
-        the retelling. getALPHA&apos;s journal skips that step: a small Expert Advisor runs on one
-        dedicated MT5 chart and pushes each closed trade to your account automatically. Entry,
-        exit, size and stop are read straight from the terminal.
+        the retelling. getALPHA&apos;s journal skips that step: a small add-on runs on your
+        platform — MT5, MT4, cTrader, or a TradingView alert — and pushes each closed trade to your
+        account automatically — entry, exit, size and stop, never typed in by hand.
       </p>
 
       <h2>What gets computed, not typed</h2>
@@ -41,8 +41,8 @@ export default function Page() {
 
       <h2>What it doesn&apos;t do</h2>
       <p>
-        It doesn&apos;t ask for a broker password — the EA only sends data outward, and it never
-        places or modifies a trade. It doesn&apos;t score a trade&apos;s quality either; that&apos;s
+        It doesn&apos;t ask for a broker password — the add-on only sends data outward, and it
+        never places or modifies a trade. It doesn&apos;t score a trade&apos;s quality either; that&apos;s
         a separate, judgment-based module (see the{" "}
         <Link href="/features/ai-trade-coach">AI trading coach</Link>). The journal&apos;s job is
         narrower and, on its own, more trustworthy: get the record right, automatically, every
