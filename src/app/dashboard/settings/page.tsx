@@ -189,7 +189,10 @@ export default async function SettingsPage() {
         // reads as broken whitespace, not alignment. Columns let each card
         // take only the height it needs and the next one flow up right
         // after — see `cardClassName` above for the per-card half of this.
-        className="columns-1 gap-4 md:columns-2 xl:max-w-4xl"
+        // Four wide at xl so all four terminal cards sit in one row — two
+        // columns is a fallback for anything narrower, not the intended
+        // width once there's room for four.
+        className="columns-1 gap-4 sm:columns-2 xl:columns-4 xl:max-w-none"
       />
     </>
   );
