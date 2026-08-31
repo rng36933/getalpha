@@ -1,9 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import Card from "@/components/Card";
+import CtraderConnect from "@/components/CtraderConnect";
 import EmailPreferences from "@/components/EmailPreferences";
 import Mt4Connect from "@/components/Mt4Connect";
 import Mt5Connect from "@/components/Mt5Connect";
 import PageHeader from "@/components/PageHeader";
+import TradingViewConnect from "@/components/TradingViewConnect";
 import DraggableGrid, {
   type GridItem,
 } from "@/components/dashboard/DraggableGrid";
@@ -55,13 +57,15 @@ const NO_TERMINAL: TerminalState = {
 };
 
 /**
- * Shared by MT5 and MT4 — same shape, `platform`/`source` is what tells the
- * two connections and their trade counts apart (see the `[userId, platform]`
- * and `[userId, source, externalId]` keys in schema.prisma).
+ * Shared by every platform — same shape, `platform`/`source` is what tells
+ * the connections and their trade counts apart (see the `[userId, platform]`
+ * and `[userId, source, externalId]` keys in schema.prisma). TradingView's
+ * `accountLogin`/`broker` are always null here — an alert has no broker
+ * account behind it — but `TradingViewConnect` simply doesn't render them.
  */
 async function loadTerminal(
   userId: string,
-  platform: "MT5" | "MT4",
+  platform: "MT5" | "MT4" | "CTRADER" | "TRADINGVIEW",
 ): Promise<TerminalState> {
   try {
     const [connection, tradeCount] = await Promise.all([
@@ -87,11 +91,13 @@ async function loadTerminal(
 export default async function SettingsPage() {
   const { userId } = await auth();
 
-  const [emailPreference, access, mt5, mt4, savedOrder] = await Promise.all([
+  const [emailPreference, access, mt5, mt4, ctrader, tradingview, savedOrder] = await Promise.all([
     userId ? loadPreference(userId) : Promise.resolve(NO_EMAIL_PREFERENCE),
     userId ? checkAccess(userId) : Promise.resolve({ allowed: false } as const),
     userId ? loadTerminal(userId, "MT5") : Promise.resolve(NO_TERMINAL),
     userId ? loadTerminal(userId, "MT4") : Promise.resolve(NO_TERMINAL),
+    userId ? loadTerminal(userId, "CTRADER") : Promise.resolve(NO_TERMINAL),
+    userId ? loadTerminal(userId, "TRADINGVIEW") : Promise.resolve(NO_TERMINAL),
     userId
       ? loadOrder(userId, "settings").catch((error) => {
           console.error("Could not read the settings layout:", error);
@@ -114,6 +120,26 @@ export default async function SettingsPage() {
       children: (
         <Card title="MetaTrader 4">
           <Mt4Connect {...mt4} />
+        </Card>
+      ),
+    },
+    {
+      key: "ctrader",
+      children: (
+        <Card title="cTrader">
+          <CtraderConnect {...ctrader} />
+        </Card>
+      ),
+    },
+    {
+      key: "tradingview",
+      children: (
+        <Card title="TradingView">
+          <TradingViewConnect
+            connected={tradingview.connected}
+            lastSeenAt={tradingview.lastSeenAt}
+            tradeCount={tradingview.tradeCount}
+          />
         </Card>
       ),
     },

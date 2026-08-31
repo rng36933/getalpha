@@ -3,9 +3,9 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 /**
  * Connection tokens.
  *
- * Shared by MT5 and MT4 — same shape, same hashing, just a different prefix
- * per platform so a token is self-describing in logs and support requests
- * without a database lookup.
+ * Shared by every platform this app accepts trades from — same shape, same
+ * hashing, just a different prefix per platform so a token is self-describing
+ * in logs and support requests without a database lookup.
  *
  * The plaintext is shown once, at creation, and never stored. What the database
  * holds is a SHA-256 hash, so a leaked table hands nobody a working key.
@@ -17,7 +17,12 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
  * makes.
  */
 
-const PREFIXES = { MT5: "ga_mt5_", MT4: "ga_mt4_" } as const;
+const PREFIXES = {
+  MT5: "ga_mt5_",
+  MT4: "ga_mt4_",
+  CTRADER: "ga_ct_",
+  TRADINGVIEW: "ga_tv_",
+} as const;
 
 export type IssuedToken = { token: string; hash: string };
 

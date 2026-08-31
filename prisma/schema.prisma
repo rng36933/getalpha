@@ -462,12 +462,19 @@ enum TradeSource {
   MANUAL
   MT5
   MT4
+  CTRADER
+  /// A row built from a TradingView strategy alert webhook, not resent
+  /// wholesale like the others — see `applyTradingViewEvent` in
+  /// `src/lib/tradingview/sync.ts` for why that source is a different shape.
+  TRADINGVIEW
 }
 
 /// Which terminal a connection or a synced trade came from.
 enum Platform {
   MT5
   MT4
+  CTRADER
+  TRADINGVIEW
 }
 
 /// A terminal allowed to push trades into one account's journal.
