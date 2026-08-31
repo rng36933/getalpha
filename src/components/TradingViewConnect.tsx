@@ -133,7 +133,7 @@ export default function TradingViewConnect({
             getALPHA never connects to TradingView; the alert connects to us.
           </strong>{" "}
           Unlike MT5/MT4/cTrader, there is no real broker account behind a
-          TradingView alert — a trade here is built from your strategy's own
+          TradingView alert — a trade here is built from your strategy&apos;s own
           entry/exit signals, one open position per symbol at a time.
         </p>
       </div>
