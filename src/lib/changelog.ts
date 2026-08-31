@@ -15,6 +15,11 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-08-31",
+    title: "MetaTrader 4, cTrader and TradingView can now sync your journal too",
+    body: "Not just MT5 anymore. Settings has a card for each: MT4 works the same one-EA way MT5 always has, cTrader syncs from a cBot, and TradingView logs your strategy's own entry and exit alerts straight into the journal — no broker connection needed for that last one. Same rule everywhere: it only sends what you traded, never places or changes an order.",
+  },
+  {
     date: "2026-08-26",
     title: "Open Positions no longer reads a profit-locking stop as \"no stop\"",
     body: "Moving a stop past entry to lock in a gain isn't the same as having no stop at all, but the card couldn't tell the two apart and warned about both the same way. A stop on the profit side of entry now shows as \"profit locked\" instead.",
