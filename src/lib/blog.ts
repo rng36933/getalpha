@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "trade-you-didnt-take",
+    title: "The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too",
+    description:
+      "A journal built from closed trades only sees the setups that got taken. The ones that got skipped never generate a row — and that's exactly why they're worth writing down.",
+    date: "2026-09-01",
+  },
+  {
     slug: "leverage-isnt-the-risk",
     title: "Leverage Isn't the Risk — How You Use It Is",
     description:

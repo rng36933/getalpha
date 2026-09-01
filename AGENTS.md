@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too
 - [ ] Grading a Trade by Process, Not Outcome: A Practical Scorecard
 - [ ] Why Two Traders With the Same Win Rate Can Have Opposite Results
 - [ ] The Real Cost of Overtrading, Measured in Fees and Slippage
@@ -51,6 +50,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too (2026-09-01)
 - [x] Leverage Isn't the Risk — How You Use It Is (2026-08-31)
 - [x] Session Overlap Trading: Why Most of Your Volatility Happens in a Few Hours (2026-08-30)
 - [x] The Cost of Widening a Stop Loss "Just This Once" (2026-08-29)
