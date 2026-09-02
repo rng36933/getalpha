@@ -25,8 +25,17 @@ declare global {
 function ensureGtag(): (...args: unknown[]) => void {
   if (!window.gtag) {
     window.dataLayer = window.dataLayer || [];
-    window.gtag = (...args: unknown[]) => {
-      window.dataLayer.push(args);
+    // Must push the `arguments` object, not a spread-built Array — gtag.js's
+    // internal command parser silently drops every command (consent/js/config)
+    // pushed as a plain Array, confirmed 2026-09-02 by reproducing it live:
+    // switching this one line from an arrow function with `...args` to a
+    // `function` using `arguments` was the difference between zero hits ever
+    // firing and a real page_view reaching GA4. This is Google's own stock
+    // snippet shape (`function gtag(){dataLayer.push(arguments);}`) for a
+    // reason — don't "clean it up" back to an arrow function.
+    window.gtag = function () {
+      // eslint-disable-next-line prefer-rest-params -- arguments is load-bearing here, see comment above
+      window.dataLayer.push(arguments);
     };
   }
   return window.gtag;
