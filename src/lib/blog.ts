@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "grading-a-trade-by-process",
+    title: "Grading a Trade by Process, Not Outcome: A Practical Scorecard",
+    description:
+      "P&L tells you what happened. It doesn't tell you whether the trade was any good. A concrete, five-line scorecard for grading a trade on the decision instead of the result.",
+    date: "2026-09-02",
+  },
+  {
     slug: "trade-you-didnt-take",
     title: "The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too",
     description:
