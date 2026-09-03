@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "same-win-rate-opposite-results",
+    title: "Why Two Traders With the Same Win Rate Can Have Opposite Results",
+    description:
+      "A 55% win rate can belong to a profitable trader or a slowly-blowing-up one. The number that actually decides which is the one win rate never shows.",
+    date: "2026-09-03",
+  },
+  {
     slug: "grading-a-trade-by-process",
     title: "Grading a Trade by Process, Not Outcome: A Practical Scorecard",
     description:
