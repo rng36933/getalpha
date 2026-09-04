@@ -8,3 +8,10 @@
 - [ ] Paleisti lokalų prototipą.
 - [ ] Patikrinti Dashboard desktop ir mobile išvaizdą.
 - [ ] Pateikti vartotojui naujo UI peržiūrą bei pakeitimų santrauką.
+
+## Preview pataisa
+
+- [ ] Patikrinti, ar preview puslapis gauna globalų CSS ir Next assetus.
+- [ ] Patikrinti dev serverio cross-origin / allowedDevOrigins būseną.
+- [ ] Pataisyti tik preview infrastruktūrą, neliečiant produkcijos auth ar billing logikos.
+- [ ] Iš naujo patikrinti desktop ir mobile rendered rezultatą prieš siunčiant nuorodą.
