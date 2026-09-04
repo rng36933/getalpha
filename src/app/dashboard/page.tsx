@@ -251,6 +251,74 @@ function tapeChoices(entries: { symbol: string; label: string }[]) {
   );
 }
 
+function DecisionContext({
+  summary,
+  receiving,
+  lastSeenAt,
+}: {
+  summary: DashboardSummary;
+  receiving: boolean;
+  lastSeenAt: string | null;
+}) {
+  const withoutStop = summary.performance.withoutStop;
+  const hasTrades = summary.performance.closedCount > 0;
+  const syncIssue = !receiving;
+  const headline = syncIssue
+    ? "Your record may be missing recent decisions."
+    : withoutStop > 0
+      ? "Your record is useful. One process leak needs attention."
+      : hasTrades
+        ? "Your record is clean enough to make the next decision clearer."
+        : "Your decision desk is ready for its first trade.";
+  const body = syncIssue
+    ? "The terminal has not sent a recent update. Anything opened since the last sync will not appear here."
+    : withoutStop > 0
+      ? `${withoutStop} logged trade${withoutStop === 1 ? "" : "s"} without a defined stop. That is the clearest process signal in your record right now.`
+      : hasTrades
+        ? "The strongest next move is not another metric. It is keeping the same record honest through the next session."
+        : "Connect a platform and let the journal compute the numbers without asking you to type them in.";
+  const actionLabel = syncIssue ? "Check connection" : withoutStop > 0 ? "Review the leak" : "Open the journal";
+  const actionHref = syncIssue ? "/dashboard/settings" : withoutStop > 0 ? "/dashboard/journal" : "/dashboard/journal";
+
+  return (
+    <section className="decision-context mb-4 overflow-hidden rounded-2xl border border-line bg-surface">
+      <div className="grid gap-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,.65fr)]">
+        <div className="p-5 sm:p-7">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-accent">
+            <span className={`decision-signal ${syncIssue ? "is-warning" : ""}`} />
+            {syncIssue ? "Needs attention" : "Decision context"}
+          </div>
+          <h2 className="mt-4 max-w-2xl text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {headline}
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-muted">{body}</p>
+          <Link
+            href={actionHref}
+            className="decision-action mt-6 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5"
+          >
+            {actionLabel}
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+        <div className="decision-evidence grid grid-cols-2 gap-px border-t border-line bg-line lg:border-l lg:border-t-0">
+          <div className="bg-surface-raised p-5 sm:p-7">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-muted">Closed trades</p>
+            <p className="mt-3 font-mono text-3xl font-semibold tabular-nums text-foreground">{summary.performance.closedCount}</p>
+            <p className="mt-1 text-xs text-muted">your evidence base</p>
+          </div>
+          <div className="bg-surface-raised p-5 sm:p-7">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-muted">Last sync</p>
+            <p className={`mt-3 font-mono text-xl font-semibold tabular-nums ${syncIssue ? "text-warning" : "text-positive"}`}>
+              {syncIssue ? "Needs check" : lastSeenAt ? "Live" : "Waiting"}
+            </p>
+            <p className="mt-1 text-xs text-muted">{syncIssue ? "open settings" : "terminal connected"}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -310,8 +378,8 @@ export default async function DashboardPage({
   return (
     <>
       <PageHeader
-        title="Dashboard"
-        subtitle="What is open, what it risks, and how the closed trades have gone."
+        title="Decision desk"
+        subtitle="A calmer read on what matters now, what your record can prove, and what to review next."
       />
 
       <DataQualityNotice
@@ -329,6 +397,12 @@ export default async function DashboardPage({
       summary.openPositions.length === 0 ? (
         <FirstRun />
       ) : null}
+
+      <DecisionContext
+        summary={summary}
+        receiving={mt5.receiving}
+        lastSeenAt={mt5.lastSeenAt}
+      />
 
       {/* One shared frame with an internal divider instead of two separate
           cards with a gap between them — the session readout and its news
