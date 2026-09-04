@@ -15,3 +15,11 @@
 - [ ] Patikrinti dev serverio cross-origin / allowedDevOrigins būseną.
 - [ ] Pataisyti tik preview infrastruktūrą, neliečiant produkcijos auth ar billing logikos.
 - [ ] Iš naujo patikrinti desktop ir mobile rendered rezultatą prieš siunčiant nuorodą.
+
+## Balto preview puslapio blokatorius
+
+- [ ] Patikrinti preview HTTP atsakymą, HTML, CSS ir JavaScript assetus.
+- [ ] Patikrinti naršyklės console ir network klaidas.
+- [ ] Patikrinti, ar laikinas viešas URL vis dar aktyvus ir rodo tą patį serverį.
+- [ ] Jei reikia, sukurti patikimesnį preview būdą arba atskirą statinį prototipo peržiūros paketą.
+- [ ] Nepateikti naujos nuorodos, kol puslapis nebus patikrintas kaip veikiantis.
