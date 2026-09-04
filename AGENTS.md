@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] The Real Cost of Overtrading, Measured in Fees and Slippage
 - [ ] Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves
 - [ ] FOMO Entries: What They Look Like in the Data, Not Just the Feeling
 - [ ] Why "I'll Journal It Later" Never Works
@@ -48,6 +47,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] The Real Cost of Overtrading, Measured in Fees and Slippage (2026-09-04)
 - [x] Why Two Traders With the Same Win Rate Can Have Opposite Results (2026-09-03)
 - [x] Grading a Trade by Process, Not Outcome: A Practical Scorecard (2026-09-02)
 - [x] The Trade You Didn't Take: Why Missed Setups Deserve a Journal Entry Too (2026-09-01)

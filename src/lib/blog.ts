@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "real-cost-of-overtrading",
+    title: "The Real Cost of Overtrading, Measured in Fees and Slippage",
+    description:
+      "Overtrading rarely shows up as a single bad decision. It shows up as a fee line and a slippage line that quietly outgrow the P&L they're supposed to be a rounding error on.",
+    date: "2026-09-04",
+  },
+  {
     slug: "same-win-rate-opposite-results",
     title: "Why Two Traders With the Same Win Rate Can Have Opposite Results",
     description:
