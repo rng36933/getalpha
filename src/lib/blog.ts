@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "journaling-screenshots-vs-numbers",
+    title:
+      "Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves",
+    description:
+      "A folder of annotated charts and a spreadsheet of entries, stops and sizes both look like journaling. They prove different things, and neither one on its own proves the thing most traders think it does.",
+    date: "2026-09-05",
+  },
+  {
     slug: "real-cost-of-overtrading",
     title: "The Real Cost of Overtrading, Measured in Fees and Slippage",
     description:

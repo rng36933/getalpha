@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves
 - [ ] FOMO Entries: What They Look Like in the Data, Not Just the Feeling
 - [ ] Why "I'll Journal It Later" Never Works
 - [ ] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't
@@ -47,6 +46,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves (2026-09-05)
 - [x] The Real Cost of Overtrading, Measured in Fees and Slippage (2026-09-04)
 - [x] Why Two Traders With the Same Win Rate Can Have Opposite Results (2026-09-03)
 - [x] Grading a Trade by Process, Not Outcome: A Practical Scorecard (2026-09-02)
