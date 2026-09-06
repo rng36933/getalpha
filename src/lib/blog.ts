@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "fomo-entries-in-the-data",
+    title: "FOMO Entries: What They Look Like in the Data, Not Just the Feeling",
+    description:
+      "FOMO is easy to admit to after the fact and hard to catch in the moment. Here's what a fear-of-missing-out entry actually looks like once it's a row in a trade log instead of a feeling.",
+    date: "2026-09-06",
+  },
+  {
     slug: "journaling-screenshots-vs-numbers",
     title:
       "Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves",
