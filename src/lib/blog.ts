@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "journal-it-later-never-works",
+    title: "Why \"I'll Journal It Later\" Never Works",
+    description:
+      "The plan to journal at the end of the day or on the weekend feels harmless in the moment. What it actually loses, and why the delay is the whole problem.",
+    date: "2026-09-07",
+  },
+  {
     slug: "fomo-entries-in-the-data",
     title: "FOMO Entries: What They Look Like in the Data, Not Just the Feeling",
     description:

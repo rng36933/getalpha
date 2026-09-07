@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Why "I'll Journal It Later" Never Works
 - [ ] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't
 - [ ] How Spread and Commission Quietly Erase a "Winning" Strategy
 - [ ] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two
@@ -45,6 +44,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Why "I'll Journal It Later" Never Works (2026-09-07)
 - [x] FOMO Entries: What They Look Like in the Data, Not Just the Feeling (2026-09-06)
 - [x] Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves (2026-09-05)
 - [x] The Real Cost of Overtrading, Measured in Fees and Slippage (2026-09-04)
