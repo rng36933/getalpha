@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't
 - [ ] How Spread and Commission Quietly Erase a "Winning" Strategy
 - [ ] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two
 - [ ] What a Maximum Daily Loss Limit Actually Protects You From
@@ -44,6 +43,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't (2026-09-08)
 - [x] Why "I'll Journal It Later" Never Works (2026-09-07)
 - [x] FOMO Entries: What They Look Like in the Data, Not Just the Feeling (2026-09-06)
 - [x] Journaling Screenshots vs. Journaling Numbers: What Each One Actually Proves (2026-09-05)

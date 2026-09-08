@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "averaging-down",
+    title: "Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't",
+    description:
+      "Adding to a losing position is either a planned scale-in with a defined cap, or a way to avoid admitting the first entry was wrong. The trade history looks identical either way — until the risk numbers are pulled apart.",
+    date: "2026-09-08",
+  },
+  {
     slug: "journal-it-later-never-works",
     title: "Why \"I'll Journal It Later\" Never Works",
     description:
