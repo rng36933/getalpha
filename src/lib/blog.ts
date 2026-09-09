@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "spread-and-commission-erase-edge",
+    title: 'How Spread and Commission Quietly Erase a "Winning" Strategy',
+    description:
+      "A strategy report showing positive expectancy is usually a report on price movement alone. Spread and commission are paid on every trade regardless of outcome, and for a lot of strategies that's the whole edge, gone.",
+    date: "2026-09-09",
+  },
+  {
     slug: "averaging-down",
     title: "Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't",
     description:
