@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "trading-plan-vs-trading-rules",
+    title: "Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two",
+    description:
+      "A trading plan and a set of trading rules are not the same document, and treating them as one is why most plans never get followed. What each one is actually for, and how to check whether yours has both.",
+    date: "2026-09-10",
+  },
+  {
     slug: "spread-and-commission-erase-edge",
     title: 'How Spread and Commission Quietly Erase a "Winning" Strategy',
     description:

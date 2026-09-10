@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two
 - [ ] What a Maximum Daily Loss Limit Actually Protects You From
 - [ ] Confidence vs. Overconfidence, Measured in Position Size
 - [ ] Why Your Best Month Might Be Your Most Dangerous One
@@ -42,6 +41,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two (2026-09-10)
 - [x] How Spread and Commission Quietly Erase a "Winning" Strategy (2026-09-09)
 - [x] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't (2026-09-08)
 - [x] Why "I'll Journal It Later" Never Works (2026-09-07)
