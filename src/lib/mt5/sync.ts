@@ -147,6 +147,27 @@ export async function applySync(
     const { stopLoss, takeProfit, ...sharedRest } = shared;
 
     try {
+      // A closed trade is a historical fact, not a live value — once a row
+      // has a closedAt, nothing about it should ever be touched again. The
+      // terminal resends its whole history window every cycle (by design,
+      // so a stop moved on a still-open position keeps showing up without
+      // the EA tracking what changed), and without this guard every one of
+      // those resends would silently overwrite an already-closed trade's
+      // entry/exit/pnl/balance with whatever the EA recomputes that day —
+      // exactly how a past trade's risk% used to drift as the live account
+      // balance moved long after the trade itself was over.
+      const existing = await prisma.trade.findUnique({
+        where: {
+          userId_source_externalId: { userId, source, externalId: incoming.ticket },
+        },
+        select: { closedAt: true },
+      });
+
+      if (existing?.closedAt) {
+        applied += 1;
+        continue;
+      }
+
       // Matched on the position ticket. An open position and the closed trade
       // it becomes are the same row, so closing updates rather than inserting.
       await prisma.trade.upsert({
