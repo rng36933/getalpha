@@ -1,10 +1,33 @@
-import { NextResponse } from "next/server";
 import { TradeSource } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { applySync, type IncomingTrade } from "@/lib/mt5/sync";
 import { hashToken, tokenFromHeader } from "@/lib/mt5/token";
 import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { requireJsonRequest } from "@/lib/request-guards";
+
+/**
+ * A response with an explicit Content-Length instead of Vercel's default
+ * chunked transfer-encoding.
+ *
+ * MetaTrader's WebRequest (WinINet under the hood) was observed hanging for a
+ * full client-side timeout on this endpoint even though the server answered
+ * within a second every time — confirmed by comparing this route's own
+ * runtime logs against the EA's journal timestamps. A response with no
+ * Content-Length depends on the client correctly recognising the final
+ * zero-length chunk to know the body is complete; if that recognition
+ * doesn't happen, the client sits waiting for more bytes that already
+ * arrived. A fixed Content-Length removes that ambiguity entirely.
+ */
+function jsonFixedLength(body: unknown, status: number): Response {
+  const text = JSON.stringify(body);
+  return new Response(text, {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": String(Buffer.byteLength(text, "utf8")),
+    },
+  });
+}
 
 /**
  * A terminal sending more than this in one call is not a person trading.
@@ -37,7 +60,7 @@ export async function POST(request: Request) {
   const token = tokenFromHeader(request.headers.get("authorization"));
 
   if (!token) {
-    return NextResponse.json({ error: "Missing connection token" }, { status: 401 });
+    return jsonFixedLength({ error: "Missing connection token" }, 401);
   }
 
   const wrongType = requireJsonRequest(request);
@@ -60,17 +83,14 @@ export async function POST(request: Request) {
   if (!connection) {
     // The same answer as a missing token: a caller learns nothing about
     // whether a token it tried once existed.
-    return NextResponse.json({ error: "Unknown connection token" }, { status: 401 });
+    return jsonFixedLength({ error: "Unknown connection token" }, 401);
   }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Request body must be valid JSON" },
-      { status: 400 },
-    );
+    return jsonFixedLength({ error: "Request body must be valid JSON" }, 400);
   }
 
   const payload = body as {
@@ -81,17 +101,11 @@ export async function POST(request: Request) {
   };
 
   if (!Array.isArray(payload.trades)) {
-    return NextResponse.json(
-      { error: "trades: required, must be an array" },
-      { status: 400 },
-    );
+    return jsonFixedLength({ error: "trades: required, must be an array" }, 400);
   }
 
   if (payload.trades.length > MAX_TRADES) {
-    return NextResponse.json(
-      { error: `Send at most ${MAX_TRADES} trades per request` },
-      { status: 413 },
-    );
+    return jsonFixedLength({ error: `Send at most ${MAX_TRADES} trades per request` }, 413);
   }
 
   const asText = (value: unknown): string | null =>
@@ -114,9 +128,9 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ ok: true, ...result });
+    return jsonFixedLength({ ok: true, ...result }, 200);
   } catch (error) {
     console.error("POST /api/mt5/sync failed:", error);
-    return NextResponse.json({ error: "Could not store the trades" }, { status: 500 });
+    return jsonFixedLength({ error: "Could not store the trades" }, 500);
   }
 }

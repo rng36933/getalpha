@@ -137,6 +137,7 @@ string TradeJson(const string ticket, const string symbol, const string directio
                  const double volume, const double contractSize,
                  const double entry, const double stop, const double target,
                  const double exit, const double profit,
+                 const double accountBalance,
                  const datetime opened, const datetime closed,
                  const string comment)
   {
@@ -155,7 +156,7 @@ string TradeJson(const string ticket, const string symbol, const string directio
    json += "\"takeProfit\":" + (target > 0 ? JsonNumber(target, digits) : "null") + ",";
    json += "\"exitPrice\":" + (exit > 0 ? JsonNumber(exit, digits) : "null") + ",";
    json += "\"profit\":" + JsonNumber(profit, 2) + ",";
-   json += "\"accountBalance\":" + JsonNumber(AccountInfoDouble(ACCOUNT_BALANCE), 2) + ",";
+   json += "\"accountBalance\":" + JsonNumber(accountBalance, 2) + ",";
    json += "\"openedAt\":" + IsoUtc(opened) + ",";
    json += "\"closedAt\":" + IsoUtc(closed) + ",";
    // The order comment an EA sets at entry — "ZonuRetestas" and the like —
@@ -283,12 +284,63 @@ void CollectOpenPositions(string &trades[], int &count)
          PositionGetDouble(POSITION_TP),
          0,                                   // still open
          PositionGetDouble(POSITION_PROFIT),
+         // Still open, so the account's current balance genuinely is the
+         // balance behind this position's risk right now.
+         AccountInfoDouble(ACCOUNT_BALANCE),
          (datetime)PositionGetInteger(POSITION_TIME),
          0,
          PositionGetString(POSITION_COMMENT));
 
       count++;
      }
+  }
+
+//+------------------------------------------------------------------+
+//| Reconstructs what the account balance was at a past moment,       |
+//| given the deals already loaded by HistorySelect.                  |
+//|                                                                    |
+//| MT5 keeps no "balance at time T" history — only the deals that     |
+//| moved it. The live ACCOUNT_BALANCE is always today's number, so    |
+//| using it for an old closed trade's risk% compares that trade's     |
+//| risk against a balance it never actually faced (grown or shrunk    |
+//| since). Instead: take today's balance and undo every deal that     |
+//| changed it after the moment in question — what's left is the      |
+//| balance right before that moment.                                  |
+//+------------------------------------------------------------------+
+double BalanceAtTime(const datetime at, const int deals)
+  {
+   double undo = 0;
+
+   for(int i = 0; i < deals; i++)
+     {
+      ulong dealTicket = HistoryDealGetTicket(i);
+      if(dealTicket == 0)
+         continue;
+
+      datetime dealTime = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
+      if(dealTime <= at)
+         continue;
+
+      long entry = HistoryDealGetInteger(dealTicket, DEAL_ENTRY);
+      long type  = HistoryDealGetInteger(dealTicket, DEAL_TYPE);
+
+      if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY)
+        {
+         // Closing a position: profit, swap and commission all land on the
+         // balance the moment it closes.
+         undo += HistoryDealGetDouble(dealTicket, DEAL_PROFIT)
+               + HistoryDealGetDouble(dealTicket, DEAL_SWAP)
+               + HistoryDealGetDouble(dealTicket, DEAL_COMMISSION);
+        }
+      else if(type == DEAL_TYPE_BALANCE || type == DEAL_TYPE_CREDIT)
+        {
+         // A deposit, withdrawal or credit adjustment — not tied to any
+         // position, but it still moved the balance between `at` and now.
+         undo += HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+        }
+     }
+
+   return AccountInfoDouble(ACCOUNT_BALANCE) - undo;
   }
 
 //+------------------------------------------------------------------+
@@ -438,6 +490,9 @@ void CollectClosedTrades(string &trades[], int &count,
          target,
          HistoryDealGetDouble(dealTicket, DEAL_PRICE),
          HistoryDealGetDouble(dealTicket, DEAL_PROFIT),
+         // The balance right before this position opened, not today's —
+         // see BalanceAtTime above.
+         BalanceAtTime(openedAt, deals),
          openedAt,
          closedAt,
          comment);
@@ -479,11 +534,22 @@ bool Send(const string body, const int count)
    // byte would itself make the body invalid. This drops exactly that byte.
    ArrayResize(post, ArraySize(post) - 1);
 
+   // Connection: close — forces a fresh TCP connection for every sync
+   // instead of reusing a pooled one. A stale reused connection against a
+   // CDN edge (Vercel) is what let the server answer instantly while the
+   // terminal sat waiting for a response that never arrived back on that
+   // connection, until its own timeout gave up and misreported failure.
    string headers = "Content-Type: application/json\r\n"
+                    "Connection: close\r\n"
                     "Authorization: Bearer " + ConnectionToken + "\r\n";
 
+   // 60s, not 10s: a first-run resend of a long history can carry hundreds of
+   // trades, and the server genuinely takes several seconds to write them all.
+   // A short timeout here doesn't make the request fail server-side — it just
+   // makes the terminal give up and report failure on a request that the
+   // server was about to finish and store successfully anyway.
    ResetLastError();
-   int status = WebRequest("POST", ENDPOINT, headers, 10000, post, result, responseHeaders);
+   int status = WebRequest("POST", ENDPOINT, headers, 60000, post, result, responseHeaders);
 
    if(status == -1)
      {

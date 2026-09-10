@@ -132,6 +132,7 @@ string TradeJson(const string ticket, const string symbol, const string directio
                  const double volume, const double contractSize,
                  const double entry, const double stop, const double target,
                  const double exit, const double profit,
+                 const double accountBalance,
                  const datetime opened, const datetime closed,
                  const string comment)
   {
@@ -150,7 +151,7 @@ string TradeJson(const string ticket, const string symbol, const string directio
    json += "\"takeProfit\":" + (target > 0 ? JsonNumber(target, digits) : "null") + ",";
    json += "\"exitPrice\":" + (exit > 0 ? JsonNumber(exit, digits) : "null") + ",";
    json += "\"profit\":" + JsonNumber(profit, 2) + ",";
-   json += "\"accountBalance\":" + JsonNumber(AccountBalance(), 2) + ",";
+   json += "\"accountBalance\":" + JsonNumber(accountBalance, 2) + ",";
    json += "\"openedAt\":" + IsoUtc(opened) + ",";
    json += "\"closedAt\":" + IsoUtc(closed) + ",";
    // The order comment — the closest thing to a stated reason for the trade
@@ -224,6 +225,49 @@ void Sync()
   }
 
 //+------------------------------------------------------------------+
+//| Reconstructs what the account balance was at a past moment.       |
+//|                                                                    |
+//| MT4 keeps no "balance at time T" history — only the closed orders  |
+//| (and balance/credit entries) that moved it. The live               |
+//| AccountBalance() is always today's number, so using it for an old  |
+//| closed trade's risk% compares that trade's risk against a balance  |
+//| it never faced (grown or shrunk since). Instead: take today's      |
+//| balance and undo everything that changed it after the moment in    |
+//| question — what's left is the balance right before that moment.    |
+//+------------------------------------------------------------------+
+double BalanceAtTime(const datetime at)
+  {
+   double undo = 0;
+   int total = OrdersHistoryTotal();
+
+   for(int i = 0; i < total; i++)
+     {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
+         continue;
+
+      int type = OrderType();
+
+      if(type == OP_BUY || type == OP_SELL)
+        {
+         datetime closedAt = OrderCloseTime();
+         if(closedAt > at)
+            undo += OrderProfit() + OrderSwap() + OrderCommission();
+        }
+      // 6 = OP_BALANCE, 7 = OP_CREDIT — deposits, withdrawals and credit
+      // adjustments. Not documented as named constants in MQL4, but every
+      // broker uses these two values; a single-event entry, open time and
+      // close time are the same for it.
+      else if(type == 6 || type == 7)
+        {
+         if(OrderOpenTime() > at)
+            undo += OrderProfit();
+        }
+     }
+
+   return AccountBalance() - undo;
+  }
+
+//+------------------------------------------------------------------+
 //| Open orders. Resent every cycle rather than tracked, so a stop    |
 //| the user moved shows up without the EA having to notice it moved. |
 //| Pending orders (buy/sell limit/stop) are skipped — they are not   |
@@ -260,6 +304,9 @@ void CollectOpenOrders(string &trades[], int &count)
          OrderTakeProfit(),
          0,                                   // still open
          OrderProfit(),
+         // Still open, so the account's current balance genuinely is the
+         // balance behind this position's risk right now.
+         AccountBalance(),
          OrderOpenTime(),
          0,
          OrderComment());
@@ -303,6 +350,14 @@ void CollectClosedOrders(string &trades[], int &count,
       if(contractSize <= 0)
          contractSize = 1;
 
+      // Computed and stashed before building the JSON call below:
+      // BalanceAtTime() runs its own OrderSelect() loop internally, which
+      // would otherwise clobber this order's selection mid-argument-list
+      // (MQL4 does not guarantee left-to-right argument evaluation), making
+      // every OrderXxx() call after it read the wrong order.
+      double openedAtBalance = BalanceAtTime(OrderOpenTime());
+      OrderSelect(i, SELECT_BY_POS, MODE_HISTORY);
+
       ArrayResize(trades, count + 1);
       trades[count] = TradeJson(
          IntegerToString(OrderTicket()),
@@ -315,6 +370,7 @@ void CollectClosedOrders(string &trades[], int &count,
          OrderTakeProfit(),
          OrderClosePrice(),
          OrderProfit(),
+         openedAtBalance,
          OrderOpenTime(),
          closedAt,
          OrderComment());
@@ -349,11 +405,19 @@ bool Send(const string body, const int count)
    StringToCharArray(body, post, 0, WHOLE_ARRAY, CP_UTF8);
    ArrayResize(post, ArraySize(post) - 1);
 
+   // Connection: close — forces a fresh TCP connection for every sync
+   // instead of reusing a pooled one.
    string headers = "Content-Type: application/json\r\n"
+                    "Connection: close\r\n"
                     "Authorization: Bearer " + ConnectionToken + "\r\n";
 
+   // 60s, not 10s: a first-run resend of a long history can carry hundreds of
+   // trades, and the server genuinely takes several seconds to write them all.
+   // A short timeout here doesn't make the request fail server-side — it just
+   // makes the terminal give up and report failure on a request that the
+   // server was about to finish and store successfully anyway.
    ResetLastError();
-   int status = WebRequest("POST", ENDPOINT, headers, 10000, post, result, responseHeaders);
+   int status = WebRequest("POST", ENDPOINT, headers, 60000, post, result, responseHeaders);
 
    if(status == -1)
      {
