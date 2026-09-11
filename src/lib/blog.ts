@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "max-daily-loss-limit",
+    title: "What a Maximum Daily Loss Limit Actually Protects You From",
+    description:
+      "A daily loss limit doesn't stop a bad trade from losing. It stops a bad trade from turning into five. What the rule is actually defending against, and why the number matters less than the enforcement.",
+    date: "2026-09-11",
+  },
+  {
     slug: "trading-plan-vs-trading-rules",
     title: "Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two",
     description:

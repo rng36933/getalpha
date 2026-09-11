@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] What a Maximum Daily Loss Limit Actually Protects You From
 - [ ] Confidence vs. Overconfidence, Measured in Position Size
 - [ ] Why Your Best Month Might Be Your Most Dangerous One
 - [ ] Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?
@@ -41,6 +40,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] What a Maximum Daily Loss Limit Actually Protects You From (2026-09-11)
 - [x] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two (2026-09-10)
 - [x] How Spread and Commission Quietly Erase a "Winning" Strategy (2026-09-09)
 - [x] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't (2026-09-08)
