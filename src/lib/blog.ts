@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "confidence-vs-overconfidence-position-size",
+    title: "Confidence vs. Overconfidence, Measured in Position Size",
+    description:
+      "Confidence in a setup and confidence in a decision are not the same thing, and only one of them should be allowed to move your position size. How to tell the two apart in your own trade log.",
+    date: "2026-09-12",
+  },
+  {
     slug: "max-daily-loss-limit",
     title: "What a Maximum Daily Loss Limit Actually Protects You From",
     description:

@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Confidence vs. Overconfidence, Measured in Position Size
 - [ ] Why Your Best Month Might Be Your Most Dangerous One
 - [ ] Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?
 - [ ] The Setup That Worked Once: How Traders Mistake Luck for an Edge
@@ -40,6 +39,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Confidence vs. Overconfidence, Measured in Position Size (2026-09-12)
 - [x] What a Maximum Daily Loss Limit Actually Protects You From (2026-09-11)
 - [x] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two (2026-09-10)
 - [x] How Spread and Commission Quietly Erase a "Winning" Strategy (2026-09-09)
