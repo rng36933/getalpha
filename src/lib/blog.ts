@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "best-month-most-dangerous",
+    title: "Why Your Best Month Might Be Your Most Dangerous One",
+    description:
+      "A great month feels like proof the strategy is working. Pull the trade log apart and it's often proof of something else — concentration, size drift, or a streak that hasn't broken yet.",
+    date: "2026-09-13",
+  },
+  {
     slug: "confidence-vs-overconfidence-position-size",
     title: "Confidence vs. Overconfidence, Measured in Position Size",
     description:
