@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?
 - [ ] The Setup That Worked Once: How Traders Mistake Luck for an Edge
 - [ ] Journaling Emotions Without Turning Your Journal Into a Diary
 - [ ] Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck
@@ -38,6 +37,7 @@ Each run:
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour? (2026-09-14)
 - [x] Why Your Best Month Might Be Your Most Dangerous One (2026-09-13)
 - [x] Confidence vs. Overconfidence, Measured in Position Size (2026-09-12)
 - [x] What a Maximum Daily Loss Limit Actually Protects You From (2026-09-11)

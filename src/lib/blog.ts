@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "time-of-day-bias",
+    title: "Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?",
+    description:
+      "A trade log totalled by day hides which hours are actually carrying the losses. How to split it by entry time, what a real time-of-day bias looks like, and why it's easy to have without knowing it.",
+    date: "2026-09-14",
+  },
+  {
     slug: "best-month-most-dangerous",
     title: "Why Your Best Month Might Be Your Most Dangerous One",
     description:
