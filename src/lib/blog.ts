@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "setup-that-worked-once",
+    title: "The Setup That Worked Once: How Traders Mistake Luck for an Edge",
+    description:
+      "One clean win on a setup feels like discovery. It's one data point. How a single lucky trade gets promoted into a rule, and the checks that catch the promotion before it costs a strategy's worth of losses.",
+    date: "2026-09-15",
+  },
+  {
     slug: "time-of-day-bias",
     title: "Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?",
     description:
