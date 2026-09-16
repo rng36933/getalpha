@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "journaling-emotions-without-diary",
+    title: "Journaling Emotions Without Turning Your Journal Into a Diary",
+    description:
+      "Emotional state affects trade quality, but a paragraph about how you felt doesn't get reviewed and doesn't produce a fix. How to log emotion as data that ties back to specific trades instead of a diary entry that sits unread.",
+    date: "2026-09-16",
+  },
+  {
     slug: "setup-that-worked-once",
     title: "The Setup That Worked Once: How Traders Mistake Luck for an Edge",
     description:
