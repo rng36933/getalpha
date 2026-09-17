@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "margin-call-risk-failure",
+    title: "Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck",
+    description:
+      "A margin call feels like something the market did to you. Usually it's something a position size decided days earlier already guaranteed. Why 'the market moved against me' is the wrong read on most margin calls, and what actually predicts one.",
+    date: "2026-09-17",
+  },
+  {
     slug: "journaling-emotions-without-diary",
     title: "Journaling Emotions Without Turning Your Journal Into a Diary",
     description:
