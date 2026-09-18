@@ -28,12 +28,12 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] The Weekend Gap Problem: What Holding Positions Overnight Actually Costs
 - [ ] How Many Strategies Should You Actually Be Running at Once?
 - [ ] Stop Loss vs. Mental Stop: Why Only One of Them Actually Works
 - [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] The Weekend Gap Problem: What Holding Positions Overnight Actually Costs (2026-09-18)
 - [x] Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck (2026-09-17)
 - [x] Journaling Emotions Without Turning Your Journal Into a Diary (2026-09-16)
 - [x] The Setup That Worked Once: How Traders Mistake Luck for an Edge (2026-09-15)

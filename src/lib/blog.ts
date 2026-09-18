@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "weekend-gap-problem",
+    title: "The Weekend Gap Problem: What Holding Positions Overnight Actually Costs",
+    description:
+      "A stop-loss only works while the market is open to fill it. What a weekend or overnight gap actually does to a position, and how to see the cost in your own trade log instead of finding out live.",
+    date: "2026-09-18",
+  },
+  {
     slug: "margin-call-risk-failure",
     title: "Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck",
     description:
