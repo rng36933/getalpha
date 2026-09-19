@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "how-many-strategies-at-once",
+    title: "How Many Strategies Should You Actually Be Running at Once?",
+    description:
+      "Running several strategies feels like diversification. Usually it just splits your sample size, hides which one is actually working, and doubles the number of rules you have to follow under pressure.",
+    date: "2026-09-19",
+  },
+  {
     slug: "weekend-gap-problem",
     title: "The Weekend Gap Problem: What Holding Positions Overnight Actually Costs",
     description:
