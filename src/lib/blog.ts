@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "stop-loss-vs-mental-stop",
+    title: "Stop Loss vs. Mental Stop: Why Only One of Them Actually Works",
+    description:
+      "A hard stop and a mental stop can sit at the exact same price and still be two completely different risk decisions. What actually happens to the mental one when the price gets there.",
+    date: "2026-09-20",
+  },
+  {
     slug: "how-many-strategies-at-once",
     title: "How Many Strategies Should You Actually Be Running at Once?",
     description:
