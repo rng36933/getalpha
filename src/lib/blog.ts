@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "changing-strategy-mid-drawdown",
+    title: "What Changing Your Strategy Mid-Drawdown Really Costs You",
+    description:
+      "Swapping strategies while one is underwater feels like fixing the problem. Usually it just resets the sample size on the old strategy and starts a new, unproven one at the worst possible time.",
+    date: "2026-09-21",
+  },
+  {
     slug: "stop-loss-vs-mental-stop",
     title: "Stop Loss vs. Mental Stop: Why Only One of Them Actually Works",
     description:
