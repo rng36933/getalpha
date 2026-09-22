@@ -28,9 +28,9 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
 
 **Published:**
+- [x] What Changing Your Strategy Mid-Drawdown Really Costs You (2026-09-22)
 - [x] Stop Loss vs. Mental Stop: Why Only One of Them Actually Works (2026-09-20)
 - [x] How Many Strategies Should You Actually Be Running at Once? (2026-09-19)
 - [x] The Weekend Gap Problem: What Holding Positions Overnight Actually Costs (2026-09-18)

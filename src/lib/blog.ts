@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "strategy-switching-mid-drawdown",
+    title: "What Changing Your Strategy Mid-Drawdown Really Costs You",
+    description:
+      "Switching strategies during a losing stretch feels like fixing the problem. Usually it resets the sample size on both strategies and hides which one actually failed.",
+    date: "2026-09-22",
+  },
+  {
     slug: "stop-loss-vs-mental-stop",
     title: "Stop Loss vs. Mental Stop: Why Only One of Them Actually Works",
     description:
