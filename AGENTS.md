@@ -28,8 +28,28 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
+- [ ] Maximum Favorable Excursion: What Your Winners Do Before You Exit Them
+- [ ] The Break-Even Stop Trap: When "Protecting Profit" Just Guarantees a Scratch
+- [ ] ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk
+- [ ] Trade Frequency: How Many Trades a Day Actually Fits Your Strategy
+- [ ] Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway
+- [ ] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology
+- [ ] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money
+- [ ] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble
+- [ ] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money
+- [ ] Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge
+- [ ] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth
+- [ ] The Weekly Review: What Actually Belongs in It Besides P&L
+- [ ] Rule Adherence Rate: A Number That Matters More Than Your Win Rate
+- [ ] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade
+- [ ] Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal
+- [ ] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear
+- [ ] One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk?
+- [ ] Swing Trading vs Day Trading Journals: Why They Need Different Granularity
+- [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Maximum Adverse Excursion: The Number That Shows How Much Heat You Actually Take (2026-09-23)
 - [x] What Changing Your Strategy Mid-Drawdown Really Costs You (2026-09-22)
 - [x] Stop Loss vs. Mental Stop: Why Only One of Them Actually Works (2026-09-20)
 - [x] How Many Strategies Should You Actually Be Running at Once? (2026-09-19)

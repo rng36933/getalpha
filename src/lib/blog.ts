@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "max-adverse-excursion",
+    title: "Maximum Adverse Excursion: The Number That Shows How Much Heat You Actually Take",
+    description:
+      "A winning trade that was down 3R before it turned around and a winning trade that never went red are not the same trade. MAE is the number that tells them apart.",
+    date: "2026-09-23",
+  },
+  {
     slug: "strategy-switching-mid-drawdown",
     title: "What Changing Your Strategy Mid-Drawdown Really Costs You",
     description:
