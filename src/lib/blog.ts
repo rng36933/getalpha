@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "max-favorable-excursion",
+    title: "Maximum Favorable Excursion: What Your Winners Do Before You Exit Them",
+    description:
+      "A trade that peaks at +3R and closes at +0.8R looks identical to one that only ever reached +0.8R — unless you're logging MFE. What it actually reveals about your exits.",
+    date: "2026-09-24",
+  },
+  {
     slug: "max-adverse-excursion",
     title: "Maximum Adverse Excursion: The Number That Shows How Much Heat You Actually Take",
     description:
