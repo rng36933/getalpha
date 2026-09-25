@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "break-even-stop-trap",
+    title:
+      'The Break-Even Stop Trap: When "Protecting Profit" Just Guarantees a Scratch',
+    description:
+      "Moving a stop to break-even the moment a trade goes green feels like free risk management. Run the numbers on what it actually does to your winners, and it isn't free.",
+    date: "2026-09-26",
+  },
+  {
     slug: "max-favorable-excursion",
     title: "Maximum Favorable Excursion: What Your Winners Do Before You Exit Them",
     description:
