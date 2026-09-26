@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk
 - [ ] Trade Frequency: How Many Trades a Day Actually Fits Your Strategy
 - [ ] Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway
 - [ ] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology
@@ -47,6 +46,7 @@ Each run:
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk (2026-09-27)
 - [x] The Break-Even Stop Trap: When "Protecting Profit" Just Guarantees a Scratch (2026-09-26)
 - [x] Maximum Favorable Excursion: What Your Winners Do Before You Exit Them (2026-09-24)
 - [x] Maximum Adverse Excursion: The Number That Shows How Much Heat You Actually Take (2026-09-23)

@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "atr-vs-fixed-pip-stops",
+    title:
+      "ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk",
+    description:
+      "A 20-pip stop is not one risk decision, it's a different one every day depending on volatility. Why a fixed-pip stop drifts and what an ATR stop actually fixes.",
+    date: "2026-09-27",
+  },
+  {
     slug: "break-even-stop-trap",
     title:
       'The Break-Even Stop Trap: When "Protecting Profit" Just Guarantees a Scratch',
