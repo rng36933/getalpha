@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "trade-frequency",
+    title: "Trade Frequency: How Many Trades a Day Actually Fits Your Strategy",
+    description:
+      "There's no universal right number of trades per day. There's a number your strategy's own signal rate produces, and a gap between that and what you actually took.",
+    date: "2026-09-28",
+  },
+  {
     slug: "atr-vs-fixed-pip-stops",
     title:
       "ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk",
