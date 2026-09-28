@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "boredom-trading",
+    title:
+      "Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway",
+    description:
+      "Boredom doesn't feel like a mistake while it's happening — it feels like being ready. What a boredom entry actually looks like in a trade log, and how it differs from a real one.",
+    date: "2026-09-28",
+  },
+  {
     slug: "trade-frequency",
     title: "Trade Frequency: How Many Trades a Day Actually Fits Your Strategy",
     description:

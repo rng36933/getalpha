@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway
 - [ ] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology
 - [ ] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money
 - [ ] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble
@@ -45,6 +44,7 @@ Each run:
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway (2026-09-28)
 - [x] Trade Frequency: How Many Trades a Day Actually Fits Your Strategy (2026-09-28)
 - [x] ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk (2026-09-27)
 - [x] The Break-Even Stop Trap: When "Protecting Profit" Just Guarantees a Scratch (2026-09-26)
