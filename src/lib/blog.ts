@@ -17,6 +17,128 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "boredom-trading",
+    title:
+      "Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway",
+    description:
+      "Boredom doesn't feel like a mistake while it's happening — it feels like being ready. What a boredom entry actually looks like in a trade log, and how it differs from a real one.",
+    date: "2026-09-28",
+  },
+  {
+    slug: "trade-frequency",
+    title: "Trade Frequency: How Many Trades a Day Actually Fits Your Strategy",
+    description:
+      "There's no universal right number of trades per day. There's a number your strategy's own signal rate produces, and a gap between that and what you actually took.",
+    date: "2026-09-28",
+  },
+  {
+    slug: "atr-vs-fixed-pip-stops",
+    title:
+      "ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk",
+    description:
+      "A 20-pip stop is not one risk decision, it's a different one every day depending on volatility. Why a fixed-pip stop drifts and what an ATR stop actually fixes.",
+    date: "2026-09-27",
+  },
+  {
+    slug: "break-even-stop-trap",
+    title:
+      'The Break-Even Stop Trap: When "Protecting Profit" Just Guarantees a Scratch',
+    description:
+      "Moving a stop to break-even the moment a trade goes green feels like free risk management. Run the numbers on what it actually does to your winners, and it isn't free.",
+    date: "2026-09-26",
+  },
+  {
+    slug: "max-favorable-excursion",
+    title: "Maximum Favorable Excursion: What Your Winners Do Before You Exit Them",
+    description:
+      "A trade that peaks at +3R and closes at +0.8R looks identical to one that only ever reached +0.8R — unless you're logging MFE. What it actually reveals about your exits.",
+    date: "2026-09-24",
+  },
+  {
+    slug: "max-adverse-excursion",
+    title: "Maximum Adverse Excursion: The Number That Shows How Much Heat You Actually Take",
+    description:
+      "A winning trade that was down 3R before it turned around and a winning trade that never went red are not the same trade. MAE is the number that tells them apart.",
+    date: "2026-09-23",
+  },
+  {
+    slug: "strategy-switching-mid-drawdown",
+    title: "What Changing Your Strategy Mid-Drawdown Really Costs You",
+    description:
+      "Switching strategies during a losing stretch feels like fixing the problem. Usually it resets the sample size on both strategies and hides which one actually failed.",
+    date: "2026-09-22",
+  },
+  {
+    slug: "stop-loss-vs-mental-stop",
+    title: "Stop Loss vs. Mental Stop: Why Only One of Them Actually Works",
+    description:
+      "A hard stop and a mental stop can sit at the exact same price and still be two completely different risk decisions. What actually happens to the mental one when the price gets there.",
+    date: "2026-09-20",
+  },
+  {
+    slug: "how-many-strategies-at-once",
+    title: "How Many Strategies Should You Actually Be Running at Once?",
+    description:
+      "Running several strategies feels like diversification. Usually it just splits your sample size, hides which one is actually working, and doubles the number of rules you have to follow under pressure.",
+    date: "2026-09-19",
+  },
+  {
+    slug: "weekend-gap-problem",
+    title: "The Weekend Gap Problem: What Holding Positions Overnight Actually Costs",
+    description:
+      "A stop-loss only works while the market is open to fill it. What a weekend or overnight gap actually does to a position, and how to see the cost in your own trade log instead of finding out live.",
+    date: "2026-09-18",
+  },
+  {
+    slug: "margin-call-risk-failure",
+    title: "Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck",
+    description:
+      "A margin call feels like something the market did to you. Usually it's something a position size decided days earlier already guaranteed. Why 'the market moved against me' is the wrong read on most margin calls, and what actually predicts one.",
+    date: "2026-09-17",
+  },
+  {
+    slug: "journaling-emotions-without-diary",
+    title: "Journaling Emotions Without Turning Your Journal Into a Diary",
+    description:
+      "Emotional state affects trade quality, but a paragraph about how you felt doesn't get reviewed and doesn't produce a fix. How to log emotion as data that ties back to specific trades instead of a diary entry that sits unread.",
+    date: "2026-09-16",
+  },
+  {
+    slug: "setup-that-worked-once",
+    title: "The Setup That Worked Once: How Traders Mistake Luck for an Edge",
+    description:
+      "One clean win on a setup feels like discovery. It's one data point. How a single lucky trade gets promoted into a rule, and the checks that catch the promotion before it costs a strategy's worth of losses.",
+    date: "2026-09-15",
+  },
+  {
+    slug: "time-of-day-bias",
+    title: "Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?",
+    description:
+      "A trade log totalled by day hides which hours are actually carrying the losses. How to split it by entry time, what a real time-of-day bias looks like, and why it's easy to have without knowing it.",
+    date: "2026-09-14",
+  },
+  {
+    slug: "best-month-most-dangerous",
+    title: "Why Your Best Month Might Be Your Most Dangerous One",
+    description:
+      "A great month feels like proof the strategy is working. Pull the trade log apart and it's often proof of something else — concentration, size drift, or a streak that hasn't broken yet.",
+    date: "2026-09-13",
+  },
+  {
+    slug: "confidence-vs-overconfidence-position-size",
+    title: "Confidence vs. Overconfidence, Measured in Position Size",
+    description:
+      "Confidence in a setup and confidence in a decision are not the same thing, and only one of them should be allowed to move your position size. How to tell the two apart in your own trade log.",
+    date: "2026-09-12",
+  },
+  {
+    slug: "max-daily-loss-limit",
+    title: "What a Maximum Daily Loss Limit Actually Protects You From",
+    description:
+      "A daily loss limit doesn't stop a bad trade from losing. It stops a bad trade from turning into five. What the rule is actually defending against, and why the number matters less than the enforcement.",
+    date: "2026-09-11",
+  },
+  {
     slug: "trading-plan-vs-trading-rules",
     title: "Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two",
     description:

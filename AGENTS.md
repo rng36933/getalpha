@@ -28,19 +28,39 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] What a Maximum Daily Loss Limit Actually Protects You From
-- [ ] Confidence vs. Overconfidence, Measured in Position Size
-- [ ] Why Your Best Month Might Be Your Most Dangerous One
-- [ ] Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour?
-- [ ] The Setup That Worked Once: How Traders Mistake Luck for an Edge
-- [ ] Journaling Emotions Without Turning Your Journal Into a Diary
-- [ ] Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck
-- [ ] The Weekend Gap Problem: What Holding Positions Overnight Actually Costs
-- [ ] How Many Strategies Should You Actually Be Running at Once?
-- [ ] Stop Loss vs. Mental Stop: Why Only One of Them Actually Works
-- [ ] What Changing Your Strategy Mid-Drawdown Really Costs You
+- [ ] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology
+- [ ] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money
+- [ ] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble
+- [ ] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money
+- [ ] Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge
+- [ ] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth
+- [ ] The Weekly Review: What Actually Belongs in It Besides P&L
+- [ ] Rule Adherence Rate: A Number That Matters More Than Your Win Rate
+- [ ] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade
+- [ ] Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal
+- [ ] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear
+- [ ] One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk?
+- [ ] Swing Trading vs Day Trading Journals: Why They Need Different Granularity
+- [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway (2026-09-28)
+- [x] Trade Frequency: How Many Trades a Day Actually Fits Your Strategy (2026-09-28)
+- [x] ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk (2026-09-27)
+- [x] The Break-Even Stop Trap: When "Protecting Profit" Just Guarantees a Scratch (2026-09-26)
+- [x] Maximum Favorable Excursion: What Your Winners Do Before You Exit Them (2026-09-24)
+- [x] Maximum Adverse Excursion: The Number That Shows How Much Heat You Actually Take (2026-09-23)
+- [x] What Changing Your Strategy Mid-Drawdown Really Costs You (2026-09-22)
+- [x] Stop Loss vs. Mental Stop: Why Only One of Them Actually Works (2026-09-20)
+- [x] How Many Strategies Should You Actually Be Running at Once? (2026-09-19)
+- [x] The Weekend Gap Problem: What Holding Positions Overnight Actually Costs (2026-09-18)
+- [x] Trading Too Close to a Margin Call Is a Risk Failure, Not Bad Luck (2026-09-17)
+- [x] Journaling Emotions Without Turning Your Journal Into a Diary (2026-09-16)
+- [x] The Setup That Worked Once: How Traders Mistake Luck for an Edge (2026-09-15)
+- [x] Time-of-Day Bias: Are Your Losses Clustering at a Specific Hour? (2026-09-14)
+- [x] Why Your Best Month Might Be Your Most Dangerous One (2026-09-13)
+- [x] Confidence vs. Overconfidence, Measured in Position Size (2026-09-12)
+- [x] What a Maximum Daily Loss Limit Actually Protects You From (2026-09-11)
 - [x] Trading Plan vs. Trading Rules: Why Most Traders Confuse the Two (2026-09-10)
 - [x] How Spread and Commission Quietly Erase a "Winning" Strategy (2026-09-09)
 - [x] Averaging Down: When Adding to a Loser Makes Sense, and When It Doesn't (2026-09-08)
