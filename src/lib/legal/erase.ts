@@ -12,6 +12,7 @@ export type ErasureResult = {
   aiUsageLogs: number;
   legalAcceptances: number;
   dashboardLayouts: number;
+  promoEmailsSent: number;
 };
 
 /**
@@ -82,6 +83,12 @@ export async function eraseUserData(userId: string): Promise<ErasureResult> {
       where: { userId },
     });
 
+    // Just a dedup guard for a one-off campaign send, worth nothing once the
+    // account it was guarding against re-mailing is gone.
+    const promoEmailsSent = await tx.promoEmailSent.deleteMany({
+      where: { userId },
+    });
+
     return {
       trades: trades.count,
       watchlistItems: watchlistItems.count,
@@ -94,6 +101,7 @@ export async function eraseUserData(userId: string): Promise<ErasureResult> {
       aiUsageLogs: aiUsageLogs.count,
       legalAcceptances,
       dashboardLayouts: dashboardLayouts.count,
+      promoEmailsSent: promoEmailsSent.count,
     };
   });
 }

@@ -31,6 +31,14 @@ type PricingPlansProps = {
    * the route, because a disabled button is a suggestion, not a control.
    */
   sellingClosed?: boolean;
+  /**
+   * The active promo code, or null when none applies to this account.
+   *
+   * Sent back to the checkout route, which re-checks eligibility itself
+   * (deadline, not-already-entitled) — this only changes the button's own
+   * copy and what gets included in the request.
+   */
+  promo?: string | null;
 };
 
 type Cycle = "month" | "year";
@@ -55,6 +63,7 @@ export default function PricingPlans({
   plans,
   currentPlan,
   sellingClosed = false,
+  promo = null,
 }: PricingPlansProps) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +91,7 @@ export default function PricingPlans({
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ plan: slug }),
+        body: JSON.stringify(promo ? { plan: slug, promo } : { plan: slug }),
       });
 
       const body = await response.json().catch(() => null);
@@ -224,7 +233,9 @@ export default function PricingPlans({
                     ? "Not available yet"
                     : pending === pro.slug
                       ? "Opening checkout…"
-                      : "Upgrade to Pro"}
+                      : promo
+                        ? "Upgrade to Pro — get the next period free"
+                        : "Upgrade to Pro"}
             </button>
           </section>
         ) : null}

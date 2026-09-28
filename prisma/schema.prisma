@@ -253,6 +253,18 @@ model DashboardLayout {
   @@unique([userId, page])
 }
 
+/// One row per account the one-off 2026-09-28 "2-for-1" promo email has
+/// already been sent to.
+///
+/// Send-and-retry safety, not a general unsubscribe list: this campaign runs
+/// once via `POST /api/admin/send-promo`, in batches, over a serverless
+/// function's timeout — a retried or resumed run must not re-mail anyone it
+/// already reached.
+model PromoEmailSent {
+  userId String @id
+  sentAt DateTime @default(now())
+}
+
 /// One row per day the morning email went out.
 ///
 /// The send is idempotent on this: Vercel's scheduler offers no exactly-once

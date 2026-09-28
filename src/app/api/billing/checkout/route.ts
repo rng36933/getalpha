@@ -7,14 +7,15 @@ import {
   sellingIsAllowed,
   subscribeUrl,
 } from "@/lib/billing/paypal";
-import { findOrCreateSubscriptionRow } from "@/lib/billing/subscription";
+import { PROMO_CODE, promoActive, promoTrialFields } from "@/lib/billing/promo";
+import { checkAccess, findOrCreateSubscriptionRow } from "@/lib/billing/subscription";
 import { LIMITS, enforceRateLimit } from "@/lib/rate-limit";
 import { requireJsonRequest } from "@/lib/request-guards";
 
 /**
  * POST /api/billing/checkout
  *
- * Body: { plan: "pro-monthly" | "pro-yearly" }
+ * Body: { plan: "pro-monthly" | "pro-yearly", promo?: "2x1" }
  * Returns: { url } — PayPal's "Subscribe" page to send the browser to.
  *
  * The price is never taken from the request. A client that could name its own
@@ -70,7 +71,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown plan" }, { status: 404 });
   }
 
+  const requestedPromo = (body as { promo?: unknown })?.promo;
+
   try {
+    // The 2x1 promo is for people who are not already paying — applying it to
+    // an existing Pro subscriber would just hand out a free cycle on a
+    // renewal nobody asked to change.
+    const promo =
+      requestedPromo === PROMO_CODE &&
+      promoActive() &&
+      !(await checkAccess(userId)).allowed;
+
     await findOrCreateSubscriptionRow(userId);
     const origin = appOrigin(request);
 
@@ -79,6 +90,7 @@ export async function POST(request: Request) {
       // Echoed back in every IPN as `item_number` — how the webhook learns
       // which plan this subscription is for.
       item_number: plan.slug,
+      ...(promo ? promoTrialFields(plan) : {}),
       a3: plan.amount.toFixed(2),
       p3: "1",
       t3: plan.intervalUnit,
