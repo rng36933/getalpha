@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/billing/stripe";
+import { businessEmail, checkoutOrigin } from "@/lib/billing/paypal";
 
 export type ComponentStatus = "operational" | "degraded" | "down";
 
@@ -41,25 +41,29 @@ async function checkDatabase(): Promise<ComponentCheck> {
 }
 
 /**
- * A direct call against our own Stripe account rather than Stripe's public
- * status feed — that feed's API shape isn't stable enough to depend on, and
- * this answers the more relevant question anyway: can *our* checkout reach
- * Stripe. `balance.retrieve` is one of the cheapest reads in their API.
+ * A direct reachability check against PayPal's own checkout host, rather than
+ * PayPal's public status feed — that feed's API shape isn't stable enough to
+ * depend on, and this answers the more relevant question anyway: can *our*
+ * checkout reach PayPal. There is no credential to verify with classic
+ * subscribe buttons (see `plans.ts`'s docblock) — this also confirms
+ * `PAYPAL_BUSINESS_EMAIL` is actually configured, since checkout cannot build
+ * a URL without it.
  */
 async function checkPayments(): Promise<ComponentCheck> {
   const start = Date.now();
   try {
-    await withTimeout(stripe().balance.retrieve(), 4000);
+    businessEmail();
+    await withTimeout(fetch(checkoutOrigin(), { method: "HEAD" }), 4000);
     return {
       name: "Payments",
-      description: "Stripe checkout and billing",
+      description: "PayPal checkout and billing",
       status: "operational",
       latencyMs: Date.now() - start,
     };
   } catch {
     return {
       name: "Payments",
-      description: "Stripe checkout and billing",
+      description: "PayPal checkout and billing",
       status: "down",
       latencyMs: null,
     };

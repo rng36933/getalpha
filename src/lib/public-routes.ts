@@ -70,8 +70,8 @@ export const PUBLIC_ROUTES = [
   // either. TODO: remove this route and the file once Play Store testing
   // starts — it doesn't need to stay public.
   "/downloads/getALPHA-test.apk",
-  // Stripe has no Clerk session. The webhook authenticates itself with a
-  // signature over the raw body instead.
+  // PayPal has no Clerk session. The webhook authenticates itself with a
+  // signature over the event body instead.
   "/api/billing/webhook",
   // Nor does Vercel's scheduler. That route checks CRON_SECRET itself and
   // refuses everything when the secret is unset.

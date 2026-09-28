@@ -1,17 +1,15 @@
-import type Stripe from "stripe";
 import { SubscriptionStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hasActiveReward } from "@/lib/referral/program";
 import { hasComplimentaryAccess } from "./complimentary";
-import { planSlugForPrice } from "./plans";
-import { stripe } from "./stripe";
+import { findPlan } from "./plans";
 
 /**
  * Statuses that unlock the paid modules.
  *
- * PAST_DUE is included on purpose: Stripe retries a failed card for around two
- * weeks, and locking a paying customer out on the first declined charge loses
- * more than the fortnight of usage costs.
+ * PAST_DUE is included on purpose: PayPal retries a failed recurring charge
+ * for a while, and locking a paying customer out on the first declined charge
+ * loses more than the grace period costs.
  */
 const ENTITLED: SubscriptionStatus[] = [
   SubscriptionStatus.ACTIVE,
@@ -84,140 +82,114 @@ export async function getSubscription(userId: string) {
 }
 
 /**
- * The user's Stripe customer, created on first checkout and reused after that.
- *
- * Reused deliberately: creating a customer per checkout would scatter one
- * person's payment history across several Stripe customers and break the
- * billing portal.
+ * Ensures a subscription row exists for this user before sending them to
+ * PayPal, so the IPN that comes back afterwards has a row to update.
  */
-export async function findOrCreateCustomer(
-  userId: string,
-  email: string | null,
-): Promise<string> {
-  const existing = await prisma.subscription.findUnique({ where: { userId } });
-  if (existing) return existing.stripeCustomerId;
-
-  const customer = await stripe().customers.create({
-    email: email ?? undefined,
-    // Written on the customer as well as the session, so a Stripe object found
-    // from the dashboard can always be traced back to an account.
-    metadata: { userId },
+export async function findOrCreateSubscriptionRow(userId: string): Promise<void> {
+  await prisma.subscription.upsert({
+    where: { userId },
+    create: { userId, status: SubscriptionStatus.INCOMPLETE },
+    update: {},
   });
-
-  await prisma.subscription.create({
-    data: {
-      userId,
-      stripeCustomerId: customer.id,
-      status: SubscriptionStatus.INCOMPLETE,
-    },
-  });
-
-  return customer.id;
 }
 
-function toStatus(stripeStatus: Stripe.Subscription.Status): SubscriptionStatus {
-  switch (stripeStatus) {
-    case "active":
-      return SubscriptionStatus.ACTIVE;
-    case "trialing":
-      return SubscriptionStatus.TRIALING;
-    case "past_due":
-    case "unpaid":
-    case "paused":
-      return SubscriptionStatus.PAST_DUE;
-    case "canceled":
-    case "incomplete_expired":
-      return SubscriptionStatus.CANCELED;
-    case "incomplete":
-      return SubscriptionStatus.INCOMPLETE;
-  }
+export type IpnFields = Record<string, string>;
+
+/**
+ * PayPal's recurring-billing date format, e.g. "05:00:00 Jan 25, 2027 PST".
+ *
+ * The zone abbreviation is dropped rather than mapped to an offset — this
+ * value only feeds the "still inside a paid period after cancelling" grace
+ * check, never the entitlement decision itself (that is `status`), so being
+ * off by the difference between the zone and UTC is harmless here.
+ */
+function parseNextPaymentDate(value: string): Date | null {
+  const match = value.match(/^(\d{2}:\d{2}:\d{2}) (\w{3} \d{1,2}, \d{4})/);
+  if (!match) return null;
+
+  const [, time, datePart] = match;
+  const parsed = new Date(`${datePart} ${time} UTC`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 /**
- * The end of the period the customer has paid for.
+ * Applies one verified PayPal IPN message to the database.
  *
- * Stripe moved `current_period_end` off the subscription and onto its items,
- * so this reads the items and takes the latest — with more than one item, the
- * customer keeps access until the last of them lapses.
+ * Unlike a REST webhook, classic IPN has no separate "re-fetch the object"
+ * step — the verified message itself (see `verifyIpn`) is the trusted source,
+ * so this writes what it says directly rather than re-reading anything.
  */
-function periodEnd(subscription: Stripe.Subscription): Date | null {
-  const ends = subscription.items.data
-    .map((item) => item.current_period_end)
-    .filter((value): value is number => typeof value === "number");
-
-  if (ends.length === 0) return null;
-  return new Date(Math.max(...ends) * 1000);
-}
-
-/**
- * Writes the current state of one Stripe subscription into the database.
- *
- * Always re-reads the subscription from Stripe rather than trusting the event
- * payload. Webhooks arrive out of order — a `customer.subscription.updated`
- * from the cancellation can land after the `deleted` that followed it — and
- * applying a stale payload would restore access that was just revoked.
- */
-export async function syncSubscription(subscriptionId: string): Promise<void> {
-  const subscription = await stripe().subscriptions.retrieve(subscriptionId);
-
-  const userId = subscription.metadata?.userId;
-  const customerId =
-    typeof subscription.customer === "string"
-      ? subscription.customer
-      : subscription.customer.id;
-
-  const price = subscription.items.data[0]?.price;
-  const priceId = price?.id ?? null;
-
-  const data = {
-    stripeSubscriptionId: subscription.id,
-    status: toStatus(subscription.status),
-    planSlug: planSlugForPrice(priceId),
-    stripePriceId: priceId,
-    currentPeriodEnd: periodEnd(subscription),
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-  };
-
-  // Matched on the customer, which exists from the very first checkout, rather
-  // than on the subscription id, which does not exist until checkout completes.
-  const updated = await prisma.subscription.updateMany({
-    where: { stripeCustomerId: customerId },
-    data,
-  });
-
-  if (updated.count > 0) return;
-
-  // No row yet — possible if the customer was created straight in Stripe's
-  // dashboard. Only recoverable when the subscription carries the user id.
+export async function applyIpn(fields: IpnFields): Promise<void> {
+  const userId = fields.custom || null;
   if (!userId) {
-    console.error(
-      `Stripe subscription ${subscription.id} has no local row and no userId in metadata; ignoring.`,
-    );
+    console.error(`PayPal IPN ${fields.txn_type} has no custom userId; ignoring.`);
     return;
+  }
+
+  const data: {
+    paypalSubscriptionId?: string;
+    planSlug?: string;
+    status?: SubscriptionStatus;
+    cancelAtPeriodEnd?: boolean;
+    currentPeriodEnd?: Date;
+  } = {};
+
+  if (fields.subscr_id) data.paypalSubscriptionId = fields.subscr_id;
+  if (fields.item_number && findPlan(fields.item_number)) {
+    data.planSlug = fields.item_number;
+  }
+
+  switch (fields.txn_type) {
+    case "subscr_signup":
+      data.status = SubscriptionStatus.ACTIVE;
+      data.cancelAtPeriodEnd = false;
+      break;
+    case "subscr_payment":
+      if (fields.payment_status === "Completed") {
+        data.status = SubscriptionStatus.ACTIVE;
+      }
+      break;
+    case "subscr_failed":
+      data.status = SubscriptionStatus.PAST_DUE;
+      break;
+    case "subscr_cancel":
+      // Auto-renew turned off, but the buyer keeps access to the period
+      // already paid for — `subscr_eot` is the actual end of access.
+      data.cancelAtPeriodEnd = true;
+      break;
+    case "subscr_eot":
+      data.status = SubscriptionStatus.CANCELED;
+      break;
+  }
+
+  if (fields.next_payment_date) {
+    const parsed = parseNextPaymentDate(fields.next_payment_date);
+    if (parsed) data.currentPeriodEnd = parsed;
   }
 
   await prisma.subscription.upsert({
     where: { userId },
-    create: { userId, stripeCustomerId: customerId, ...data },
-    update: { stripeCustomerId: customerId, ...data },
+    create: { userId, status: SubscriptionStatus.INCOMPLETE, ...data },
+    update: data,
   });
 }
 
 /**
- * Records that an event has been handled, and reports whether it is new.
+ * Records that an IPN delivery has been handled, and reports whether it is new.
  *
- * Stripe retries until it receives a 2xx and does not promise exactly-once
- * delivery, so every handler runs behind this.
+ * PayPal retries IPN until it receives a 200, and classic IPN carries no
+ * event id to dedupe on — the caller hashes the verified message body instead,
+ * since a retried delivery resends the identical bytes.
  */
 export async function claimEvent(
   eventId: string,
   type: string,
 ): Promise<boolean> {
   try {
-    await prisma.processedStripeEvent.create({ data: { id: eventId, type } });
+    await prisma.processedPaypalEvent.create({ data: { id: eventId, type } });
     return true;
   } catch {
-    // Unique violation: another delivery of the same event got here first.
+    // Unique violation: another delivery of the same message got here first.
     return false;
   }
 }

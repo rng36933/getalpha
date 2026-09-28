@@ -1,10 +1,10 @@
 /**
  * The plan catalogue.
  *
- * Prices live in Stripe, not here: only the price *id* is configured, and the
- * amount shown on the pricing page is read back from Stripe at render time.
- * A hardcoded "€19" is a promise the checkout page is free to break, and
- * changing what you charge should not need a deploy.
+ * Amounts are set here, not read back from a PayPal dashboard object: classic
+ * PayPal subscribe buttons have no server-side "plan" to look up, only fields
+ * supplied at checkout time. The trade-off for "just an email address, no API
+ * app" is that this file is the one place a price change actually happens.
  */
 
 export type PlanSlug = "free" | "pro-monthly" | "pro-yearly";
@@ -12,11 +12,15 @@ export type PlanSlug = "free" | "pro-monthly" | "pro-yearly";
 export type PaidPlan = {
   slug: Exclude<PlanSlug, "free">;
   name: string;
-  /** Environment variable holding the Stripe price id. */
-  priceEnv: string;
   tagline: string;
   /** Shown as a badge. Only one plan should carry it. */
   highlight?: string;
+  /** Euros, charged at this amount every billing cycle. */
+  amount: number;
+  /** PayPal's billing-cycle unit code for this plan. */
+  intervalUnit: "M" | "Y";
+  /** Human-readable cadence, matching `intervalUnit`. */
+  interval: "month" | "year";
 };
 
 /** What the free tier gets. Listed so the pricing page can be honest about it. */
@@ -37,37 +41,22 @@ export const PAID_PLANS: PaidPlan[] = [
   {
     slug: "pro-monthly",
     name: "Pro",
-    priceEnv: "STRIPE_PRICE_PRO_MONTHLY",
     tagline: "Billed monthly, cancel any time.",
+    amount: 19.99,
+    intervalUnit: "M",
+    interval: "month",
   },
   {
     slug: "pro-yearly",
     name: "Pro",
-    priceEnv: "STRIPE_PRICE_PRO_YEARLY",
     tagline: "Billed once a year.",
     highlight: "Best value",
+    amount: 199.99,
+    intervalUnit: "Y",
+    interval: "year",
   },
 ];
 
 export function findPlan(slug: string): PaidPlan | undefined {
   return PAID_PLANS.find((plan) => plan.slug === slug);
-}
-
-/** The configured Stripe price id for a plan, or null when it is not set up. */
-export function priceIdFor(plan: PaidPlan): string | null {
-  return process.env[plan.priceEnv] || null;
-}
-
-/**
- * Maps a Stripe price id back onto a plan slug.
- *
- * The webhook needs this: Stripe reports the price that was bought, and the
- * subscription row records the plan, so a user who switches plans in Stripe's
- * portal ends up on the right one without checkout being involved.
- */
-export function planSlugForPrice(priceId: string | null | undefined): PlanSlug | null {
-  if (!priceId) return null;
-
-  const match = PAID_PLANS.find((plan) => priceIdFor(plan) === priceId);
-  return match ? match.slug : null;
 }

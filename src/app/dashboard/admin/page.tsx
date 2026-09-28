@@ -4,8 +4,7 @@ import Card from "@/components/Card";
 import PageHeader from "@/components/PageHeader";
 import { SubscriptionStatus } from "@/generated/prisma/client";
 import { isAdmin } from "@/lib/admin";
-import { PAID_PLANS, priceIdFor } from "@/lib/billing/plans";
-import { stripe } from "@/lib/billing/stripe";
+import { PAID_PLANS } from "@/lib/billing/plans";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -77,30 +76,13 @@ async function loadVisitStats(): Promise<VisitStats> {
 
 type PlanAmount = { slug: string; amountEuros: number; interval: string | null };
 
-/** The live price behind each paid plan, read from Stripe once per render. */
-async function loadPlanAmounts(): Promise<PlanAmount[]> {
-  const amounts = await Promise.all(
-    PAID_PLANS.map(async (plan): Promise<PlanAmount | null> => {
-      const priceId = priceIdFor(plan);
-      if (!priceId) return null;
-
-      try {
-        const price = await stripe().prices.retrieve(priceId);
-        if (price.unit_amount === null) return null;
-
-        return {
-          slug: plan.slug,
-          amountEuros: price.unit_amount / 100,
-          interval: price.recurring?.interval ?? null,
-        };
-      } catch (error) {
-        console.error(`Admin panel could not read the Stripe price for ${plan.slug}:`, error);
-        return null;
-      }
-    }),
-  );
-
-  return amounts.filter((a): a is PlanAmount => a !== null);
+/** The price behind each paid plan, straight from `plans.ts` (see its docblock). */
+function loadPlanAmounts(): PlanAmount[] {
+  return PAID_PLANS.map((plan) => ({
+    slug: plan.slug,
+    amountEuros: plan.amount,
+    interval: plan.interval,
+  }));
 }
 
 type ActivityItem = {

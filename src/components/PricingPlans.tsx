@@ -8,14 +8,14 @@ export type PlanCard = {
   name: string;
   tagline: string;
   highlight?: string;
-  /** Formatted by the server from the live Stripe price, e.g. "€19". */
+  /** Formatted by the server from the live PayPal plan price, e.g. "€19". */
   price: string | null;
   /** Bare euro amount behind `price`, for computing the yearly saving. */
   amount: number | null;
   /** "month" | "year", or null when the price could not be read. */
   interval: string | null;
   features: readonly string[];
-  /** False when the plan has no Stripe price configured yet. */
+  /** False when the plan has no PayPal Billing Plan configured yet. */
   purchasable: boolean;
 };
 
@@ -65,7 +65,7 @@ export default function PricingPlans({
   const yearly = plans.find((plan) => plan.interval === "year") ?? null;
 
   // Falls back to whichever variant actually has a price, so a deployment with
-  // only one Stripe plan configured still renders instead of showing nothing.
+  // only one PayPal plan configured still renders instead of showing nothing.
   const pro = (cycle === "year" ? yearly : monthly) ?? monthly ?? yearly ?? null;
 
   const savingsPercent = useMemo(() => {
@@ -93,7 +93,7 @@ export default function PricingPlans({
         return;
       }
 
-      // Stripe hosts the payment page; card details never touch this app.
+      // PayPal hosts the payment page; card details never touch this app.
       window.location.assign(body.url);
     } catch {
       setError("Could not reach the server. Check your connection.");

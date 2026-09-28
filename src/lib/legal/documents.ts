@@ -36,7 +36,7 @@ export const LEGAL_PAGES = [
 
 /**
  * The operator, filled from the individuali veikla certificate (No. 1534465,
- * issued 2026-08-02) and the Stripe account it matches.
+ * issued 2026-08-02) and the PayPal account it matches.
  *
  * getALPHA runs as a Lithuanian sole proprietorship (individuali veikla)
  * rather than a company, so "registration number" here is the activity

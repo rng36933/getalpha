@@ -1,80 +1,39 @@
 import { auth } from "@clerk/nextjs/server";
 import PageHeader from "@/components/PageHeader";
 import PricingPlans, { type PlanCard } from "@/components/PricingPlans";
-import {
-  FREE_FEATURES,
-  PAID_PLANS,
-  PRO_FEATURES,
-  priceIdFor,
-} from "@/lib/billing/plans";
-import { isTestMode, sellingIsAllowed, stripe } from "@/lib/billing/stripe";
+import { FREE_FEATURES, PAID_PLANS, PRO_FEATURES } from "@/lib/billing/plans";
+import { isTestMode, sellingIsAllowed } from "@/lib/billing/paypal";
 import { hasComplimentaryAccess } from "@/lib/billing/complimentary";
 import { getSubscription } from "@/lib/billing/subscription";
 
-/**
- * Formats a Stripe price for display.
- *
- * Amounts are minor units — 1900 is €19.00 — and the trailing ".00" is dropped
- * because a round price reads better without it.
- */
-function formatAmount(amount: number | null, currency: string): string | null {
-  if (amount === null) return null;
-
-  const value = amount / 100;
+/** Formats a plan amount for display, e.g. 19.99 -> "€19.99", 0 -> "€0". */
+function formatAmount(amount: number): string {
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
-  }).format(value);
-}
-
-/** Bare euro value behind `formatAmount`, for the yearly-saving calculation. */
-function toAmount(amount: number | null): number | null {
-  return amount === null ? null : amount / 100;
+    currency: "EUR",
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+  }).format(amount);
 }
 
 /**
- * Reads the live price for each plan from Stripe.
+ * The plan cards for the pricing page.
  *
- * The amount is not stored in the codebase on purpose: whatever this page
- * claims, Checkout charges what Stripe holds, and two sources of truth for a
- * price is the kind of mismatch that ends in a refund. Changing what you charge
- * is a Stripe dashboard edit, not a deploy.
+ * Amounts come straight from `plans.ts` — there is no PayPal object to read
+ * them back from, so this file is the single source of truth for what gets
+ * charged. See the docblock in `plans.ts`.
  */
-async function loadPlanCards(): Promise<PlanCard[]> {
-  const cards = await Promise.all(
-    PAID_PLANS.map(async (plan): Promise<PlanCard> => {
-      const base = {
-        slug: plan.slug,
-        name: plan.name,
-        tagline: plan.tagline,
-        highlight: plan.highlight,
-        features: PRO_FEATURES,
-      };
-
-      const priceId = priceIdFor(plan);
-      if (!priceId) {
-        return { ...base, price: null, amount: null, interval: null, purchasable: false };
-      }
-
-      try {
-        const price = await stripe().prices.retrieve(priceId);
-
-        return {
-          ...base,
-          price: formatAmount(price.unit_amount, price.currency),
-          amount: toAmount(price.unit_amount),
-          interval: price.recurring?.interval ?? null,
-          purchasable: price.active,
-        };
-      } catch (error) {
-        // A price that cannot be read is not a page that should fail: show the
-        // plan without a number rather than a stack trace.
-        console.error(`Could not read the Stripe price ${priceId}:`, error);
-        return { ...base, price: null, amount: null, interval: null, purchasable: false };
-      }
-    }),
-  );
+function loadPlanCards(): PlanCard[] {
+  const cards: PlanCard[] = PAID_PLANS.map((plan) => ({
+    slug: plan.slug,
+    name: plan.name,
+    tagline: plan.tagline,
+    highlight: plan.highlight,
+    features: PRO_FEATURES,
+    price: formatAmount(plan.amount),
+    amount: plan.amount,
+    interval: plan.interval,
+    purchasable: true,
+  }));
 
   const free: PlanCard = {
     slug: "free",
@@ -98,10 +57,8 @@ export default async function PricingPage({
   const { checkout } = await searchParams;
   const { userId } = await auth();
 
-  const [plans, subscription] = await Promise.all([
-    loadPlanCards(),
-    userId ? getSubscription(userId) : Promise.resolve(null),
-  ]);
+  const plans = loadPlanCards();
+  const subscription = userId ? await getSubscription(userId) : null;
 
   // A comped account has no subscription row, so without this the page would
   // invite somebody to pay for the two modules they already have.
@@ -139,17 +96,17 @@ export default async function PricingPage({
       ) : null}
 
       {/* Two situations that used to share one banner.
-          On the live site with test keys nothing may be sold, the buttons are
-          off, and the test card number is deliberately not printed — publishing
-          it to every signed-in visitor is handing out the exploit. The hint
-          appears only where it is useful and harmless: locally and on previews. */}
+          On the live site with sandbox settings nothing may be sold, the
+          buttons are off, and no sandbox hint is printed — that would just be
+          publishing the exploit. The hint appears only where it is useful and
+          harmless: locally and on previews. */}
       {!sellingIsAllowed() ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
           Not for sale yet — billing is not live. Nothing can be bought or charged.
         </p>
       ) : isTestMode() ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-          Test mode: card 4242 4242 4242 4242, any expiry, any CVC.
+          Sandbox mode: use a PayPal sandbox buyer account to test checkout.
         </p>
       ) : null}
 

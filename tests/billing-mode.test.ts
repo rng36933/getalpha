@@ -6,34 +6,30 @@ import {
   sellingIsAllowed,
 } from "../src/lib/billing/mode.ts";
 
-const TEST_KEY = "sk_test_abc123";
-const LIVE_KEY = "sk_live_abc123";
-
-test("test keys on the live deployment cannot sell", () => {
-  // The whole point. Stripe's test cards are published, so a test-mode
-  // checkout on the live site is a free subscription for anyone who tries one.
-  assert.equal(sellingIsAllowed(TEST_KEY, "production"), false);
+test("sandbox credentials on the live deployment cannot sell", () => {
+  // The whole point. PayPal sandbox buyer accounts are free to complete an
+  // approval flow, so a sandbox checkout on the live site is a free
+  // subscription for anyone who tries one.
+  assert.equal(sellingIsAllowed("sandbox", "production"), false);
 });
 
-test("live keys on the live deployment can sell", () => {
-  assert.equal(sellingIsAllowed(LIVE_KEY, "production"), true);
+test("live credentials on the live deployment can sell", () => {
+  assert.equal(sellingIsAllowed("live", "production"), true);
 });
 
-test("test keys are fine anywhere that is not the live deployment", () => {
-  // Local development and preview deployments are exactly where test keys
-  // belong, and the guard must not break them.
-  assert.equal(sellingIsAllowed(TEST_KEY, "preview"), true);
-  assert.equal(sellingIsAllowed(TEST_KEY, "development"), true);
-  assert.equal(sellingIsAllowed(TEST_KEY, undefined), true);
+test("sandbox credentials are fine anywhere that is not the live deployment", () => {
+  // Local development and preview deployments are exactly where sandbox
+  // credentials belong, and the guard must not break them.
+  assert.equal(sellingIsAllowed("sandbox", "preview"), true);
+  assert.equal(sellingIsAllowed("sandbox", "development"), true);
+  assert.equal(sellingIsAllowed("sandbox", undefined), true);
 });
 
-test("a missing secret key does not read as live", () => {
-  // Unset is not `sk_test_`, so selling is technically allowed — but nothing
-  // can be sold without a key anyway, and the checkout route answers 503 on
-  // BillingConfigError. What must never happen is the opposite: an unset key
-  // being treated as a valid live one.
-  assert.equal(isTestMode(undefined), false);
-  assert.equal(isTestMode(""), false);
+test("an unset PAYPAL_ENV reads as sandbox, not live", () => {
+  // What must never happen is the opposite: an unset env var being treated as
+  // a valid live one and quietly allowing real charges.
+  assert.equal(isTestMode(undefined), true);
+  assert.equal(isTestMode(""), true);
 });
 
 test("only VERCEL_ENV=production counts as the live deployment", () => {
