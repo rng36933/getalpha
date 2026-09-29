@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "demo-to-live-performance-gap",
+    title: "The Demo-to-Live Performance Gap, and Why It's Not Just Psychology",
+    description:
+      "A strategy that worked on demo and falls apart live usually isn't a psychology problem in disguise. Fills, latency and size are different too — how to tell which one actually broke.",
+    date: "2026-09-29",
+  },
+  {
     slug: "boredom-trading",
     title:
       "Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway",
