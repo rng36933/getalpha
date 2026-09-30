@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money
 - [ ] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble
 - [ ] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money
 - [ ] Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge
@@ -43,6 +42,7 @@ Each run:
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money (2026-09-30)
 - [x] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology (2026-09-29)
 - [x] Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway (2026-09-28)
 - [x] Trade Frequency: How Many Trades a Day Actually Fits Your Strategy (2026-09-28)

@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "r-multiple-distribution",
+    title:
+      "R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money",
+    description:
+      "Average R-multiple is one number computed from a spread that usually isn't symmetric. What the distribution behind it looks like, and why the average alone can't tell you if the edge is real.",
+    date: "2026-09-30",
+  },
+  {
     slug: "demo-to-live-performance-gap",
     title: "The Demo-to-Live Performance Gap, and Why It's Not Just Psychology",
     description:
