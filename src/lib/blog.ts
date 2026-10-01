@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "pyramiding-into-winners",
+    title:
+      "Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble",
+    description:
+      "Adding to a winning position can be disciplined risk management or a slow-motion version of averaging down with the labels swapped. What separates the two, and what a pyramid actually needs before the first add.",
+    date: "2026-10-01",
+  },
+  {
     slug: "r-multiple-distribution",
     title:
       "R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money",
