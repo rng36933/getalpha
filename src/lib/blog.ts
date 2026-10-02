@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "kelly-criterion-for-retail-traders",
+    title:
+      "Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money",
+    description:
+      "The Kelly criterion gives a precise, mathematically optimal position size — if you feed it inputs no retail trader actually has. What full Kelly does to a real account, and what to size instead.",
+    date: "2026-10-02",
+  },
+  {
     slug: "pyramiding-into-winners",
     title:
       "Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble",

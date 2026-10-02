@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money
 - [ ] Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge
 - [ ] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth
 - [ ] The Weekly Review: What Actually Belongs in It Besides P&L
@@ -41,6 +40,7 @@ Each run:
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money (2026-10-02)
 - [x] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble (2026-10-01)
 - [x] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money (2026-09-30)
 - [x] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology (2026-09-29)
