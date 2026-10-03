@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "win-rate-by-symbol",
+    title:
+      "Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge",
+    description:
+      "A blended win rate across every symbol you trade hides the fact that most of your edge usually comes from one or two of them. How to split it apart, and what to do once you see it.",
+    date: "2026-10-03",
+  },
+  {
     slug: "kelly-criterion-for-retail-traders",
     title:
       "Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money",
