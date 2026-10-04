@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth
 - [ ] The Weekly Review: What Actually Belongs in It Besides P&L
 - [ ] Rule Adherence Rate: A Number That Matters More Than Your Win Rate
 - [ ] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade
@@ -39,6 +38,7 @@ Each run:
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth (2026-10-04)
 - [x] Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge (2026-10-03)
 - [x] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money (2026-10-02)
 - [x] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble (2026-10-01)

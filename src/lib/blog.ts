@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "time-underwater-drawdown-duration",
+    title:
+      "Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth",
+    description:
+      "A 20% drawdown that recovers in three weeks and one that drags on for eight months are not the same event, even with identical depth. What time underwater actually measures, and why most journals only track the depth.",
+    date: "2026-10-04",
+  },
+  {
     slug: "win-rate-by-symbol",
     title:
       "Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge",
