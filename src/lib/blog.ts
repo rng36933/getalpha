@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "weekly-review-beyond-pnl",
+    title: "The Weekly Review: What Actually Belongs in It Besides P&L",
+    description:
+      "Most weekly reviews are a single number checked on Friday: up or down. Here's what a review actually needs to contain to change anything the following week.",
+    date: "2026-10-05",
+  },
+  {
     slug: "time-underwater-drawdown-duration",
     title:
       "Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth",
