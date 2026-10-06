@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "rule-adherence-rate",
+    title:
+      "Rule Adherence Rate: A Number That Matters More Than Your Win Rate",
+    description:
+      "Win rate measures how the market treated your trades. Rule adherence rate measures whether you actually traded your plan. Only one of them is something you control.",
+    date: "2026-10-06",
+  },
+  {
     slug: "weekly-review-beyond-pnl",
     title: "The Weekly Review: What Actually Belongs in It Besides P&L",
     description:
