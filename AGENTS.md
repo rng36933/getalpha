@@ -28,7 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade
 - [ ] Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal
 - [ ] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear
 - [ ] One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk?
@@ -36,6 +35,7 @@ Each run:
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade (2026-10-07)
 - [x] Rule Adherence Rate: A Number That Matters More Than Your Win Rate (2026-10-06)
 - [x] The Weekly Review: What Actually Belongs in It Besides P&L (2026-10-05)
 - [x] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth (2026-10-04)

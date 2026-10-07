@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "re-entry-speed-after-a-loss",
+    title:
+      "Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade",
+    description:
+      "The time between a losing trade closing and the next one opening is one of the cleanest leading indicators in a trade log. What a fast re-entry actually predicts, and how to set a threshold from your own data instead of guessing one.",
+    date: "2026-10-07",
+  },
+  {
     slug: "rule-adherence-rate",
     title:
       "Rule Adherence Rate: A Number That Matters More Than Your Win Rate",
