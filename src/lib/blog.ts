@@ -17,6 +17,76 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "re-entry-speed-after-a-loss",
+    title:
+      "Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade",
+    description:
+      "The time between a losing trade closing and the next one opening is one of the cleanest leading indicators in a trade log. What a fast re-entry actually predicts, and how to set a threshold from your own data instead of guessing one.",
+    date: "2026-10-07",
+  },
+  {
+    slug: "rule-adherence-rate",
+    title:
+      "Rule Adherence Rate: A Number That Matters More Than Your Win Rate",
+    description:
+      "Win rate measures how the market treated your trades. Rule adherence rate measures whether you actually traded your plan. Only one of them is something you control.",
+    date: "2026-10-06",
+  },
+  {
+    slug: "weekly-review-beyond-pnl",
+    title: "The Weekly Review: What Actually Belongs in It Besides P&L",
+    description:
+      "Most weekly reviews are a single number checked on Friday: up or down. Here's what a review actually needs to contain to change anything the following week.",
+    date: "2026-10-05",
+  },
+  {
+    slug: "time-underwater-drawdown-duration",
+    title:
+      "Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth",
+    description:
+      "A 20% drawdown that recovers in three weeks and one that drags on for eight months are not the same event, even with identical depth. What time underwater actually measures, and why most journals only track the depth.",
+    date: "2026-10-04",
+  },
+  {
+    slug: "win-rate-by-symbol",
+    title:
+      "Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge",
+    description:
+      "A blended win rate across every symbol you trade hides the fact that most of your edge usually comes from one or two of them. How to split it apart, and what to do once you see it.",
+    date: "2026-10-03",
+  },
+  {
+    slug: "kelly-criterion-for-retail-traders",
+    title:
+      "Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money",
+    description:
+      "The Kelly criterion gives a precise, mathematically optimal position size — if you feed it inputs no retail trader actually has. What full Kelly does to a real account, and what to size instead.",
+    date: "2026-10-02",
+  },
+  {
+    slug: "pyramiding-into-winners",
+    title:
+      "Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble",
+    description:
+      "Adding to a winning position can be disciplined risk management or a slow-motion version of averaging down with the labels swapped. What separates the two, and what a pyramid actually needs before the first add.",
+    date: "2026-10-01",
+  },
+  {
+    slug: "r-multiple-distribution",
+    title:
+      "R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money",
+    description:
+      "Average R-multiple is one number computed from a spread that usually isn't symmetric. What the distribution behind it looks like, and why the average alone can't tell you if the edge is real.",
+    date: "2026-09-30",
+  },
+  {
+    slug: "demo-to-live-performance-gap",
+    title: "The Demo-to-Live Performance Gap, and Why It's Not Just Psychology",
+    description:
+      "A strategy that worked on demo and falls apart live usually isn't a psychology problem in disguise. Fills, latency and size are different too — how to tell which one actually broke.",
+    date: "2026-09-29",
+  },
+  {
     slug: "boredom-trading",
     title:
       "Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway",

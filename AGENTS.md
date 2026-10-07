@@ -28,15 +28,6 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology
-- [ ] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money
-- [ ] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble
-- [ ] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money
-- [ ] Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge
-- [ ] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth
-- [ ] The Weekly Review: What Actually Belongs in It Besides P&L
-- [ ] Rule Adherence Rate: A Number That Matters More Than Your Win Rate
-- [ ] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade
 - [ ] Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal
 - [ ] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear
 - [ ] One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk?
@@ -44,6 +35,15 @@ Each run:
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade (2026-10-07)
+- [x] Rule Adherence Rate: A Number That Matters More Than Your Win Rate (2026-10-06)
+- [x] The Weekly Review: What Actually Belongs in It Besides P&L (2026-10-05)
+- [x] Time Underwater: Why Drawdown Duration Matters as Much as Drawdown Depth (2026-10-04)
+- [x] Win Rate by Symbol: Why One Instrument Can Be Carrying Your Whole Edge (2026-10-03)
+- [x] Kelly Criterion for Retail Traders: Why Full Kelly Is a Bad Idea With Real Money (2026-10-02)
+- [x] Pyramiding Into Winners: Scaling In Without Turning a Plan Into a Gamble (2026-10-01)
+- [x] R-Multiple Distribution: Why Your Average Hides the Trades That Actually Made You Money (2026-09-30)
+- [x] The Demo-to-Live Performance Gap, and Why It's Not Just Psychology (2026-09-29)
 - [x] Boredom Trading: What It Looks Like When There's No Setup and You Trade Anyway (2026-09-28)
 - [x] Trade Frequency: How Many Trades a Day Actually Fits Your Strategy (2026-09-28)
 - [x] ATR Stops vs. Fixed-Pip Stops: Why the Same Stop Distance Means Different Risk (2026-09-27)
