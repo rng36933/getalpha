@@ -7,6 +7,7 @@ import CoachReviewPanel from "@/components/CoachReviewPanel";
 import type { TradeMetrics } from "@/lib/ai/trade-metrics";
 import type { CoachReview } from "@/lib/ai/types";
 import { formatSignedMoney } from "@/lib/format/money";
+import { MAX_NOTE_LENGTH } from "@/lib/journal/notes";
 
 export type TradeRow = {
   id: string;
@@ -135,6 +136,8 @@ function pageWindow(page: number, count: number): (number | "gap")[] {
 const selectClass =
   "rounded-lg border border-line bg-surface-raised px-2.5 py-1.5 text-xs text-foreground outline-none focus:border-accent";
 
+type NoteStatus = "idle" | "saving" | "saved" | "error";
+
 type ReviewState =
   | { status: "idle" }
   | { status: "loading" }
@@ -241,6 +244,48 @@ export default function TradeList({
   const topRef = useRef<HTMLDivElement>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<string, ReviewState>>({});
+
+  // Notes are opened independently of the review: the review spends a paid AI
+  // call the moment it opens, a note should not.
+  const [notesOpenId, setNotesOpenId] = useState<string | null>(null);
+  const [savedNotes, setSavedNotes] = useState<Record<string, string | null>>({});
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [noteStatus, setNoteStatus] = useState<Record<string, NoteStatus>>({});
+
+  /** What is stored for this trade, including a note saved since the page loaded. */
+  function noteOf(trade: TradeRow): string | null {
+    return trade.id in savedNotes ? savedNotes[trade.id] : trade.marketContext;
+  }
+
+  async function saveNote(trade: TradeRow) {
+    const text = drafts[trade.id] ?? noteOf(trade) ?? "";
+    setNoteStatus((current) => ({ ...current, [trade.id]: "saving" }));
+
+    try {
+      const response = await fetch(`/api/trades/${trade.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ notes: text }),
+      });
+
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        setNoteStatus((current) => ({ ...current, [trade.id]: "error" }));
+        return;
+      }
+
+      setSavedNotes((current) => ({ ...current, [trade.id]: body?.notes ?? null }));
+      setDrafts((current) => {
+        const next = { ...current };
+        delete next[trade.id];
+        return next;
+      });
+      setNoteStatus((current) => ({ ...current, [trade.id]: "saved" }));
+    } catch {
+      setNoteStatus((current) => ({ ...current, [trade.id]: "error" }));
+    }
+  }
 
   // Filtering is client-side on purpose. The page already has every row it is
   // going to show, so a round trip per filter would spend a request to hide
@@ -470,7 +515,7 @@ export default function TradeList({
               sortKey={sortKey}
               onSort={setSortKey}
             />
-            <th className="py-2 text-right font-normal">Review</th>
+            <th className="py-2 text-right font-normal">Notes / Review</th>
           </tr>
         </thead>
 
@@ -478,6 +523,11 @@ export default function TradeList({
           {visible.map((trade) => {
             const state = stateOf(trade.id);
             const open = openId === trade.id;
+            const notesOpen = notesOpenId === trade.id;
+            const note = noteOf(trade);
+            const draft = drafts[trade.id] ?? note ?? "";
+            const status = noteStatus[trade.id] ?? "idle";
+            const dirty = draft.trim() !== (note ?? "");
 
             return (
               // The key belongs on the fragment, not on the rows inside it: a
@@ -556,29 +606,95 @@ export default function TradeList({
                     </span>
                   </td>
                   <td className="py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => review(trade.id)}
-                      disabled={state.status === "loading"}
-                      aria-expanded={open}
-                      className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {state.status === "loading"
-                        ? "Reviewing…"
-                        : state.status === "ready"
-                          ? open
-                            ? "Hide"
-                            : "Show"
-                          : "Review"}
-                    </button>
+                    <span className="inline-flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNotesOpenId(notesOpen ? null : trade.id);
+                          setNoteStatus((current) => ({ ...current, [trade.id]: "idle" }));
+                        }}
+                        aria-expanded={notesOpen}
+                        title={note ? "Edit your note on this trade" : "Add a note on this trade"}
+                        className={`rounded-lg border px-3 py-1.5 text-xs transition-colors hover:border-accent hover:text-accent ${
+                          note ? "border-accent/40 text-accent" : "border-line text-muted"
+                        }`}
+                      >
+                        {note ? "Note ✓" : "Add note"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => review(trade.id)}
+                        disabled={state.status === "loading"}
+                        aria-expanded={open}
+                        className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {state.status === "loading"
+                          ? "Reviewing…"
+                          : state.status === "ready"
+                            ? open
+                              ? "Hide"
+                              : "Show"
+                            : "Review"}
+                      </button>
+                    </span>
                   </td>
                 </tr>
 
-                {open ? (
+                {open || notesOpen ? (
                   <tr>
                     <td colSpan={9} className="pb-6">
                       <div className="rounded-lg border border-line bg-surface-raised p-4">
-                        {state.status === "loading" ? (
+                        {/* Notes sit above the review so the story you wrote is
+                            the first thing next to the numbers, and opening the
+                            review shows them too. */}
+                        <label
+                          htmlFor={`note-${trade.id}`}
+                          className="block text-xs font-medium uppercase tracking-wider text-muted"
+                        >
+                          Notes
+                        </label>
+                        <textarea
+                          id={`note-${trade.id}`}
+                          value={draft}
+                          onChange={(event) => {
+                            setDrafts((current) => ({
+                              ...current,
+                              [trade.id]: event.target.value,
+                            }));
+                            setNoteStatus((current) => ({ ...current, [trade.id]: "idle" }));
+                          }}
+                          maxLength={MAX_NOTE_LENGTH}
+                          rows={3}
+                          placeholder="What happened on this trade? Why you took it, what you saw, how you felt."
+                          className="mt-1.5 w-full resize-y rounded-lg border border-line bg-surface px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent"
+                        />
+                        <div className="mt-2 flex flex-wrap items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => saveNote(trade)}
+                            disabled={!dirty || status === "saving"}
+                            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-surface disabled:text-muted"
+                          >
+                            {status === "saving" ? "Saving…" : "Save note"}
+                          </button>
+                          {status === "saved" ? (
+                            <span role="status" className="text-xs text-positive">
+                              Saved
+                            </span>
+                          ) : null}
+                          {status === "error" ? (
+                            <span role="alert" className="text-xs text-negative">
+                              Could not save. Try again.
+                            </span>
+                          ) : null}
+                          <span className="ml-auto text-[11px] tabular-nums text-muted">
+                            {draft.length}/{MAX_NOTE_LENGTH} · the AI Coach reads this when it reviews the trade
+                          </span>
+                        </div>
+
+                        {open ? <div className="mt-4 border-t border-line pt-4" /> : null}
+
+                        {open && state.status === "loading" ? (
                           <p className="flex items-center gap-2 text-sm text-muted">
                             <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden="true" />
                             Reading the trade against your history. This takes
@@ -586,7 +702,7 @@ export default function TradeList({
                           </p>
                         ) : null}
 
-                        {state.status === "error" ? (
+                        {open && state.status === "error" ? (
                           <div>
                             <p className="text-sm text-negative">
                               {state.message}
@@ -602,7 +718,7 @@ export default function TradeList({
                           </div>
                         ) : null}
 
-                        {state.status === "ready" ? (
+                        {open && state.status === "ready" ? (
                           <CoachReviewPanel review={state.review} />
                         ) : null}
                       </div>
