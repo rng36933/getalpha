@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "broker-execution-quality",
+    title:
+      "Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal",
+    description:
+      "Slippage on its own is just noise — a few pips better, a few pips worse, roughly cancelling out. The pattern behind it is what tells you whether your broker's execution is costing you money.",
+    date: "2026-10-08",
+  },
+  {
     slug: "re-entry-speed-after-a-loss",
     title:
       "Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade",
