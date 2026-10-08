@@ -50,6 +50,46 @@ export function bucketByDay(
   return days;
 }
 
+export type PeriodTotals = { today: DayPnl; week: DayPnl; month: DayPnl };
+
+function sumDays(days: Map<string, DayPnl>, dates: Date[]): DayPnl {
+  const total: DayPnl = { pnl: 0, trades: 0 };
+
+  for (const date of dates) {
+    const day = days.get(dayKey(date.getFullYear(), date.getMonth(), date.getDate()));
+    if (!day) continue;
+    total.pnl += day.pnl;
+    total.trades += day.trades;
+  }
+
+  return total;
+}
+
+/**
+ * What today, this week and this month have made so far.
+ *
+ * The week runs Monday to Sunday, matching the calendar grid, and "today" is
+ * `now`'s own calendar day — all three read from the same per-day buckets, so
+ * they cannot disagree with the cells shown below them.
+ */
+export function periodTotals(days: Map<string, DayPnl>, now: Date): PeriodTotals {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const date = now.getDate();
+
+  const sinceMonday = (now.getDay() + 6) % 7;
+  const week = Array.from({ length: 7 }, (_, i) => new Date(year, month, date - sinceMonday + i));
+
+  const monthLength = new Date(year, month + 1, 0).getDate();
+  const wholeMonth = Array.from({ length: monthLength }, (_, i) => new Date(year, month, i + 1));
+
+  return {
+    today: sumDays(days, [new Date(year, month, date)]),
+    week: sumDays(days, week),
+    month: sumDays(days, wholeMonth),
+  };
+}
+
 /**
  * The month as weeks of seven cells, Monday first, `null` for the padding
  * before the 1st and after the last day.

@@ -4,16 +4,45 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { formatCompactMoney, formatSignedMoney } from "@/lib/format/money";
 import {
+  type DayPnl,
   type PnlPoint,
   bucketByDay,
   dayKey,
   monthGrid,
+  periodTotals,
 } from "@/lib/journal/month-pnl";
 
 const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 const navClass =
   "rounded-lg border border-line p-1.5 text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted";
+
+/** One of the Today / This week / This month figures. */
+function Total({
+  label,
+  total,
+  currency,
+}: {
+  label: string;
+  total: DayPnl;
+  currency: string | null;
+}) {
+  const tone =
+    total.trades === 0 || total.pnl === 0
+      ? "text-muted"
+      : total.pnl > 0
+        ? "text-positive"
+        : "text-negative";
+
+  return (
+    <div className="min-w-0 rounded-lg border border-line px-2 py-1.5">
+      <p className="text-[10px] uppercase tracking-wider text-muted">{label}</p>
+      <p className={`mt-0.5 truncate font-mono text-xs font-medium tabular-nums ${tone}`}>
+        {total.trades === 0 ? "—" : formatSignedMoney(total.pnl, currency)}
+      </p>
+    </div>
+  );
+}
 
 /**
  * A month of closed trades, one cell per day, each showing what that day made
@@ -38,6 +67,7 @@ export default function PnlMonthCalendar({
 
   const today = new Date();
   const todayKey = dayKey(today.getFullYear(), today.getMonth(), today.getDate());
+  const totals = periodTotals(days, today);
 
   const weeks = monthGrid(shown.year, shown.month);
   const label = new Date(shown.year, shown.month, 1).toLocaleDateString("en-GB", {
@@ -57,6 +87,12 @@ export default function PnlMonthCalendar({
 
   return (
     <div>
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        <Total label="Today" total={totals.today} currency={currency} />
+        <Total label="This week" total={totals.week} currency={currency} />
+        <Total label="This month" total={totals.month} currency={currency} />
+      </div>
+
       <div className="mb-3 flex items-center justify-between gap-2">
         <button type="button" onClick={() => move(-1)} aria-label="Previous month" className={navClass}>
           <ChevronLeft className="size-4" aria-hidden="true" />
