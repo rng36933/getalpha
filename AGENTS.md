@@ -28,12 +28,12 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear
 - [ ] One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk?
 - [ ] Swing Trading vs Day Trading Journals: Why They Need Different Granularity
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear (2026-10-09)
 - [x] Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal (2026-10-08)
 - [x] Chasing a Loss Within Minutes: How Re-Entry Speed Predicts a Bad Trade (2026-10-07)
 - [x] Rule Adherence Rate: A Number That Matters More Than Your Win Rate (2026-10-06)

@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "take-profit-creep",
+    title:
+      "Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear",
+    description:
+      "Moving a take-profit mid-trade is sometimes a legitimate read on new information, and sometimes just fear of giving back an unrealized gain wearing a better excuse. How to tell the two apart from your own log.",
+    date: "2026-10-09",
+  },
+  {
     slug: "broker-execution-quality",
     title:
       "Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal",
