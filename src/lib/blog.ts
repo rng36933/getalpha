@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "one-position-at-a-time",
+    title:
+      "One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk?",
+    description:
+      "A rule capping you to one open position at a time feels like obvious risk control. It caps something real, but not the thing most traders think it caps — and it's silent on the risk that actually blows accounts up.",
+    date: "2026-10-10",
+  },
+  {
     slug: "take-profit-creep",
     title:
       "Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear",
