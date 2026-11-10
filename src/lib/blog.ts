@@ -17,6 +17,14 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "swing-vs-day-trading-journal-granularity",
+    title:
+      "Swing Trading vs Day Trading Journals: Why They Need Different Granularity",
+    description:
+      "The same journal template doesn't fit a trade held for six minutes and a trade held for six days. What granularity actually means for a trade log, and why using the wrong one hides the thing you're trying to measure.",
+    date: "2026-11-10",
+  },
+  {
     slug: "one-position-at-a-time",
     title:
       "One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk?",

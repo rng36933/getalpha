@@ -28,10 +28,10 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Swing Trading vs Day Trading Journals: Why They Need Different Granularity
 - [ ] Why Your Trading Journal Is Also Your Best Tax Record
 
 **Published:**
+- [x] Swing Trading vs Day Trading Journals: Why They Need Different Granularity (2026-11-10)
 - [x] One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk? (2026-10-10)
 - [x] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear (2026-10-09)
 - [x] Broker Execution Quality: What Slippage Patterns in Your Journal Actually Reveal (2026-10-08)
