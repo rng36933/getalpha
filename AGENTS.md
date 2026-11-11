@@ -28,9 +28,10 @@ Each run:
    next run doesn't repeat it.
 
 **Blog backlog** (remaining, in order):
-- [ ] Why Your Trading Journal Is Also Your Best Tax Record
+(empty — ask Almintas for more topics)
 
 **Published:**
+- [x] Why Your Trading Journal Is Also Your Best Tax Record (2026-11-11)
 - [x] Swing Trading vs Day Trading Journals: Why They Need Different Granularity (2026-11-10)
 - [x] One Position at a Time: Does Limiting Concurrent Trades Actually Reduce Risk? (2026-10-10)
 - [x] Take-Profit Creep: When Moving Your Target Is Optimization and When It's Fear (2026-10-09)

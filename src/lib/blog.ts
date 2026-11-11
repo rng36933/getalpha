@@ -17,6 +17,13 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "trading-journal-tax-record",
+    title: "Why Your Trading Journal Is Also Your Best Tax Record",
+    description:
+      "The record you keep to review your trading is the same record a tax filing needs: dates, sizes, entries, exits and fees for every closed position. Why reconstructing it from a broker statement in April is the hard way to do this.",
+    date: "2026-11-11",
+  },
+  {
     slug: "swing-vs-day-trading-journal-granularity",
     title:
       "Swing Trading vs Day Trading Journals: Why They Need Different Granularity",
